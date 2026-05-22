@@ -6,19 +6,19 @@
   <link rel="stylesheet" href="../colors_and_type.css">
   <style>
     * { box-sizing:border-box; }
-    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
-    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:18px; }
+    body { margin:0; padding:24px 32px; background:var(--page-bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-caps); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--muted); margin-bottom:18px; }
     .grid { display:grid; grid-template-columns:1.2fr 0.9fr; gap:16px; }
-    .panel { border:1px solid var(--border); border-radius:var(--radius-xl); background:var(--gray-50); padding:18px; }
-    .principle { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .panel { border:1px solid var(--line); border-radius:var(--radius-xl); background:var(--soft); padding:18px; }
+    .principle { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
     .principle:last-child { border-bottom:0; padding-bottom:0; }
-    .title { font-size:17px; font-weight:var(--weight-medium); color:var(--fg); }
-    .detail { font-size:12px; color:var(--gray-400); }
+    .title { font-size:17px; font-weight:var(--weight-medium); color:var(--ink); }
+    .detail { font-size:12px; color:var(--muted); }
     .stack { display:flex; flex-direction:column; gap:8px; }
     .chip { padding:8px 14px; border-radius:var(--radius-full); font-size:13px; font-weight:var(--weight-medium); border:1px solid; }
     .good    { background:var(--verdict-positive-bg); border-color:var(--verdict-positive-border); color:var(--verdict-positive-fg); }
     .careful { background:var(--verdict-cautious-bg); border-color:var(--verdict-cautious-border); color:var(--verdict-cautious-fg); }
-    .unknown { background:var(--gray-100); border-color:var(--border); color:var(--gray-500); }
+    .unknown { background:var(--soft); border-color:var(--line); color:var(--muted); }
   </style>
 </head>
 <body>

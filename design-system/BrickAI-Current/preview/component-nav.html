@@ -7,20 +7,20 @@
   <style>
     * { box-sizing:border-box; }
     body { margin:0; padding:0; background:linear-gradient(to bottom, #eff6ff, #fff, #ecfdf5); font-family:var(--font-body); }
-    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); padding:16px 24px 10px; }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-caps); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--muted); padding:16px 24px 10px; }
     /* Full nav — 3-col grid */
     .nav-wrap { padding:16px 24px; }
     .nav-grid { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:16px; }
     .logo-side { padding-left:8px; }
     .logo-img  { height:48px; width:auto; object-fit:contain; }
     /* Center pill nav */
-    .nav-pill { display:flex; align-items:center; border-radius:var(--radius-full); border:1px solid var(--border); background:rgba(255,255,255,0.88); padding:4px; box-shadow:var(--shadow-nav); backdrop-filter:var(--blur-xl); gap:0; }
+    .nav-pill { display:flex; align-items:center; border-radius:var(--radius-full); border:1px solid var(--line); background:rgba(255,255,255,0.88); padding:4px; box-shadow:var(--shadow-nav); backdrop-filter:var(--blur-xl); gap:0; }
     .nav-item { padding:6px 18px; border-radius:var(--radius-full); font-size:14px; transition:background 150ms; }
     .nav-item.active { background:var(--gray-950); color:#fff; }
-    .nav-item.idle   { color:var(--gray-600); }
+    .nav-item.idle   { color:var(--text-secondary); }
     /* Right sign-in */
     .right-side { display:flex; justify-content:flex-end; }
-    .sign-btn { border-radius:var(--radius-full); border:1px solid var(--border); background:rgba(255,255,255,0.88); padding:8px 16px; font-size:14px; color:var(--gray-700); box-shadow:var(--shadow-nav); backdrop-filter:var(--blur-xl); }
+    .sign-btn { border-radius:var(--radius-full); border:1px solid var(--line); background:rgba(255,255,255,0.88); padding:8px 16px; font-size:14px; color:var(--gray-700); box-shadow:var(--shadow-nav); backdrop-filter:var(--blur-xl); }
   </style>
 </head>
 <body>

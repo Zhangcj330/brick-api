@@ -2,30 +2,119 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Brick AI · Display type</title>
+  <title>Brick AI · Typography</title>
   <link rel="stylesheet" href="../colors_and_type.css">
   <style>
     * { box-sizing:border-box; }
-    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
-    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:16px; }
-    .panel { background:#fff; border:1px solid var(--border); border-radius:var(--radius-draw); padding:28px 32px; box-shadow:var(--shadow-card); }
-    .hero  { font-size:48px; line-height:1.08; font-weight:var(--weight-semibold); color:var(--brand); letter-spacing:var(--tracking-tight); }
-    .sub   { margin-top:10px; font-size:18px; line-height:1.55; color:var(--gray-600); font-weight:var(--weight-normal); }
-    .cap   { margin-top:16px; font-family:var(--font-mono); font-size:11px; color:var(--gray-400); }
-    /* Actual chat page h1 */
-    .chat-h1 { font-size:24px; font-weight:var(--weight-normal); line-height:1.3; color:rgba(22,2,17,0.70); margin-top:20px; }
-    /* Report page h1 */
-    .report-h1 { font-size:30px; font-weight:var(--weight-normal); letter-spacing:var(--tracking-tight); color:#fff; background:#374151; border-radius:var(--radius-md); padding:10px 14px; margin-top:20px; display:inline-block; }
+    body { margin:0; padding:28px 36px; background:var(--page-bg); font-family:var(--font-body); color:var(--ink); }
+
+    .page-title { font-size:11px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:32px; }
+
+    /* ── Scale rows ── */
+    .ramp { display:flex; flex-direction:column; gap:0; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface); margin-bottom:36px; }
+    .ramp-row { display:grid; grid-template-columns:160px 1fr; gap:0; border-bottom:1px solid var(--line); align-items:center; min-height:64px; }
+    .ramp-row:last-child { border-bottom:none; }
+    .ramp-meta { padding:14px 18px; border-right:1px solid var(--line); background:var(--soft); }
+    .ramp-meta .size  { font-size:13px; font-weight:700; color:var(--ink); }
+    .ramp-meta .spec  { font-size:10px; font-family:ui-monospace,monospace; color:var(--subtle); margin-top:2px; line-height:1.5; }
+    .ramp-sample { padding:14px 24px; }
+
+    /* ── Divider labels ── */
+    .divider { display:flex; align-items:center; gap:12px; margin:32px 0 14px; font-size:12px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-tertiary); }
+    .divider::after { content:""; flex:1; height:1px; background:var(--line); }
+
+    /* ── Type styles (exact from report) ── */
+    .t-h1     { font-size:clamp(42px,5.2vw,64px); font-weight:900; line-height:1.02; letter-spacing:-0.065em; color:var(--ink); }
+    .t-h2     { font-size:clamp(25px,3vw,35px);   font-weight:800; line-height:1.14; letter-spacing:-0.055em; color:var(--ink); }
+    .t-label  { font-size:24px; font-weight:800; letter-spacing:-0.04em; color:var(--ink); }
+    .t-lead   { font-size:clamp(17px,2vw,21px);   font-weight:450; line-height:1.55; color:var(--text-secondary); }
+    .t-metric { font-size:clamp(19px,2.2vw,24px); font-weight:900; letter-spacing:-0.045em; line-height:1; color:var(--ink); }
+    .t-metric.good { color:var(--green); }
+    .t-body-lg  { font-size:17px; font-weight:750; letter-spacing:-0.02em; color:var(--ink); }
+    .t-body     { font-size:15px; font-weight:400; line-height:1.5; color:var(--text); }
+    .t-small    { font-size:13px; font-weight:400; line-height:1.38; color:var(--text-tertiary); }
+    .t-section  { font-size:14px; font-weight:900; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink); }
+    .t-data-lbl { font-size:12px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-tertiary); }
+    .t-kicker   { font-size:13px; font-weight:900; letter-spacing:0.11em; text-transform:uppercase; color:var(--ink); }
+    .t-footnote { font-size:12px; font-weight:400; line-height:1.45; color:var(--subtle); }
+    .t-mono     { font-family:ui-monospace,monospace; font-size:13px; color:var(--text-secondary); border-left:2px solid var(--line); padding-left:10px; }
   </style>
 </head>
 <body>
-  <div class="lbl">Display type · DM Sans · landing hero + page headings</div>
-  <div class="panel">
-    <div class="hero">Discover Australian<br>property with AI.</div>
-    <div class="sub">Talk naturally about your goals and let AI surface recommendations tuned to price, commute, and lifestyle.</div>
-    <div class="cap">DM Sans 600 · 48px / 1.08 · tracking-tight · landing hero</div>
+
+  <div class="page-title">Typography · Inter Variable · Full Scale</div>
+
+  <!-- DISPLAY -->
+  <div class="divider">Display</div>
+  <div class="ramp">
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">H1 / Hero</div><div class="spec">900 · clamp(42→64px)<br>lh 1.02 · ls -0.065em</div></div>
+      <div class="ramp-sample"><span class="t-h1">St Ives</span></div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">H2 / Section</div><div class="spec">800 · clamp(25→35px)<br>lh 1.14 · ls -0.055em</div></div>
+      <div class="ramp-sample"><span class="t-h2">Boom phase.</span></div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Card label</div><div class="spec">800 · 24px · ls -0.04em</div></div>
+      <div class="ramp-sample"><span class="t-label">Growth Report</span></div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Lead</div><div class="spec">450 · clamp(17→21px)<br>lh 1.55</div></div>
+      <div class="ramp-sample"><span class="t-lead">Strong capital growth driven by limited supply and high-income demand.</span></div>
+    </div>
   </div>
-  <div class="chat-h1">How can I help you find your next home?</div>
-  <div class="report-h1">78 Cary Street</div>
+
+  <!-- DATA / METRICS -->
+  <div class="divider">Data &amp; metrics</div>
+  <div class="ramp">
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Metric value</div><div class="spec">900 · clamp(19→24px)<br>ls -0.045em · lh 1</div></div>
+      <div class="ramp-sample" style="display:flex;gap:36px;align-items:baseline;">
+        <span class="t-metric">$1,875,000</span>
+        <span class="t-metric good">+14.2%</span>
+        <span class="t-metric">23 days</span>
+      </div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Section title</div><div class="spec">900 · 14px<br>ls 0.06em · caps</div></div>
+      <div class="ramp-sample"><span class="t-section">Market drivers</span></div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Data label</div><div class="spec">900 · 12px<br>ls 0.08em · caps</div></div>
+      <div class="ramp-sample"><span class="t-data-lbl">Median price</span></div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Kicker</div><div class="spec">900 · 13px<br>ls 0.11em · caps</div></div>
+      <div class="ramp-sample"><span class="t-kicker">Investment outlook</span></div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="divider">Body &amp; UI</div>
+  <div class="ramp">
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Body large</div><div class="spec">750 · 17px<br>ls -0.02em</div></div>
+      <div class="ramp-sample"><span class="t-body-lg">Freestanding layout with strong land value.</span></div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Body</div><div class="spec">400 · 15px · lh 1.5</div></div>
+      <div class="ramp-sample"><span class="t-body">St Ives recorded strong demand across all price segments, with family homes seeing the highest competition.</span></div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Small / Note</div><div class="spec">400 · 13px · lh 1.38</div></div>
+      <div class="ramp-sample"><span class="t-small">Data sourced from PropTrack, CoreLogic — 12 months to Apr 2025.</span></div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Footnote</div><div class="spec">400 · 12px · lh 1.45</div></div>
+      <div class="ramp-sample"><span class="t-footnote">Last updated May 2025 · Not financial advice · © Brick AI</span></div>
+    </div>
+    <div class="ramp-row">
+      <div class="ramp-meta"><div class="size">Mono / Evidence</div><div class="spec">ui-monospace · 13px</div></div>
+      <div class="ramp-sample"><span class="t-mono">strata report p.14 · "water ingress noted to rear retaining wall"</span></div>
+    </div>
+  </div>
+
 </body>
 </html>
+

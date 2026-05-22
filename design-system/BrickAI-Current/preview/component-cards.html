@@ -7,30 +7,30 @@
   <style>
     * { box-sizing:border-box; }
     body { margin:0; padding:20px 24px; background:linear-gradient(to bottom, #eff6ff, #fff, #ecfdf5); font-family:var(--font-body); }
-    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-caps); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--muted); margin-bottom:14px; }
     .grid { display:grid; grid-template-columns:1.1fr 0.9fr; gap:14px; }
     /* PropertyCard — rounded-2xl border-gray-200 bg-white */
-    .prop-card { background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius-xl); overflow:hidden; box-shadow:var(--shadow-card); }
-    .img { width:100%; aspect-ratio:4/3; background:linear-gradient(135deg,var(--gray-100),var(--gray-200)); position:relative; display:flex; align-items:flex-end; }
+    .prop-card { background:#fff; border:1px solid var(--line); border-radius:var(--radius-xl); overflow:hidden; box-shadow:var(--shadow-card); }
+    .img { width:100%; aspect-ratio:4/3; background:linear-gradient(135deg,var(--gray-100),var(--line)); position:relative; display:flex; align-items:flex-end; }
     .img-overlay { position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6),rgba(0,0,0,0.15),rgba(0,0,0,0.05)); }
     .img-badge { position:absolute;top:10px;left:10px;padding:4px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:var(--weight-medium);backdrop-filter:blur(12px); }
     .body { padding:14px 16px; }
     .verdict-chip { display:inline-flex;padding:3px 10px;border-radius:var(--radius-full);font-size:12px;font-weight:var(--weight-medium);border:1px solid;margin-bottom:10px; }
     .reason { font-size:14px; line-height:1.6; color:var(--gray-900); margin-bottom:10px; }
     .price { font-size:14px; font-weight:var(--weight-medium); color:var(--gray-900); margin-bottom:6px; }
-    .addr  { font-size:12px; color:var(--gray-500); margin-bottom:8px; display:flex; align-items:center; gap:4px; }
-    .specs { font-size:13px; color:var(--gray-600); display:flex; gap:12px; margin-bottom:10px; }
-    .insight { border:1px solid var(--gray-200); background:var(--gray-50); border-radius:var(--radius-lg); padding:6px 10px; font-size:12px; line-height:1.5; color:var(--gray-700); margin-bottom:6px; }
+    .addr  { font-size:12px; color:var(--muted); margin-bottom:8px; display:flex; align-items:center; gap:4px; }
+    .specs { font-size:13px; color:var(--text-secondary); display:flex; gap:12px; margin-bottom:10px; }
+    .insight { border:1px solid var(--line); background:var(--soft); border-radius:var(--radius-lg); padding:6px 10px; font-size:12px; line-height:1.5; color:var(--gray-700); margin-bottom:6px; }
     .open-btn { width:100%; height:36px; border-radius:var(--radius-lg); background:var(--gray-100); border:none; font-size:13px; color:var(--gray-900); font-family:var(--font-body); cursor:pointer; }
     /* Report card — glass */
     .report-card { background:rgba(255,255,255,0.82); border:1px solid rgba(255,255,255,0.80); border-radius:var(--radius-report); overflow:hidden; box-shadow:var(--shadow-report); backdrop-filter:var(--blur-xl); }
     .r-img { width:100%; height:140px; background:linear-gradient(135deg,var(--gray-700),var(--gray-900)); position:relative; display:flex; align-items:flex-end; padding:14px; }
-    .r-eyebrow { font-size:11px; text-transform:uppercase; letter-spacing:var(--tracking-label); color:rgba(255,255,255,0.65); margin-bottom:6px; }
+    .r-eyebrow { font-size:11px; text-transform:uppercase; letter-spacing:var(--tracking-caps); color:rgba(255,255,255,0.65); margin-bottom:6px; }
     .r-title { font-size:20px; font-weight:var(--weight-medium); color:#fff; letter-spacing:var(--tracking-tight); }
     .r-body { padding:14px 18px; }
-    .r-decision-label { font-size:11px; text-transform:uppercase; letter-spacing:var(--tracking-label); color:var(--gray-400); margin-bottom:6px; }
+    .r-decision-label { font-size:11px; text-transform:uppercase; letter-spacing:var(--tracking-caps); color:var(--muted); margin-bottom:6px; }
     .r-verdict { font-size:18px; font-weight:var(--weight-medium); color:var(--gray-950); letter-spacing:var(--tracking-tight); margin-bottom:8px; }
-    .r-summary { font-size:13px; color:var(--gray-600); line-height:1.6; }
+    .r-summary { font-size:13px; color:var(--text-secondary); line-height:1.6; }
   </style>
 </head>
 <body>

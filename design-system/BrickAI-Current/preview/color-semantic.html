@@ -6,63 +6,118 @@
   <link rel="stylesheet" href="../colors_and_type.css">
   <style>
     * { box-sizing:border-box; }
-    body { margin:0; padding:20px 24px; background:var(--bg); font-family:var(--font-body); }
-    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
-    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-    .group { border:1px solid var(--border); border-radius:var(--radius-xl); padding:14px; background:var(--gray-50); }
-    .pair { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
-    .swatch { height:68px; border-radius:var(--radius-md); padding:8px 10px; display:flex; align-items:flex-end; font-family:var(--font-mono); font-size:10px; border:1px solid transparent; }
-    .meta div { font-size:11px; color:var(--gray-500); }
-    .meta strong { display:block; font-size:12px; color:var(--fg); font-weight:var(--weight-medium); margin-bottom:2px; }
-    /* Badge context — shown on photo overlay */
-    .badge-demo { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
-    .badge-demo-label { font-size:10px; color:var(--gray-400); margin-bottom:6px; }
-    .badge-row { display:flex; gap:6px; flex-wrap:wrap; }
-    .badge { display:inline-flex; padding:3px 10px; border-radius:var(--radius-full); font-size:11px; font-weight:var(--weight-medium); border:1px solid; }
-    .badge.dark { background:rgba(255,255,255,0.14); border-color:rgba(255,255,255,0.20); color:#fff; padding:4px 12px; border-radius:var(--radius-full); font-size:11px; font-weight:var(--weight-medium); }
-    .overlay { background:#374151; border-radius:var(--radius-md); padding:8px 10px; }
+    body { margin:0; padding:20px 24px; background:var(--page-bg); font-family:var(--font-body); color:var(--ink); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-caps); text-transform:uppercase; font-weight:var(--weight-extrabold); color:var(--muted); margin-bottom:6px; }
+    .section { margin-bottom:32px; }
+    .section-title { font-size:12px; font-weight:var(--weight-extrabold); letter-spacing:var(--tracking-wider); text-transform:uppercase; color:var(--ink); margin:0 0 12px; }
+
+    /* swatch rows */
+    .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+    .swatch { display:flex; flex-direction:column; justify-content:flex-end; width:120px; height:80px; border-radius:10px; padding:8px 10px; border:1px solid rgba(0,0,0,0.07); }
+    .swatch .hex { font-size:11px; font-weight:600; font-family:ui-monospace,monospace; }
+    .swatch .name { font-size:10px; margin-top:2px; opacity:0.7; }
+
+    /* text scale demo */
+    .text-demo { display:flex; flex-direction:column; gap:6px; padding:20px; background:var(--surface); border-radius:12px; border:1px solid var(--line); }
+    .t-ink   { color:var(--ink); font-weight:700; }
+    .t-text  { color:var(--text); }
+    .t-sec   { color:var(--text-secondary); }
+    .t-ter   { color:var(--text-tertiary); }
+    .t-muted { color:var(--muted); }
+    .t-subtle{ color:var(--subtle); }
+
+    /* verdict */
+    .badge { display:inline-flex; padding:3px 10px; border-radius:9999px; font-size:11px; font-weight:600; border:1px solid; }
   </style>
 </head>
 <body>
-  <div class="lbl">Semantic colors · verdict tones · two contexts</div>
-  <div class="grid">
-    <div class="group">
-      <div class="pair">
-        <div class="swatch" style="background:var(--verdict-positive-fg);color:#fff;">047857</div>
-        <div class="swatch" style="background:var(--verdict-positive-bg);border-color:var(--verdict-positive-border);color:var(--verdict-positive-fg);">ecfdf5</div>
+
+  <div class="lbl">Semantic Colors · from St Ives Growth Report</div>
+
+  <!-- Text hierarchy -->
+  <div class="section">
+    <div class="section-title">Text hierarchy</div>
+    <div class="row">
+      <div class="swatch" style="background:var(--ink);color:#fff;">
+        <span class="hex">#050507</span><span class="name">--ink</span>
       </div>
-      <div class="meta"><div><strong>positive</strong>emerald-700 / emerald-50</div></div>
-      <div class="badge-demo">
-        <div class="badge-demo-label">Chip (normal bg)</div>
-        <div class="badge-row"><span class="badge" style="background:var(--verdict-positive-bg);border-color:var(--verdict-positive-border);color:var(--verdict-positive-fg);">Worth pursuing</span></div>
-        <div class="badge-demo-label" style="margin-top:8px;">Badge (photo overlay)</div>
-        <div class="overlay"><span class="badge dark">Worth pursuing</span></div>
+      <div class="swatch" style="background:var(--text);color:#fff;">
+        <span class="hex">#2f3237</span><span class="name">--text</span>
       </div>
-    </div>
-    <div class="group">
-      <div class="pair">
-        <div class="swatch" style="background:var(--verdict-cautious-fg);color:#fff;">92400e</div>
-        <div class="swatch" style="background:var(--verdict-cautious-bg);border-color:var(--verdict-cautious-border);color:var(--verdict-cautious-fg);">fffbeb</div>
+      <div class="swatch" style="background:var(--text-secondary);color:#fff;">
+        <span class="hex">#3f444c</span><span class="name">--text-secondary</span>
       </div>
-      <div class="meta"><div><strong>cautious</strong>amber-800 / amber-50</div></div>
-      <div class="badge-demo">
-        <div class="badge-demo-label">Chip (normal bg)</div>
-        <div class="badge-row"><span class="badge" style="background:var(--verdict-cautious-bg);border-color:var(--verdict-cautious-border);color:var(--verdict-cautious-fg);">Proceed with caution</span></div>
-        <div class="badge-demo-label" style="margin-top:8px;">Score pill (photo overlay)</div>
-        <div class="badge-row"><span class="badge" style="background:var(--verdict-cautious-bg);border-color:var(--verdict-cautious-border);color:var(--verdict-cautious-fg);">8.2</span></div>
+      <div class="swatch" style="background:var(--text-tertiary);color:#fff;">
+        <span class="hex">#4a5059</span><span class="name">--text-tertiary</span>
+      </div>
+      <div class="swatch" style="background:var(--muted);color:#fff;">
+        <span class="hex">#696e77</span><span class="name">--muted</span>
+      </div>
+      <div class="swatch" style="background:var(--subtle);color:#fff;">
+        <span class="hex">#858b93</span><span class="name">--subtle</span>
       </div>
     </div>
-    <div class="group">
-      <div class="pair">
-        <div class="swatch" style="background:var(--verdict-unclear-fg);color:#fff;">be123c</div>
-        <div class="swatch" style="background:var(--verdict-unclear-bg);border-color:var(--verdict-unclear-border);color:var(--verdict-unclear-fg);">fff1f2</div>
+    <div class="text-demo">
+      <span class="t-ink" style="font-size:22px;letter-spacing:-0.045em;">$1,875,000  <small style="font-size:12px;font-weight:400;letter-spacing:0;">--ink · heading / value</small></span>
+      <span class="t-text" style="font-size:15px;">St Ives recorded strong growth over the past 12 months. <small style="color:var(--muted);font-size:11px;">--text · body</small></span>
+      <span class="t-sec" style="font-size:14px;">Driven by limited supply and high demand from upsizers. <small style="color:var(--muted);font-size:11px;">--text-secondary · lead</small></span>
+      <span class="t-ter" style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">MEDIAN PRICE <small style="font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted);font-size:11px;">--text-tertiary · label</small></span>
+      <span class="t-muted" style="font-size:13px;">Data sourced from PropTrack, CoreLogic. <small style="font-size:11px;">--muted</small></span>
+      <span class="t-subtle" style="font-size:12px;">Last updated May 2025 · Not financial advice. <small style="font-size:11px;">--subtle · footnote</small></span>
+    </div>
+  </div>
+
+  <!-- Surface & borders -->
+  <div class="section">
+    <div class="section-title">Surfaces &amp; borders</div>
+    <div class="row">
+      <div class="swatch" style="background:var(--surface);border-color:var(--line);">
+        <span class="hex" style="color:var(--ink)">#ffffff</span><span class="name" style="color:var(--muted)">--surface</span>
       </div>
-      <div class="meta"><div><strong>unclear</strong>rose-700 / rose-50</div></div>
-      <div class="badge-demo">
-        <div class="badge-demo-label">Chip (normal bg)</div>
-        <div class="badge-row"><span class="badge" style="background:var(--verdict-unclear-bg);border-color:var(--verdict-unclear-border);color:var(--verdict-unclear-fg);">Too many unknowns</span></div>
+      <div class="swatch" style="background:var(--soft);border-color:var(--line);">
+        <span class="hex" style="color:var(--ink)">#f7f8f8</span><span class="name" style="color:var(--muted)">--soft</span>
+      </div>
+      <div class="swatch" style="background:var(--page-bg);border-color:var(--line);">
+        <span class="hex" style="color:var(--ink)">#f5f5f3</span><span class="name" style="color:var(--muted)">--page-bg</span>
+      </div>
+      <div class="swatch" style="background:var(--line);color:var(--text);">
+        <span class="hex">#e3e5e8</span><span class="name">--line</span>
       </div>
     </div>
   </div>
+
+  <!-- Growth / Positive / Negative -->
+  <div class="section">
+    <div class="section-title">Status colors</div>
+    <div class="row">
+      <div class="swatch" style="background:var(--green);color:#fff;">
+        <span class="hex">#118f4a</span><span class="name">--green</span>
+      </div>
+      <div class="swatch" style="background:var(--green-soft);color:var(--green);">
+        <span class="hex">#dfeee6</span><span class="name">--green-soft</span>
+      </div>
+      <div class="swatch" style="background:var(--mint);color:var(--green);">
+        <span class="hex">#eef8f3</span><span class="name">--mint</span>
+      </div>
+      <div class="swatch" style="background:var(--negative);color:#fff;">
+        <span class="hex">#e22a2e</span><span class="name">--negative</span>
+      </div>
+    </div>
+    <div class="row" style="gap:8px;margin-top:4px;">
+      <span class="badge" style="background:var(--mint);border-color:var(--green-soft);color:var(--green);">+12.4% growth</span>
+      <span class="badge" style="background:#fff1f2;border-color:#fecdd3;color:var(--negative);">−3.1% decline</span>
+    </div>
+  </div>
+
+  <!-- Verdict tones -->
+  <div class="section">
+    <div class="section-title">Verdict tones (app chip context)</div>
+    <div class="row" style="gap:8px;">
+      <span class="badge" style="background:var(--verdict-positive-bg);border-color:var(--verdict-positive-border);color:var(--verdict-positive-fg);">Worth pursuing</span>
+      <span class="badge" style="background:var(--verdict-cautious-bg);border-color:var(--verdict-cautious-border);color:var(--verdict-cautious-fg);">Proceed with caution</span>
+      <span class="badge" style="background:var(--verdict-unclear-bg);border-color:var(--verdict-unclear-border);color:var(--verdict-unclear-fg);">Too many unknowns</span>
+    </div>
+  </div>
+
 </body>
 </html>
