@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Buttons</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); margin-bottom:14px; }
+    .row { display:flex; flex-wrap:wrap; gap:12px; }
+    .btn { height:48px; padding:0 18px; border-radius:var(--radius-sm); border:1px solid transparent; font-family:var(--font-body); font-size:15px; font-weight:500; line-height:1; display:inline-flex; align-items:center; }
+    .primary { background:var(--ink); color:var(--paper); }
+    .secondary { background:var(--limestone); color:var(--ink); border-color:var(--chalk); }
+    .outline { background:transparent; color:var(--ink); border-color:var(--ink); }
+    .ghost { background:transparent; color:var(--slate); padding:0 12px; }
+    .destructive { background:var(--signal); color:var(--paper); }
+    .disabled { background:var(--ink); color:var(--paper); opacity:0.4; }
+  </style>
+</head>
+<body>
+  <div class="lbl">Buttons · 48px controls · Geist medium</div>
+  <div class="row">
+    <div class="btn primary">Continue</div>
+    <div class="btn secondary">Save to watch</div>
+    <div class="btn outline">Open workspace</div>
+    <div class="btn ghost">Skip for now</div>
+    <div class="btn destructive">Dismiss property</div>
+    <div class="btn disabled">Continue</div>
+  </div>
+</body>
+</html>

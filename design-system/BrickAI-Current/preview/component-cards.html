@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Cards</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:20px 24px; background:linear-gradient(to bottom, #eff6ff, #fff, #ecfdf5); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .grid { display:grid; grid-template-columns:1.1fr 0.9fr; gap:14px; }
+    /* PropertyCard — rounded-2xl border-gray-200 bg-white */
+    .prop-card { background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius-xl); overflow:hidden; box-shadow:var(--shadow-card); }
+    .img { width:100%; aspect-ratio:4/3; background:linear-gradient(135deg,var(--gray-100),var(--gray-200)); position:relative; display:flex; align-items:flex-end; }
+    .img-overlay { position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.6),rgba(0,0,0,0.15),rgba(0,0,0,0.05)); }
+    .img-badge { position:absolute;top:10px;left:10px;padding:4px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:var(--weight-medium);backdrop-filter:blur(12px); }
+    .body { padding:14px 16px; }
+    .verdict-chip { display:inline-flex;padding:3px 10px;border-radius:var(--radius-full);font-size:12px;font-weight:var(--weight-medium);border:1px solid;margin-bottom:10px; }
+    .reason { font-size:14px; line-height:1.6; color:var(--gray-900); margin-bottom:10px; }
+    .price { font-size:14px; font-weight:var(--weight-medium); color:var(--gray-900); margin-bottom:6px; }
+    .addr  { font-size:12px; color:var(--gray-500); margin-bottom:8px; display:flex; align-items:center; gap:4px; }
+    .specs { font-size:13px; color:var(--gray-600); display:flex; gap:12px; margin-bottom:10px; }
+    .insight { border:1px solid var(--gray-200); background:var(--gray-50); border-radius:var(--radius-lg); padding:6px 10px; font-size:12px; line-height:1.5; color:var(--gray-700); margin-bottom:6px; }
+    .open-btn { width:100%; height:36px; border-radius:var(--radius-lg); background:var(--gray-100); border:none; font-size:13px; color:var(--gray-900); font-family:var(--font-body); cursor:pointer; }
+    /* Report card — glass */
+    .report-card { background:rgba(255,255,255,0.82); border:1px solid rgba(255,255,255,0.80); border-radius:var(--radius-report); overflow:hidden; box-shadow:var(--shadow-report); backdrop-filter:var(--blur-xl); }
+    .r-img { width:100%; height:140px; background:linear-gradient(135deg,var(--gray-700),var(--gray-900)); position:relative; display:flex; align-items:flex-end; padding:14px; }
+    .r-eyebrow { font-size:11px; text-transform:uppercase; letter-spacing:var(--tracking-label); color:rgba(255,255,255,0.65); margin-bottom:6px; }
+    .r-title { font-size:20px; font-weight:var(--weight-medium); color:#fff; letter-spacing:var(--tracking-tight); }
+    .r-body { padding:14px 18px; }
+    .r-decision-label { font-size:11px; text-transform:uppercase; letter-spacing:var(--tracking-label); color:var(--gray-400); margin-bottom:6px; }
+    .r-verdict { font-size:18px; font-weight:var(--weight-medium); color:var(--gray-950); letter-spacing:var(--tracking-tight); margin-bottom:8px; }
+    .r-summary { font-size:13px; color:var(--gray-600); line-height:1.6; }
+  </style>
+</head>
+<body>
+  <div class="lbl">Cards · PropertyCard + Report hero card</div>
+  <div class="grid">
+    <div class="prop-card">
+      <div class="img">
+        <div class="img-overlay"></div>
+        <div class="img-badge" style="background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.20);color:#fff;">Worth pursuing</div>
+      </div>
+      <div class="body">
+        <div class="verdict-chip" style="background:var(--verdict-positive-bg);border-color:var(--verdict-positive-border);color:var(--verdict-positive-fg);">Worth pursuing</div>
+        <div class="reason">Freestanding layout, strong land value, and fewer near-term repair flags than nearby comparables.</div>
+        <div class="price">Guide $1,720,000</div>
+        <div class="addr">📍 78 Cary Street, Marrickville</div>
+        <div class="specs"><span>4 bed</span><span>2 bath</span><span>2 park</span><span>420m²</span></div>
+        <div class="insight">Rear studio adds flexible space without crowding the block.</div>
+        <div class="insight">Strata not applicable; drainage check recommended.</div>
+        <button class="open-btn">Open report</button>
+      </div>
+    </div>
+    <div class="report-card">
+      <div class="r-img">
+        <div style="position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="padding:4px 12px;border-radius:9999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.14);color:#fff;font-size:11px;font-weight:500;backdrop-filter:blur(12px);">Worth pursuing</span>
+          <span style="padding:4px 10px;border-radius:9999px;border:1px solid #a7f3d0;background:rgba(236,253,245,0.95);color:#047857;font-size:13px;font-weight:500;">9.1</span>
+        </div>
+        <div>
+          <div class="r-eyebrow">Property context</div>
+          <div class="r-title">78 Cary Street</div>
+        </div>
+      </div>
+      <div class="r-body">
+        <div class="r-decision-label">Decision framing</div>
+        <div class="r-verdict">Strong fundamentals, few near-term flags.</div>
+        <div class="r-summary">Rear studio adds flexible income potential. Council infrastructure charges are modest. Recommend a pest inspection before offer.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

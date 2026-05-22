@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Border radius</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .row { display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; }
+    .item { display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .box { width:56px; height:56px; background:var(--gray-200); border:2px solid var(--gray-300); }
+    .name { font-size:11px; font-weight:var(--weight-medium); color:var(--fg); }
+    .val  { font-family:var(--font-mono); font-size:10px; color:var(--gray-400); }
+    .use  { font-size:10px; color:var(--gray-400); max-width:68px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="lbl">Border radius · pill-first design language</div>
+  <div class="row">
+    <div class="item"><div class="box" style="border-radius:var(--radius-sm)"></div><div class="name">sm</div><div class="val">6px</div><div class="use">buttons</div></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-md)"></div><div class="name">md</div><div class="val">8px</div><div class="use">inputs</div></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-lg)"></div><div class="name">lg</div><div class="val">12px</div><div class="use">insight rows</div></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-xl)"></div><div class="name">xl</div><div class="val">16px</div><div class="use">PropertyCard</div></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-card)"></div><div class="name">card</div><div class="val">24px</div><div class="use">chat AI bubble</div></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-draw)"></div><div class="name">draw</div><div class="val">26px</div><div class="use">chat composer</div></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-report)"></div><div class="name">report</div><div class="val">34px</div><div class="use">report hero</div></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-swipe)"></div><div class="name">swipe</div><div class="val">36px</div><div class="use">swipe card</div></div>
+    <div class="item"><div class="box" style="border-radius:var(--radius-full)"></div><div class="name">full</div><div class="val">9999px</div><div class="use">nav, badges, pills</div></div>
+  </div>
+</body>
+</html>

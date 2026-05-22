@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Pills & chips</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px 32px; background:var(--white); height:170px; box-sizing:border-box; }
+  .lbl { font-size:11px; color:var(--fg-secondary); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; margin-bottom:14px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+  .chip { font-family:var(--font-display); font-weight:500; font-size:13px; padding:8px 14px; border-radius:999px; background:#F6F6F6; color:#000; border:1px solid transparent; cursor:pointer; line-height:1; }
+  .chip.active { background:#000; color:#fff; }
+  .chip.outline { background:#fff; border-color:#E2E2E2; }
+  .pill-cta { font-family:var(--font-display); font-weight:600; font-size:14px; padding:12px 20px; border-radius:999px; background:#000; color:#fff; border:0; cursor:pointer; }
+  .pill-icon { display:inline-flex; align-items:center; gap:6px; }
+  .dot { width:6px; height:6px; border-radius:999px; background:#06C167; display:inline-block; }
+</style></head>
+<body>
+  <div class="lbl">Pills, chips · filter and selection</div>
+  <div class="row">
+    <button class="chip active">All</button>
+    <button class="chip">Ride</button>
+    <button class="chip">Eats</button>
+    <button class="chip">Reserve</button>
+    <button class="chip outline">+ More</button>
+  </div>
+  <div class="row">
+    <span class="chip pill-icon"><span class="dot"></span>Online</span>
+    <button class="pill-cta">Go online</button>
+    <button class="pill-cta" style="background:#fff;color:#000;border:1px solid #000">Share trip</button>
+  </div>
+</body></html>

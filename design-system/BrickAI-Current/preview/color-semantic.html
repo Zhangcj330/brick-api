@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Semantic colors</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:20px 24px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .group { border:1px solid var(--border); border-radius:var(--radius-xl); padding:14px; background:var(--gray-50); }
+    .pair { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+    .swatch { height:68px; border-radius:var(--radius-md); padding:8px 10px; display:flex; align-items:flex-end; font-family:var(--font-mono); font-size:10px; border:1px solid transparent; }
+    .meta div { font-size:11px; color:var(--gray-500); }
+    .meta strong { display:block; font-size:12px; color:var(--fg); font-weight:var(--weight-medium); margin-bottom:2px; }
+    /* Badge context — shown on photo overlay */
+    .badge-demo { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+    .badge-demo-label { font-size:10px; color:var(--gray-400); margin-bottom:6px; }
+    .badge-row { display:flex; gap:6px; flex-wrap:wrap; }
+    .badge { display:inline-flex; padding:3px 10px; border-radius:var(--radius-full); font-size:11px; font-weight:var(--weight-medium); border:1px solid; }
+    .badge.dark { background:rgba(255,255,255,0.14); border-color:rgba(255,255,255,0.20); color:#fff; padding:4px 12px; border-radius:var(--radius-full); font-size:11px; font-weight:var(--weight-medium); }
+    .overlay { background:#374151; border-radius:var(--radius-md); padding:8px 10px; }
+  </style>
+</head>
+<body>
+  <div class="lbl">Semantic colors · verdict tones · two contexts</div>
+  <div class="grid">
+    <div class="group">
+      <div class="pair">
+        <div class="swatch" style="background:var(--verdict-positive-fg);color:#fff;">047857</div>
+        <div class="swatch" style="background:var(--verdict-positive-bg);border-color:var(--verdict-positive-border);color:var(--verdict-positive-fg);">ecfdf5</div>
+      </div>
+      <div class="meta"><div><strong>positive</strong>emerald-700 / emerald-50</div></div>
+      <div class="badge-demo">
+        <div class="badge-demo-label">Chip (normal bg)</div>
+        <div class="badge-row"><span class="badge" style="background:var(--verdict-positive-bg);border-color:var(--verdict-positive-border);color:var(--verdict-positive-fg);">Worth pursuing</span></div>
+        <div class="badge-demo-label" style="margin-top:8px;">Badge (photo overlay)</div>
+        <div class="overlay"><span class="badge dark">Worth pursuing</span></div>
+      </div>
+    </div>
+    <div class="group">
+      <div class="pair">
+        <div class="swatch" style="background:var(--verdict-cautious-fg);color:#fff;">92400e</div>
+        <div class="swatch" style="background:var(--verdict-cautious-bg);border-color:var(--verdict-cautious-border);color:var(--verdict-cautious-fg);">fffbeb</div>
+      </div>
+      <div class="meta"><div><strong>cautious</strong>amber-800 / amber-50</div></div>
+      <div class="badge-demo">
+        <div class="badge-demo-label">Chip (normal bg)</div>
+        <div class="badge-row"><span class="badge" style="background:var(--verdict-cautious-bg);border-color:var(--verdict-cautious-border);color:var(--verdict-cautious-fg);">Proceed with caution</span></div>
+        <div class="badge-demo-label" style="margin-top:8px;">Score pill (photo overlay)</div>
+        <div class="badge-row"><span class="badge" style="background:var(--verdict-cautious-bg);border-color:var(--verdict-cautious-border);color:var(--verdict-cautious-fg);">8.2</span></div>
+      </div>
+    </div>
+    <div class="group">
+      <div class="pair">
+        <div class="swatch" style="background:var(--verdict-unclear-fg);color:#fff;">be123c</div>
+        <div class="swatch" style="background:var(--verdict-unclear-bg);border-color:var(--verdict-unclear-border);color:var(--verdict-unclear-fg);">fff1f2</div>
+      </div>
+      <div class="meta"><div><strong>unclear</strong>rose-700 / rose-50</div></div>
+      <div class="badge-demo">
+        <div class="badge-demo-label">Chip (normal bg)</div>
+        <div class="badge-row"><span class="badge" style="background:var(--verdict-unclear-bg);border-color:var(--verdict-unclear-border);color:var(--verdict-unclear-fg);">Too many unknowns</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI Design System · Current</title>
+  <link rel="stylesheet" href="colors_and_type.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; background: #f9fafb; }
+
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0 40px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo { font-size: 15px; font-weight: 600; color: #160211; display: flex; align-items: center; gap: 8px; }
+    .logo-dot { width: 22px; height: 22px; border-radius: 6px; background: #160211; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .topbar-tag { font-size: 12px; color: #6b7280; border-left: 1px solid #e5e7eb; padding-left: 16px; }
+
+    .layout { display: flex; min-height: calc(100vh - 56px); }
+
+    .sidebar {
+      width: 196px;
+      flex-shrink: 0;
+      background: #fff;
+      border-right: 1px solid #e5e7eb;
+      padding: 20px 0;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    .sidebar-section { margin-bottom: 18px; }
+    .sidebar-label { font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: #9ca3af; padding: 0 18px; margin-bottom: 4px; }
+    .sidebar a { display: block; font-size: 13px; color: #6b7280; text-decoration: none; padding: 5px 18px; }
+    .sidebar a:hover { color: #160211; background: #f9fafb; }
+
+    .main { flex: 1; padding: 36px 40px; }
+
+    .section-title {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase;
+      color: #9ca3af; margin-bottom: 14px; padding-top: 28px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .section-title:first-child { border-top: none; padding-top: 0; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; margin-bottom: 4px; }
+    .span2 { grid-column: span 2; }
+
+    .preview-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .preview-card iframe { width: 100%; border: none; display: block; }
+    .preview-card-label {
+      font-size: 11px; color: #9ca3af;
+      padding: 7px 12px;
+      border-top: 1px solid #f3f4f6;
+      background: #f9fafb;
+      font-family: ui-monospace, monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="logo"><div class="logo-dot">B</div> Brick AI</div>
+    <span class="topbar-tag">Design System · Current Frontend</span>
+  </div>
+
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Brand</div>
+        <a href="#brand-logo">Logo</a>
+        <a href="#brand-voice">Voice</a>
+        <a href="#brand-motion">Motion</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Color</div>
+        <a href="#color-palette">Palette</a>
+        <a href="#color-semantic">Semantic</a>
+        <a href="#color-gradients">Gradients</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Typography</div>
+        <a href="#type-display">Display</a>
+        <a href="#type-scale">Scale</a>
+        <a href="#type-body">Body</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Spacing</div>
+        <a href="#spacing-scale">Scale</a>
+        <a href="#spacing-radii">Radii</a>
+        <a href="#spacing-elevation">Elevation</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Components</div>
+        <a href="#nav">Navigation</a>
+        <a href="#buttons">Buttons</a>
+        <a href="#chips">Chips</a>
+        <a href="#inputs">Inputs</a>
+        <a href="#cards">Cards</a>
+        <a href="#chat">Chat</a>
+      </div>
+    </nav>
+
+    <main class="main">
+
+      <!-- BRAND -->
+      <div class="section-title" id="brand-logo">Logo</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/brand-logo.html" height="220"></iframe>
+          <div class="preview-card-label">brand-logo.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="brand-voice">Voice</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/brand-voice.html" height="200"></iframe>
+          <div class="preview-card-label">brand-voice.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="brand-motion">Motion</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/brand-motion.html" height="200"></iframe>
+          <div class="preview-card-label">brand-motion.html</div>
+        </div>
+      </div>
+
+      <!-- COLOR -->
+      <div class="section-title" id="color-palette">Color Palette</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/color-palette.html" height="200"></iframe>
+          <div class="preview-card-label">color-palette.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="color-semantic">Semantic Colors</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/color-semantic.html" height="260"></iframe>
+          <div class="preview-card-label">color-semantic.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="color-gradients">Landing Gradients</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/color-landing-gradients.html" height="200"></iframe>
+          <div class="preview-card-label">color-landing-gradients.html</div>
+        </div>
+      </div>
+
+      <!-- TYPOGRAPHY -->
+      <div class="section-title" id="type-display">Display Type</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/type-display.html" height="260"></iframe>
+          <div class="preview-card-label">type-display.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="type-scale">Type Scale</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/type-scale.html" height="320"></iframe>
+          <div class="preview-card-label">type-scale.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="type-body">Body Type</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/type-body.html" height="280"></iframe>
+          <div class="preview-card-label">type-body.html</div>
+        </div>
+      </div>
+
+      <!-- SPACING -->
+      <div class="section-title" id="spacing-scale">Spacing Scale</div>
+      <div class="grid">
+        <div class="preview-card">
+          <iframe src="preview/spacing-scale.html" height="260"></iframe>
+          <div class="preview-card-label">spacing-scale.html</div>
+        </div>
+        <div class="preview-card">
+          <iframe src="preview/spacing-radii.html" height="160"></iframe>
+          <div class="preview-card-label">spacing-radii.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="spacing-elevation">Elevation</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/spacing-elevation.html" height="200"></iframe>
+          <div class="preview-card-label">spacing-elevation.html</div>
+        </div>
+      </div>
+
+      <!-- COMPONENTS -->
+      <div class="section-title" id="nav">Navigation</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/component-nav.html" height="120"></iframe>
+          <div class="preview-card-label">component-nav.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="buttons">Buttons</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/component-buttons.html" height="130"></iframe>
+          <div class="preview-card-label">component-buttons.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="chips">Chips & Badges</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/component-chips.html" height="200"></iframe>
+          <div class="preview-card-label">component-chips.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="inputs">Inputs</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/component-inputs.html" height="220"></iframe>
+          <div class="preview-card-label">component-inputs.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="cards">Cards</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/component-cards.html" height="400"></iframe>
+          <div class="preview-card-label">component-cards.html</div>
+        </div>
+      </div>
+
+      <div class="section-title" id="chat">Chat</div>
+      <div class="grid">
+        <div class="preview-card span2">
+          <iframe src="preview/component-chat.html" height="320"></iframe>
+          <div class="preview-card-label">component-chat.html</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+</body>
+</html>

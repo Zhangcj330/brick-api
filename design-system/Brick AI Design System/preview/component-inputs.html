@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Inputs</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); margin-bottom:14px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 18px; }
+    .field { display:flex; flex-direction:column; gap:8px; }
+    .label { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); }
+    .input, .textarea { background:var(--paper); color:var(--fg); border:1px solid var(--chalk); border-radius:var(--radius-sm); padding:14px 16px; font-size:15px; line-height:1.4; }
+    .focused { border:2px solid var(--ink); padding:13px 15px; }
+    .error { border:2px solid var(--signal); padding:13px 15px; }
+    .textarea { min-height:94px; resize:none; }
+  </style>
+</head>
+<body>
+  <div class="lbl">Inputs · quiet surfaces, firm focus</div>
+  <div class="grid">
+    <div class="field"><div class="label">Default</div><div class="input">12 Brown Street, Petersham NSW</div></div>
+    <div class="field"><div class="label">Focused</div><div class="input focused">12 Brown Street, Petersham NSW</div></div>
+    <div class="field"><div class="label">Error</div><div class="input error">Address not recognised</div></div>
+    <div class="field"><div class="label">Textarea</div><div class="textarea">Summarise the biggest caution in the building report and tell me what to verify before making an offer.</div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Buttons</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
+    .row-lbl { font-size:11px; color:var(--gray-400); margin-bottom:6px; }
+    .btn { height:40px; padding:0 18px; border-radius:var(--radius-full); font-family:var(--font-body); font-size:14px; font-weight:var(--weight-medium); display:inline-flex; align-items:center; gap:6px; border:1px solid transparent; cursor:pointer; }
+    .primary   { background:var(--gray-950); color:#fff; }
+    .outline   { background:rgba(255,255,255,0.88); color:var(--gray-700); border-color:var(--border); backdrop-filter:var(--blur-xl); box-shadow:var(--shadow-nav); }
+    .outline:hover { color:var(--gray-950); }
+    .ghost     { background:transparent; color:var(--gray-600); padding:0 12px; height:36px; font-size:13px; }
+    /* send button — rounded-full, 32px */
+    .send      { width:32px; height:32px; border-radius:var(--radius-full); background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; padding:0; }
+    /* nav active */
+    .nav-active { height:36px; padding:0 20px; border-radius:var(--radius-full); background:var(--gray-950); color:#fff; font-size:14px; font-weight:var(--weight-medium); display:inline-flex; align-items:center; }
+    .nav-idle   { height:36px; padding:0 20px; border-radius:var(--radius-full); background:transparent; color:var(--gray-600); font-size:14px; display:inline-flex; align-items:center; }
+  </style>
+</head>
+<body>
+  <div class="lbl">Buttons · pill-first · rounded-full</div>
+  <div class="row-lbl">Primary / Outline (glass) / Ghost</div>
+  <div class="row">
+    <div class="btn primary">Continue</div>
+    <div class="btn outline">Sign in</div>
+    <div class="btn outline">Back to explore</div>
+    <div class="btn ghost">Skip for now</div>
+    <div class="send">↑</div>
+  </div>
+  <div class="row-lbl">Nav pill — active vs idle</div>
+  <div class="row">
+    <div class="nav-active">Dashboard</div>
+    <div class="nav-idle">Explore</div>
+    <div class="nav-idle">Chat</div>
+    <div class="nav-idle">Profile</div>
+  </div>
+</body>
+</html>

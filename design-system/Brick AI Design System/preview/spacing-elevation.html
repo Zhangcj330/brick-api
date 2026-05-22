@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Elevation</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); margin-bottom:16px; }
+    .stage { background:var(--limestone); border-radius:var(--radius-xl); padding:22px; }
+    .row { display:flex; gap:16px; }
+    .item { display:flex; flex-direction:column; gap:10px; }
+    .card { width:120px; height:80px; background:#FFFFFF; border-radius:var(--radius-md); border:1px solid rgba(23,22,20,0.04); }
+    .name { font-family:var(--font-mono); font-size:11px; color:var(--fg-secondary); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Elevation · soft and wide</div>
+  <div class="stage">
+    <div class="row">
+      <div class="item"><div class="card" style="box-shadow:var(--shadow-sm)"></div><div class="name">shadow-sm</div></div>
+      <div class="item"><div class="card" style="box-shadow:var(--shadow-md)"></div><div class="name">shadow-md</div></div>
+      <div class="item"><div class="card" style="box-shadow:var(--shadow-lg)"></div><div class="name">shadow-lg</div></div>
+      <div class="item"><div class="card" style="box-shadow:var(--shadow-xl)"></div><div class="name">shadow-xl</div></div>
+    </div>
+  </div>
+</body>
+</html>

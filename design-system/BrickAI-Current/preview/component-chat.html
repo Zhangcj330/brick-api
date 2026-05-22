@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Chat</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:20px 24px; background:linear-gradient(to bottom, #eff6ff, #fff, #ecfdf5); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .messages { display:flex; flex-direction:column; gap:12px; max-width:560px; }
+    /* User bubble — rounded-2xl bg-gray-900 */
+    .msg-user { align-self:flex-end; max-width:80%; border-radius:var(--radius-xl); border:1px solid var(--gray-900); background:var(--gray-900); padding:10px 14px; font-size:14px; line-height:1.6; color:#fff; }
+    /* AI bubble — rounded-[24px] bg-white/92 border-gray-200 */
+    .msg-ai { max-width:84%; border-radius:var(--radius-card); border:1px solid var(--gray-200); background:rgba(255,255,255,0.92); padding:14px 16px; box-shadow:var(--shadow-chat-ai); }
+    .ai-label { display:inline-flex; align-items:center; gap:6px; background:var(--gray-100); color:var(--gray-600); border-radius:var(--radius-full); padding:3px 10px; font-size:10px; font-weight:var(--weight-medium); text-transform:uppercase; letter-spacing:var(--tracking-caps); margin-bottom:8px; }
+    .ai-text { font-size:14px; line-height:1.6; color:rgba(22,2,17,0.80); }
+    /* Composer — rounded-[26px] bg-white/95 border-[#d9d9d9] */
+    .composer { margin-top:12px; border-radius:var(--radius-draw); border:1px solid #d9d9d9; background:rgba(255,255,255,0.95); padding:10px 14px; box-shadow:var(--shadow-composer); backdrop-filter:var(--blur-xl); display:flex; align-items:center; gap:10px; }
+    .composer-input { flex:1; font-size:15px; line-height:1.6; color:rgba(22,2,17,0.4); font-family:var(--font-body); }
+    .icon-btn { width:32px; height:32px; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; color:var(--brand); font-size:14px; }
+    .send-btn { width:32px; height:32px; border-radius:var(--radius-full); background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="lbl">Chat · DM Sans · aurora bg · white/92 AI · gray-900 user</div>
+  <div class="messages">
+    <div class="msg-user">I'm after a 2-bedroom in Melbourne around $1.2M with an easy CBD commute.</div>
+    <div class="msg-ai">
+      <div class="ai-label">✦ Brick AI</div>
+      <div class="ai-text">Brunswick, Richmond, and South Yarra match that budget and have frequent train and tram links to the CBD. Do you prefer an apartment or townhouse?</div>
+    </div>
+    <div class="msg-user">Apartment please — gym and secure parking are on my wishlist.</div>
+  </div>
+  <div class="composer">
+    <div class="icon-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="composer-input">Ask about a suburb, report, contract, or what to verify next</div>
+    <div class="icon-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>
+    </div>
+    <div class="send-btn">↑</div>
+  </div>
+</body>
+</html>

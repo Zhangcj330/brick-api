@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Uber Rider · UI Kit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../../colors_and_type.css">
+  <style>
+    body { margin: 0; min-height: 100vh; background: #F6F6F6;
+      display: flex; flex-direction: column; align-items: center; padding: 32px 24px; box-sizing: border-box; }
+    .head { width: 100%; max-width: 1200px; margin-bottom: 24px; }
+    .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #757575; margin-bottom: 6px; }
+    h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px; }
+    .lede { font-size: 15px; color: #545454; max-width: 600px; line-height: 1.5; }
+    .stage { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+    .device-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .step-label { font-size: 12px; font-weight: 600; color: #757575; letter-spacing: 0.06em; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div class="head">
+    <div class="eyebrow">UI Kit · Rider</div>
+    <h1>Request a ride</h1>
+    <p class="lede">Five-screen click-through covering the core Uber Rider flow: home → search → ride options → tracking → receipt. Tap "Where to?" to start.</p>
+  </div>
+
+  <div id="root" class="stage"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel" src="Icon.jsx"></script>
+  <script type="text/babel" src="MapBackground.jsx"></script>
+  <script type="text/babel" src="Screens.jsx"></script>
+
+  <script type="text/babel">
+    const SAVED = [
+      { icon: 'home', name: 'Home',          address: '500 Howard St, San Francisco' },
+      { icon: 'work', name: 'Work',          address: '1 Market St, San Francisco' },
+      { icon: 'clock', name: 'SFO Airport',  address: 'Recent · last used 3 days ago' },
+    ];
+
+    function RiderDemo() {
+      const [screen, setScreen] = React.useState('home'); // home | search | options | tracking | receipt
+      const [destination, setDestination] = React.useState(null);
+      const [ride, setRide] = React.useState(null);
+
+      const goSearch = () => setScreen('search');
+      const goOptions = (d) => { setDestination(d); setScreen('options'); };
+      const goTracking = (r) => { setRide(r); setScreen('tracking'); };
+      const goReceipt = () => setScreen('receipt');
+      const goHome = () => { setScreen('home'); setDestination(null); setRide(null); };
+
+      let inner = null;
+      let label = '';
+      if (screen === 'home')     { inner = <HomeScreen savedPlaces={SAVED} onSearch={goSearch}/>; label = '1 · Home'; }
+      if (screen === 'search')   { inner = <SearchScreen onClose={goHome} onSelect={goOptions}/>; label = '2 · Search'; }
+      if (screen === 'options')  { inner = <RideOptions destination={destination} onBack={() => setScreen('search')} onConfirm={goTracking}/>; label = '3 · Choose ride'; }
+      if (screen === 'tracking') { inner = <TrackingScreen ride={ride} onCancel={goHome} onComplete={goReceipt}/>; label = '4 · Tracking'; }
+      if (screen === 'receipt')  { inner = <ReceiptScreen ride={ride} onDone={goHome}/>; label = '5 · Receipt'; }
+
+      return (
+        <div className="device-col">
+          <IOSDevice width={390} height={780}>
+            {inner}
+          </IOSDevice>
+          <div className="step-label">{label}</div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<RiderDemo/>);
+  </script>
+</body>
+</html>

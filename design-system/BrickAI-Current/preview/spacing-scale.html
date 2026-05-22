@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Spacing scale</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:20px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .table { display:flex; flex-direction:column; gap:8px; }
+    .row { display:grid; grid-template-columns:88px 44px 1fr; gap:14px; align-items:center; }
+    .token { font-family:var(--font-mono); font-size:11px; color:var(--fg); }
+    .px    { font-size:12px; color:var(--gray-400); }
+    .track { height:6px; display:flex; align-items:center; }
+    .bar   { height:6px; border-radius:var(--radius-full); background:var(--brand); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Spacing scale · 8px base unit</div>
+  <div class="table">
+    <div class="row"><div class="token">--space-1</div><div class="px">4px</div><div class="track"><div class="bar" style="width:4px"></div></div></div>
+    <div class="row"><div class="token">--space-2</div><div class="px">8px</div><div class="track"><div class="bar" style="width:8px"></div></div></div>
+    <div class="row"><div class="token">--space-3</div><div class="px">12px</div><div class="track"><div class="bar" style="width:12px"></div></div></div>
+    <div class="row"><div class="token">--space-4</div><div class="px">16px</div><div class="track"><div class="bar" style="width:16px"></div></div></div>
+    <div class="row"><div class="token">--space-6</div><div class="px">24px</div><div class="track"><div class="bar" style="width:24px"></div></div></div>
+    <div class="row"><div class="token">--space-8</div><div class="px">32px</div><div class="track"><div class="bar" style="width:32px"></div></div></div>
+    <div class="row"><div class="token">--space-12</div><div class="px">48px</div><div class="track"><div class="bar" style="width:48px"></div></div></div>
+    <div class="row"><div class="token">--space-16</div><div class="px">64px</div><div class="track"><div class="bar" style="width:64px"></div></div></div>
+    <div class="row"><div class="token">--space-20</div><div class="px">80px</div><div class="track"><div class="bar" style="width:80px"></div></div></div>
+  </div>
+</body>
+</html>

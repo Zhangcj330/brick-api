@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Map overlay</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:0; background:#E8EBEE; height:260px; box-sizing:border-box; position:relative; overflow:hidden; }
+  /* fake map */
+  .map { position:absolute; inset:0; background:
+    linear-gradient(180deg, #EAEDEE 0%, #E1E5E7 100%);
+  }
+  .road { position:absolute; background:#fff; }
+  .r1 { left:0; right:0; top:60%; height:14px; transform:rotate(-3deg); }
+  .r2 { top:0; bottom:0; left:25%; width:10px; }
+  .r3 { left:0; right:0; top:30%; height:8px; transform:rotate(4deg); }
+  .route { position:absolute; left:18%; top:0; width:6px; height:100%; background:#06C167; box-shadow:0 0 0 1px rgba(0,0,0,0.05); transform:rotate(6deg); }
+  .pin { position:absolute; width:14px; height:14px; background:#000; border:3px solid #fff; border-radius:999px; box-shadow:0 2px 4px rgba(0,0,0,0.3); }
+  .pin.start { top:20%; left:14%; }
+  .pin.end { top:75%; left:30%; background:#06C167; }
+  .sheet { position:absolute; left:16px; right:16px; bottom:14px; background:rgba(255,255,255,0.96); backdrop-filter:blur(20px); border-radius:14px; padding:14px 16px; box-shadow:0 12px 32px rgba(0,0,0,0.16); display:flex; align-items:center; gap:14px; }
+  .car { width:48px; height:48px; border-radius:8px; background:#000; display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--font-display); font-weight:700; font-size:11px; }
+  .info { flex:1; }
+  .title { font-family:var(--font-display); font-weight:700; font-size:15px; letter-spacing:-0.01em; }
+  .sub { font-size:12px; color:var(--fg-secondary); margin-top:1px; }
+  .eta { font-family:var(--font-display); font-feature-settings:"tnum"; font-weight:700; font-size:18px; letter-spacing:-0.01em; }
+  .protect { position:absolute; left:0; right:0; top:0; height:60px; background:linear-gradient(180deg, rgba(255,255,255,0.7), transparent); pointer-events:none; }
+  .lbl { position:absolute; top:14px; left:18px; font-size:11px; color:var(--fg-secondary); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; }
+</style></head>
+<body>
+  <div class="map">
+    <div class="road r1"></div><div class="road r2"></div><div class="road r3"></div>
+    <div class="route"></div>
+    <div class="pin start"></div><div class="pin end"></div>
+  </div>
+  <div class="protect"></div>
+  <div class="lbl">Bottom sheet · floating over map</div>
+  <div class="sheet">
+    <div class="car">UberX</div>
+    <div class="info">
+      <div class="title">Arriving in 3 min</div>
+      <div class="sub">Maria · Toyota Prius · 7XKT420</div>
+    </div>
+    <div class="eta">3 min</div>
+  </div>
+</body></html>

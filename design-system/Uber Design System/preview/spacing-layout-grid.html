@@ -1,0 +1,74 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Layout grids · Base</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:20px 28px; background:var(--white); box-sizing:border-box; }
+  .lbl { font-size:11px; color:var(--fg-secondary); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; margin-bottom:14px; }
+  .row { display:flex; gap:20px; align-items:stretch; }
+  .bp { flex:1; display:flex; flex-direction:column; gap:8px; }
+  .name { display:flex; align-items:baseline; gap:8px; }
+  .name b { font-family:var(--font-display); font-weight:700; font-size:14px; letter-spacing:-0.005em; }
+  .name span { font-family:var(--font-mono); font-size:11px; color:var(--fg-secondary); }
+  .frame { border:1px solid var(--border); border-radius:6px; padding:10px 6px; height:90px; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; background:#FAFAFA; }
+  .cols { display:flex; align-items:stretch; height:100%; }
+  .col { flex:1; background:#000; opacity:0.85; border-radius:2px; }
+  .gut { width:3px; background:transparent; }
+  .gut.small  { width:2px; }
+  .gut.medium { width:3px; }
+  .gut.large  { width:3px; }
+  .specs { font-family:var(--font-mono); font-size:10px; color:var(--fg-secondary); line-height:1.5; }
+  .specs b { color:var(--fg); font-weight:600; }
+</style></head>
+<body>
+  <div class="lbl">Layout grids · three breakpoints, three grids</div>
+  <div class="row">
+    <!-- Small / mobile -->
+    <div class="bp">
+      <div class="name"><b>Small</b><span>≥ 320</span></div>
+      <div class="frame">
+        <div class="cols" id="small"></div>
+      </div>
+      <div class="specs">
+        <b>4</b> cols · <b>16</b>px margin · <b>16</b>px gutter
+      </div>
+    </div>
+    <!-- Medium / tablet -->
+    <div class="bp">
+      <div class="name"><b>Medium</b><span>≥ 600</span></div>
+      <div class="frame">
+        <div class="cols" id="medium"></div>
+      </div>
+      <div class="specs">
+        <b>8</b> cols · <b>36</b>px margin · <b>24</b>px gutter
+      </div>
+    </div>
+    <!-- Large / desktop -->
+    <div class="bp">
+      <div class="name"><b>Large</b><span>≥ 1136</span></div>
+      <div class="frame">
+        <div class="cols" id="large"></div>
+      </div>
+      <div class="specs">
+        <b>12</b> cols · <b>64</b>px margin · <b>24</b>px gutter
+      </div>
+    </div>
+  </div>
+  <script>
+    function build(id, count, gutterClass) {
+      const root = document.getElementById(id);
+      for (let i = 0; i < count; i++) {
+        const c = document.createElement('div');
+        c.className = 'col';
+        root.appendChild(c);
+        if (i < count - 1) {
+          const g = document.createElement('div');
+          g.className = 'gut ' + gutterClass;
+          root.appendChild(g);
+        }
+      }
+    }
+    build('small', 4, 'small');
+    build('medium', 8, 'medium');
+    build('large', 12, 'large');
+  </script>
+</body></html>

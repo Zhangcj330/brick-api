@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Radii</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); margin-bottom:16px; }
+    .row { display:flex; gap:20px; align-items:flex-start; }
+    .item { display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .shape { width:40px; height:40px; background:var(--limestone); border:2px solid var(--ink); }
+    .name { font-family:var(--font-mono); font-size:11px; color:var(--fg-secondary); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Radii · controlled roundness</div>
+  <div class="row">
+    <div class="item"><div class="shape" style="border-radius:var(--radius-xs)"></div><div class="name">xs</div></div>
+    <div class="item"><div class="shape" style="border-radius:var(--radius-sm)"></div><div class="name">sm</div></div>
+    <div class="item"><div class="shape" style="border-radius:var(--radius-md)"></div><div class="name">md</div></div>
+    <div class="item"><div class="shape" style="border-radius:var(--radius-lg)"></div><div class="name">lg</div></div>
+    <div class="item"><div class="shape" style="border-radius:var(--radius-xl)"></div><div class="name">xl</div></div>
+    <div class="item"><div class="shape" style="border-radius:var(--radius-pill)"></div><div class="name">pill</div></div>
+  </div>
+</body>
+</html>

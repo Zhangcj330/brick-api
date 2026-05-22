@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Brand logo</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); margin-bottom:16px; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .tile { min-height:176px; border-radius:var(--radius-lg); padding:20px; display:flex; flex-direction:column; justify-content:space-between; border:1px solid var(--border); }
+    .tile.night { background:var(--night); border-color:rgba(255,253,248,0.1); }
+    .brand { display:flex; align-items:center; gap:16px; }
+    .mark { width:52px; height:52px; object-fit:contain; }
+    .word { font-family:var(--font-serif); font-size:38px; line-height:1; color:var(--fg); letter-spacing:-0.02em; }
+    .night .word { color:var(--paper); }
+    .meta { font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--fg-secondary); }
+    .night .meta { color:rgba(255,253,248,0.68); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Brand logo · mark + serif wordmark</div>
+  <div class="row">
+    <div class="tile" style="background:var(--paper)">
+      <div class="brand">
+        <img class="mark" src="../assets/brick-mark.svg" alt="Brick AI mark">
+        <div class="word">Brick AI</div>
+      </div>
+      <div class="meta">Paper application</div>
+    </div>
+    <div class="tile night">
+      <div class="brand">
+        <img class="mark" src="../assets/brick-mark-dark.svg" alt="Brick AI mark on night surface">
+        <div class="word">Brick AI</div>
+      </div>
+      <div class="meta">Night anchor tile</div>
+    </div>
+  </div>
+</body>
+</html>

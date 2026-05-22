@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Buttons</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px 32px; background:var(--white); height:170px; box-sizing:border-box; }
+  .lbl { font-size:11px; color:var(--fg-secondary); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; margin-bottom:14px; }
+  .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .btn { font-family:var(--font-display); font-weight:500; font-size:15px; padding:14px 22px; border:0; border-radius:8px; cursor:pointer; line-height:1; letter-spacing:-0.005em; }
+  .primary { background:#000; color:#fff; }
+  .secondary { background:#F6F6F6; color:#000; }
+  .outline { background:transparent; color:#000; border:1px solid #000; }
+  .destructive { background:#E11900; color:#fff; }
+  .ghost { background:transparent; color:#000; padding:14px 12px; }
+  .disabled { background:#EEEEEE; color:#AFAFAF; cursor:not-allowed; }
+</style></head>
+<body>
+  <div class="lbl">Buttons · 8px radius · 48px tap target</div>
+  <div class="row">
+    <button class="btn primary">Request UberX</button>
+    <button class="btn secondary">Schedule</button>
+    <button class="btn outline">See prices</button>
+    <button class="btn destructive">Cancel trip</button>
+    <button class="btn ghost">Skip</button>
+    <button class="btn disabled">Confirm</button>
+  </div>
+</body></html>

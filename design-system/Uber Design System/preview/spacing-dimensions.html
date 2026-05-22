@@ -1,0 +1,39 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Dimensions · Base sizing scale</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:20px 28px; background:var(--white); box-sizing:border-box; }
+  .lbl { font-size:11px; color:var(--fg-secondary); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; margin-bottom:14px; }
+  .grid { display:grid; grid-template-columns:repeat(10, 1fr); gap:10px 14px; align-items:flex-end; }
+  .step { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .blk { background:#000; width:20px; }
+  .name { font-family:var(--font-mono); font-size:9px; color:var(--fg-secondary); letter-spacing:0; }
+  .px { font-family:var(--font-display); font-weight:600; font-size:11px; }
+  .meta { margin-top:12px; font-size:11px; color:var(--fg-secondary); line-height:1.5; }
+</style></head>
+<body>
+  <div class="lbl">Dimensions · Base Web "scale" tokens · src/themes/shared/sizing.ts</div>
+  <div class="grid">
+    <div class="step"><div class="blk" style="height:2px"></div><div class="px">2</div><div class="name">scale0</div></div>
+    <div class="step"><div class="blk" style="height:4px"></div><div class="px">4</div><div class="name">scale100</div></div>
+    <div class="step"><div class="blk" style="height:6px"></div><div class="px">6</div><div class="name">scale200</div></div>
+    <div class="step"><div class="blk" style="height:8px"></div><div class="px">8</div><div class="name">scale300</div></div>
+    <div class="step"><div class="blk" style="height:10px"></div><div class="px">10</div><div class="name">scale400</div></div>
+    <div class="step"><div class="blk" style="height:12px"></div><div class="px">12</div><div class="name">scale500</div></div>
+    <div class="step"><div class="blk" style="height:14px"></div><div class="px">14</div><div class="name">scale550</div></div>
+    <div class="step"><div class="blk" style="height:16px"></div><div class="px">16</div><div class="name">scale600</div></div>
+    <div class="step"><div class="blk" style="height:18px"></div><div class="px">18</div><div class="name">scale650</div></div>
+    <div class="step"><div class="blk" style="height:20px"></div><div class="px">20</div><div class="name">scale700</div></div>
+    <div class="step"><div class="blk" style="height:22px"></div><div class="px">22</div><div class="name">scale750</div></div>
+    <div class="step"><div class="blk" style="height:24px"></div><div class="px">24</div><div class="name">scale800</div></div>
+    <div class="step"><div class="blk" style="height:32px"></div><div class="px">32</div><div class="name">scale900</div></div>
+    <div class="step"><div class="blk" style="height:40px"></div><div class="px">40</div><div class="name">scale1000</div></div>
+    <div class="step"><div class="blk" style="height:48px"></div><div class="px">48</div><div class="name">scale1200</div></div>
+    <div class="step"><div class="blk" style="height:56px"></div><div class="px">56</div><div class="name">scale1400</div></div>
+    <div class="step"><div class="blk" style="height:64px"></div><div class="px">64</div><div class="name">scale1600</div></div>
+    <div class="step"><div class="blk" style="height:80px"></div><div class="px">96</div><div class="name">scale2400</div></div>
+    <div class="step"><div class="blk" style="height:80px;background:repeating-linear-gradient(0deg,#000 0 4px,#fff 4px 6px)"></div><div class="px">128</div><div class="name">scale3200</div></div>
+    <div class="step"><div class="blk" style="height:80px;background:repeating-linear-gradient(0deg,#000 0 2px,#fff 2px 4px)"></div><div class="px">192</div><div class="name">scale4800</div></div>
+  </div>
+  <div class="meta">Used for height, padding, gap and icon sizing across Base components. "scale600" (16px) is the workhorse for buttons and form controls; "scale800" (24px) is the standard card padding.</div>
+</body></html>

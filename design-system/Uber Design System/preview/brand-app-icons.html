@@ -1,0 +1,19 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>App icons</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:24px 40px; background:var(--white); display:flex; align-items:center; gap:32px; height:150px; box-sizing:border-box; }
+  .icon { width:96px; height:96px; border-radius:22px; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:900; letter-spacing:-0.05em; }
+  .uber { background:#000; color:#fff; font-size:40px; }
+  .eats { background:#06C167; color:#000; font-size:38px; }
+  .label { font-size:12px; color:var(--fg-secondary); text-align:center; margin-top:8px; }
+  .stack { display:flex; flex-direction:column; align-items:center; }
+</style></head>
+<body>
+  <div class="stack"><div class="icon uber">Uber</div><div class="label">Uber · #000000</div></div>
+  <div class="stack"><div class="icon eats">Eats</div><div class="label">Eats · #06C167</div></div>
+  <div style="margin-left:24px;max-width:280px;font-size:13px;color:var(--fg-secondary);line-height:1.5;">
+    <b style="color:var(--fg);font-weight:600;display:block;margin-bottom:4px;font-size:14px;">App marks</b>
+    22% squircle radius. Wordmark centered, never cropped. Eats inverts the value relationship — black type on green.
+  </div>
+</body></html>

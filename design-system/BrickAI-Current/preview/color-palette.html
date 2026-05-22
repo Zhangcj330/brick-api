@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Color palette</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:20px 24px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .section { margin-bottom:16px; }
+    .section-title { font-size:10px; letter-spacing:var(--tracking-label); text-transform:uppercase; color:var(--gray-300); margin-bottom:8px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; }
+    .swatch { min-width:80px; }
+    .chip { width:80px; height:60px; border-radius:var(--radius-md); margin-bottom:6px; }
+    .name { font-size:11px; color:var(--fg); font-weight:var(--weight-medium); }
+    .hex  { font-family:var(--font-mono); font-size:10px; color:var(--gray-400); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Color palette · neutrals + warm surfaces</div>
+  <div class="section">
+    <div class="section-title">Neutrals</div>
+    <div class="row">
+      <div class="swatch"><div class="chip" style="background:#ffffff;border:1px solid var(--gray-200)"></div><div class="name">White</div><div class="hex">#ffffff</div></div>
+      <div class="swatch"><div class="chip" style="background:#f9fafb;border:1px solid var(--gray-200)"></div><div class="name">Gray 50</div><div class="hex">#f9fafb</div></div>
+      <div class="swatch"><div class="chip" style="background:#f3f4f6;border:1px solid var(--gray-200)"></div><div class="name">Gray 100</div><div class="hex">#f3f4f6</div></div>
+      <div class="swatch"><div class="chip" style="background:#e5e7eb"></div><div class="name">Gray 200</div><div class="hex">#e5e7eb</div></div>
+      <div class="swatch"><div class="chip" style="background:#6b7280"></div><div class="name">Gray 500</div><div class="hex">#6b7280</div></div>
+      <div class="swatch"><div class="chip" style="background:#374151"></div><div class="name">Gray 700</div><div class="hex">#374151</div></div>
+      <div class="swatch"><div class="chip" style="background:#030712"></div><div class="name">Gray 950</div><div class="hex">#030712</div></div>
+      <div class="swatch"><div class="chip" style="background:#160211"></div><div class="name">Brand</div><div class="hex">#160211</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Warm surfaces (used in Swipe / Report / Drawer)</div>
+    <div class="row">
+      <div class="swatch"><div class="chip" style="background:#fffdf8;border:1px solid var(--gray-200)"></div><div class="name">warm-paper</div><div class="hex">#fffdf8</div></div>
+      <div class="swatch"><div class="chip" style="background:#fbfaf7;border:1px solid var(--gray-200)"></div><div class="name">warm-cream</div><div class="hex">#fbfaf7</div></div>
+      <div class="swatch"><div class="chip" style="background:#fcfaf4;border:1px solid var(--gray-200)"></div><div class="name">warm-parch</div><div class="hex">#fcfaf4</div></div>
+    </div>
+  </div>
+</body>
+</html>

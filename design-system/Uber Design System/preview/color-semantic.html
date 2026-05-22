@@ -1,0 +1,22 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Semantic colors</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:20px 32px; background:var(--white); height:170px; box-sizing:border-box; }
+  .row { display:flex; gap:12px; }
+  .item { flex:1; }
+  .bar { height:60px; border-radius:8px; display:flex; align-items:flex-end; padding:8px 10px; font-family:var(--font-mono); font-size:11px; color:#fff; }
+  .meta { margin-top:8px; font-size:12px; }
+  .meta b { font-family:var(--font-display); font-weight:600; display:block; }
+  .meta span { color:var(--fg-secondary); }
+  .lbl { font-size:11px; color:var(--fg-secondary); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; margin-bottom:10px; }
+</style></head>
+<body>
+  <div class="lbl">Semantic · used sparingly on small surfaces</div>
+  <div class="row">
+    <div class="item"><div class="bar" style="background:#06C167">#06C167</div><div class="meta"><b>Positive</b><span>success, online</span></div></div>
+    <div class="item"><div class="bar" style="background:#E11900">#E11900</div><div class="meta"><b>Negative</b><span>error, cancel</span></div></div>
+    <div class="item"><div class="bar" style="background:#FFC043;color:#000">#FFC043</div><div class="meta"><b>Warning</b><span>caution, surge</span></div></div>
+    <div class="item"><div class="bar" style="background:#276EF1">#276EF1</div><div class="meta"><b>Accent</b><span>link, info</span></div></div>
+  </div>
+</body></html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Chips</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .section { margin-bottom:14px; }
+    .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .badge { display:inline-flex; align-items:center; padding:4px 12px; border-radius:var(--radius-full); font-size:12px; font-weight:var(--weight-medium); border:1px solid; }
+    .tag   { display:inline-flex; padding:4px 10px; border-radius:var(--radius-full); font-size:12px; border:1px solid var(--border); background:#fff; color:var(--gray-700); }
+    /* suggestion pills — from ChatSuggestions */
+    .suggest { padding:6px 12px; border-radius:var(--radius-full); font-size:13px; line-height:1.4; border:1px solid var(--border); background:rgba(255,255,255,0.70); color:var(--brand); backdrop-filter:blur(4px); box-shadow:0 10px 30px -28px rgba(22,2,17,0.16); }
+    /* page eyebrow */
+    .eyebrow { font-size:11px; text-transform:uppercase; letter-spacing:var(--tracking-label); color:var(--gray-400); }
+    /* nav label style */
+    .nav-label { font-size:11px; text-transform:uppercase; letter-spacing:var(--tracking-loose); color:var(--gray-400); border:1px solid var(--border); border-radius:var(--radius-full); padding:4px 14px; background:rgba(255,255,255,0.70); backdrop-filter:blur(16px); box-shadow:var(--shadow-label); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Chips · verdict badges · suggestion pills · page labels</div>
+  <div class="section">
+    <div class="row">
+      <span class="badge" style="background:var(--verdict-positive-bg);border-color:var(--verdict-positive-border);color:var(--verdict-positive-fg);">Worth pursuing</span>
+      <span class="badge" style="background:var(--verdict-cautious-bg);border-color:var(--verdict-cautious-border);color:var(--verdict-cautious-fg);">Proceed with caution</span>
+      <span class="badge" style="background:var(--verdict-unclear-bg);border-color:var(--verdict-unclear-border);color:var(--verdict-unclear-fg);">Too many unknowns</span>
+    </div>
+  </div>
+  <div class="section">
+    <div class="row">
+      <span class="tag">Freestanding</span>
+      <span class="tag">Near schools</span>
+      <span class="tag">Auction</span>
+      <span class="tag">New listing</span>
+    </div>
+  </div>
+  <div class="section">
+    <div class="row">
+      <span class="suggest">Find a 2-bed apartment near CBD under $1.2M</span>
+      <span class="suggest">What should I check before inspection?</span>
+    </div>
+  </div>
+  <div class="section">
+    <div class="row">
+      <span class="eyebrow">Property context</span>
+      &nbsp;&nbsp;
+      <span class="nav-label">Property report</span>
+    </div>
+  </div>
+</body>
+</html>

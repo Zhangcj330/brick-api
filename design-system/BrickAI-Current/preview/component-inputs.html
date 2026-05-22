@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Inputs</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); margin-bottom:14px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; }
+    .field { display:flex; flex-direction:column; gap:7px; }
+    .field-lbl { font-size:11px; letter-spacing:var(--tracking-label); text-transform:uppercase; font-weight:var(--weight-medium); color:var(--gray-400); }
+    .input    { background:var(--gray-100); color:var(--fg); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 14px; font-size:14px; font-family:var(--font-body); line-height:1.4; }
+    .focused  { background:#fff; border:2px solid var(--gray-950); padding:9px 13px; }
+    .textarea { background:var(--gray-100); color:var(--fg); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 14px; font-size:14px; font-family:var(--font-body); line-height:1.4; min-height:84px; resize:none; }
+    /* Chat composer input (special) */
+    .composer-input { border-radius:var(--radius-draw); border:1px solid #d9d9d9; background:rgba(255,255,255,0.95); padding:10px 16px; font-family:var(--font-body); font-size:15px; color:rgba(22,2,17,0.4); box-shadow:var(--shadow-composer); backdrop-filter:var(--blur-xl); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Inputs · text fields · chat composer</div>
+  <div class="grid">
+    <div class="field"><div class="field-lbl">Default</div><div class="input">12 Brown Street, Petersham NSW</div></div>
+    <div class="field"><div class="field-lbl">Focused</div><div class="input focused">12 Brown Street, Petersham NSW</div></div>
+    <div class="field"><div class="field-lbl">Textarea</div><div class="textarea">Summarise the biggest concern in the building report and tell me what to check before making an offer.</div></div>
+    <div class="field"><div class="field-lbl">Chat composer</div><div class="composer-input">Ask about a suburb, report, contract, or what to verify next</div></div>
+  </div>
+</body>
+</html>

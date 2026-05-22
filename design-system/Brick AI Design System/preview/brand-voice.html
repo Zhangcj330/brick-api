@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Brand voice</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); margin-bottom:18px; }
+    .grid { display:grid; grid-template-columns:1.15fr 0.95fr; gap:20px; }
+    .panel { border:1px solid var(--border); border-radius:var(--radius-lg); background:rgba(255,255,255,0.55); padding:18px; }
+    .principle { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .principle:last-child { border-bottom:0; padding-bottom:0; }
+    .title { font-family:var(--font-serif); font-size:22px; line-height:1.15; color:var(--fg); }
+    .detail { font-size:13px; color:var(--fg-secondary); }
+    .stack { display:flex; flex-direction:column; gap:10px; }
+    .chip { width:max-content; padding:10px 14px; border-radius:var(--radius-pill); font-size:14px; font-weight:500; line-height:1; }
+    .good { background:var(--positive-bg); color:var(--positive); }
+    .careful { background:var(--caution-bg); color:var(--caution); }
+    .unknown { background:var(--limestone); color:var(--slate); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Brand voice · reasoned, calm, buyer-loyal</div>
+  <div class="grid">
+    <div class="panel">
+      <div class="principle"><div class="title">reason over spec</div><div class="detail">judgment first</div></div>
+      <div class="principle"><div class="title">context over staging</div><div class="detail">reality over marketing</div></div>
+      <div class="principle"><div class="title">decision framing over score</div><div class="detail">why matters most</div></div>
+    </div>
+    <div class="panel stack">
+      <div class="chip good">Worth pursuing</div>
+      <div class="chip careful">Proceed with caution</div>
+      <div class="chip unknown">Too many unknowns right now</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Motion</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); margin-bottom:16px; }
+    .grid { display:grid; grid-template-columns:1.2fr 0.8fr; gap:18px; }
+    .panel { border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px 18px; background:rgba(255,255,255,0.45); }
+    .step { display:grid; grid-template-columns:64px 56px 1fr; align-items:center; gap:12px; margin-bottom:12px; }
+    .step:last-child { margin-bottom:0; }
+    .name { font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--fg-secondary); }
+    .time { font-family:var(--font-mono); font-size:12px; color:var(--fg); }
+    .bar { height:8px; border-radius:var(--radius-pill); background:var(--ink); }
+    .curve { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .curve-card { padding:12px; background:var(--paper); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .curve-card svg { display:block; width:100%; height:56px; }
+    .curve-label { margin-bottom:8px; font-size:12px; color:var(--fg-secondary); }
+    .curve-code { font-family:var(--font-mono); font-size:11px; color:var(--fg); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Motion · deliberate timing, soft curves</div>
+  <div class="grid">
+    <div class="panel">
+      <div class="step"><div class="name">micro</div><div class="time">100ms</div><div class="bar" style="width:21%"></div></div>
+      <div class="step"><div class="name">short</div><div class="time">180ms</div><div class="bar" style="width:38%"></div></div>
+      <div class="step"><div class="name">medium</div><div class="time">300ms</div><div class="bar" style="width:63%"></div></div>
+      <div class="step"><div class="name">long</div><div class="time">480ms</div><div class="bar" style="width:100%"></div></div>
+    </div>
+    <div class="curve">
+      <div class="curve-card">
+        <div class="curve-label">ease-out</div>
+        <svg viewBox="0 0 100 56" aria-hidden="true">
+          <path d="M8 48 C 28 48, 36 12, 92 8" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div class="curve-code">0.25, 0, 0, 1</div>
+      </div>
+      <div class="curve-card">
+        <div class="curve-label">ease-in-out</div>
+        <svg viewBox="0 0 100 56" aria-hidden="true">
+          <path d="M8 48 C 28 48, 28 8, 52 8 S 76 48, 92 8" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div class="curve-code">0.45, 0, 0.55, 1</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

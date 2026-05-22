@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Brick AI · Chips</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px 32px; background:var(--bg); font-family:var(--font-body); }
+    .lbl { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); margin-bottom:14px; }
+    .group { margin-bottom:16px; }
+    .title { font-size:11px; font-family:var(--font-body); letter-spacing:0.08em; text-transform:uppercase; font-weight:500; color:var(--fg-secondary); margin-bottom:10px; }
+    .row { display:flex; flex-wrap:wrap; gap:10px; }
+    .chip { display:inline-flex; align-items:center; height:34px; padding:0 14px; border-radius:var(--radius-pill); font-size:13px; font-weight:500; }
+    .good { background:var(--fog); color:var(--eucalyptus); }
+    .careful { background:var(--dust); color:var(--clay); }
+    .unknown { background:var(--limestone); color:var(--slate); }
+    .stage { background:transparent; color:var(--ink); border:1px solid var(--ink); }
+  </style>
+</head>
+<body>
+  <div class="lbl">Chips · verdicts + lifecycle stages</div>
+  <div class="group">
+    <div class="title">Verdicts</div>
+    <div class="row">
+      <div class="chip good">Worth pursuing</div>
+      <div class="chip careful">Proceed with caution</div>
+      <div class="chip unknown">Too many unknowns</div>
+    </div>
+  </div>
+  <div class="group">
+    <div class="title">Lifecycle</div>
+    <div class="row">
+      <div class="chip stage">Shortlisted</div>
+      <div class="chip stage">Reviewing report</div>
+      <div class="chip stage">Ready for inspection</div>
+      <div class="chip stage">Preparing offer</div>
+      <div class="chip stage">Settled</div>
+    </div>
+  </div>
+</body>
+</html>

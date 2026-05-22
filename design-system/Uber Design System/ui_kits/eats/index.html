@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Uber Eats · UI Kit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../../colors_and_type.css">
+  <style>
+    body { margin: 0; min-height: 100vh; background: #F6F6F6;
+      display: flex; flex-direction: column; align-items: center; padding: 32px 24px; box-sizing: border-box; }
+    .head { width: 100%; max-width: 1200px; margin-bottom: 24px; }
+    .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #06C167; margin-bottom: 6px; }
+    h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px; }
+    .lede { font-size: 15px; color: #545454; max-width: 600px; line-height: 1.5; }
+    .device-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .step-label { font-size: 12px; font-weight: 600; color: #757575; letter-spacing: 0.06em; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div class="head">
+    <div class="eyebrow">UI Kit · Uber Eats</div>
+    <h1>Order food</h1>
+    <p class="lede">Three-screen click-through: home with restaurant feed → restaurant detail with menu → live order tracking. Tap a restaurant to see its menu, add items to cart, then check out.</p>
+  </div>
+
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel" src="Icon.jsx"></script>
+  <script type="text/babel" src="FoodArt.jsx"></script>
+  <script type="text/babel" src="Screens.jsx"></script>
+
+  <script type="text/babel">
+    function EatsDemo() {
+      const [screen, setScreen] = React.useState('home');
+      const [restaurant, setRestaurant] = React.useState(null);
+      const [cart, setCart] = React.useState([]);
+
+      const openRestaurant = (r) => { setRestaurant(r); setScreen('detail'); };
+      const addToCart = (item) => setCart([...cart, item]);
+      const checkout = () => setScreen('tracking');
+      const reset = () => { setScreen('home'); setRestaurant(null); setCart([]); };
+
+      const cartTotal = cart.reduce((sum, i) => sum + parseFloat(i.price.replace('$','')), 0);
+
+      let inner = null, label = '';
+      if (screen === 'home')     { inner = <EatsHome onOpenRestaurant={openRestaurant}/>; label = '1 · Home feed'; }
+      if (screen === 'detail')   { inner = (<>
+        <RestaurantDetail r={restaurant} onBack={reset} onAddToCart={addToCart}/>
+        {cart.length > 0 && <CartBar count={cart.length} total={cartTotal} onCheckout={checkout}/>}
+      </>); label = '2 · Restaurant'; }
+      if (screen === 'tracking') { inner = <OrderTracking onDone={reset}/>; label = '3 · Tracking'; }
+
+      return (
+        <div className="device-col">
+          <IOSDevice width={390} height={780}>{inner}</IOSDevice>
+          <div className="step-label">{label}</div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<EatsDemo/>);
+  </script>
+</body>
+</html>
