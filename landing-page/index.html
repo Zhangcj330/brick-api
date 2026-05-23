@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brick AI — Find The Right Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset & Base ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #000000;
+      --white: #FFFFFF;
+      --white-60: rgba(255,255,255,0.6);
+      --white-30: rgba(255,255,255,0.3);
+      --white-10: rgba(255,255,255,0.1);
+      --white-05: rgba(255,255,255,0.05);
+
+      /* Brand gradient: purple → teal (from the poster outlines) */
+      --grad-start: #9B5FE3;
+      --grad-mid:   #3BBFAD;
+      --grad-end:   #4DD9C0;
+      --grad: linear-gradient(135deg, var(--grad-start), var(--grad-mid), var(--grad-end));
+
+      --accent-line: #3BBFAD;
+      --accent-url:  #4DD9C0;
+
+      --font: "Geist", "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      --nav-h: 64px;
+      --section-pad: clamp(80px, 10vw, 140px);
+      --gutter: clamp(24px, 5vw, 80px);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── Scrollbar ──────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--white-30); border-radius: 2px; }
+
+    /* ─── Utility ────────────────────────────────────────────── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--white-60);
+    }
+
+    .gradient-text {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ─── Nav ────────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      z-index: 100;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s, background 0.3s, backdrop-filter 0.3s;
+    }
+
+    nav.scrolled {
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom-color: var(--white-10);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--white-60);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:focus-visible { color: var(--white); outline: 2px solid var(--accent-line); outline-offset: 4px; border-radius: 3px; }
+
+    .nav-cta {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--black) !important;
+      background: var(--white);
+      padding: 8px 20px;
+      border-radius: 6px;
+      text-decoration: none !important;
+      transition: opacity 0.2s !important;
+    }
+
+    .nav-cta:hover { opacity: 0.85; }
+
+    .nav-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .nav-menu-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--white);
+      margin: 5px 0;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    /* ─── Hero ───────────────────────────────────────────────── */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding-top: var(--nav-h);
+    }
+
+    /* Big decorative "Brick" on the right — poster's signature element */
+    .hero-deco {
+      position: absolute;
+      right: -2%;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: clamp(160px, 26vw, 380px);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      user-select: none;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .hero-deco-inner {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      /* Outlined / stroke effect like the poster */
+      filter: drop-shadow(0 0 0 transparent);
+      opacity: 0.22;
+    }
+
+    /* Stroke-only variant layered on top */
+    .hero-deco-stroke {
+      position: absolute;
+      inset: 0;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      -webkit-text-stroke: 1.5px transparent;
+      opacity: 0.65;
+      /* We use a pseudo trick for stroke with gradient */
+      paint-order: stroke fill;
+    }
+
+    /* Simpler approach: SVG text with stroke gradient */
+    .hero-deco-svg {
+      position: absolute;
+      right: -3%;
+      top: 50%;
+      transform: translateY(-52%);
+      width: clamp(300px, 52vw, 760px);
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.75;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--section-pad) var(--gutter);
+      width: 100%;
+    }
+
+    .hero-brand {
+      font-size: clamp(14px, 1.4vw, 18px);
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: clamp(28px, 5vw, 56px);
+      letter-spacing: -0.01em;
+    }
+
+    .hero-headline {
+      font-size: clamp(56px, 10vw, 140px);
+      font-weight: 900;
+      line-height: 0.96;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      max-width: 52%;
+      margin-bottom: clamp(20px, 3vw, 32px);
+    }
+
+    .hero-rule {
+      width: clamp(40px, 5vw, 60px);
+      height: 2px;
+      background: var(--accent-line);
+      margin-bottom: clamp(16px, 2.5vw, 24px);
+    }
+
+    .hero-sub {
+      font-size: clamp(14px, 1.4vw, 17px);
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--white-60);
+      max-width: 360px;
+      margin-bottom: clamp(32px, 5vw, 56px);
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--black);
+      background: var(--white);
+      padding: 13px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-primary:active { opacity: 0.7; transform: translateY(0); }
+    .btn-primary:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 3px; }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--white-60);
+      background: transparent;
+      border: 1px solid var(--white-30);
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: color 0.2s, border-color 0.2s, transform 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-ghost:hover {
+      color: var(--white);
+      border-color: var(--white-60);
+      transform: translateY(-1px);
+    }
+    .btn-ghost:active { transform: translateY(0); }
+    .btn-ghost:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 3px; }
+
+    .hero-scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--white-30);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(6px); }
+    }
+
+    /* ─── Stats Bar ──────────────────────────────────────────── */
+    #stats {
+      border-top: 1px solid var(--white-10);
+      border-bottom: 1px solid var(--white-10);
+      padding: clamp(24px, 4vw, 40px) 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+
+    .stat-item {
+      padding: 0 var(--gutter);
+      border-right: 1px solid var(--white-10);
+    }
+
+    .stat-item:last-child { border-right: none; }
+
+    .stat-num {
+      font-size: clamp(28px, 3.5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--white-60);
+      line-height: 1.4;
+    }
+
+    /* ─── Features ───────────────────────────────────────────── */
+    #features {
+      padding: var(--section-pad) 0;
+    }
+
+    .section-header {
+      margin-bottom: clamp(48px, 7vw, 80px);
+    }
+
+    .section-header .eyebrow {
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(32px, 5vw, 64px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      max-width: 700px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--white-10);
+      border: 1px solid var(--white-10);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .feature-card {
+      background: var(--black);
+      padding: clamp(28px, 4vw, 44px);
+      transition: background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--grad);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover::before { opacity: 0.04; }
+
+    .feature-card:hover { background: #0a0a0a; }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .feature-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .feature-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent-line);
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .feature-title {
+      font-size: clamp(16px, 1.6vw, 20px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--white-60);
+      line-height: 1.65;
+    }
+
+    /* ─── How It Works ───────────────────────────────────────── */
+    #how {
+      padding: var(--section-pad) 0;
+      border-top: 1px solid var(--white-10);
+    }
+
+    .how-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(40px, 7vw, 100px);
+      align-items: center;
+    }
+
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .step {
+      display: flex;
+      gap: 24px;
+      padding: clamp(20px, 3vw, 28px) 0;
+      border-bottom: 1px solid var(--white-10);
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .step:first-child { padding-top: 0; border-top: 1px solid var(--white-10); }
+
+    .step.active .step-line { background: var(--accent-line); }
+    .step.active .step-title { color: var(--white); }
+    .step:not(.active) { opacity: 0.55; }
+    .step:not(.active):hover { opacity: 0.75; }
+
+    .step-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--white-30);
+      padding-top: 4px;
+      min-width: 28px;
+    }
+
+    .step.active .step-num { color: var(--accent-line); }
+
+    .step-body { flex: 1; }
+
+    .step-line {
+      width: 24px;
+      height: 2px;
+      background: var(--white-10);
+      margin-bottom: 10px;
+      transition: background 0.3s;
+    }
+
+    .step-title {
+      font-size: clamp(15px, 1.5vw, 18px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--white-60);
+      margin-bottom: 6px;
+      transition: color 0.3s;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--white-60);
+      line-height: 1.6;
+    }
+
+    .how-visual {
+      position: relative;
+      height: clamp(380px, 50vw, 600px);
+    }
+
+    .chat-mockup {
+      position: absolute;
+      inset: 0;
+      background: #0d0d0d;
+      border: 1px solid var(--white-10);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--white-10);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--grad);
+      flex-shrink: 0;
+    }
+
+    .chat-agent-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .chat-status {
+      font-size: 11px;
+      color: var(--accent-line);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-status::before {
+      content: "";
+      display: block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-line);
+    }
+
+    .chat-body {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+
+    .msg {
+      max-width: 85%;
+      font-size: 13px;
+      line-height: 1.55;
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+
+    .msg-ai {
+      background: var(--white-05);
+      color: var(--white-60);
+      align-self: flex-start;
+      border-bottom-left-radius: 3px;
+    }
+
+    .msg-user {
+      background: var(--white);
+      color: var(--black);
+      align-self: flex-end;
+      border-bottom-right-radius: 3px;
+      font-weight: 500;
+    }
+
+    .msg-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(61, 191, 173, 0.15);
+      color: var(--accent-line);
+      margin-top: 8px;
+    }
+
+    .chat-input-bar {
+      padding: 14px 16px;
+      border-top: 1px solid var(--white-10);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-input-fake {
+      flex: 1;
+      background: var(--white-05);
+      border: 1px solid var(--white-10);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--white-30);
+      font-family: var(--font);
+    }
+
+    .chat-send-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ─── Social Proof ───────────────────────────────────────── */
+    #proof {
+      padding: var(--section-pad) 0;
+      border-top: 1px solid var(--white-10);
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: clamp(40px, 6vw, 64px);
+    }
+
+    .testimonial {
+      background: var(--white-05);
+      border: 1px solid var(--white-10);
+      border-radius: 12px;
+      padding: clamp(20px, 3vw, 32px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .testimonial:hover {
+      background: var(--white-10);
+      border-color: var(--white-30);
+    }
+
+    .testimonial-stars {
+      display: flex;
+      gap: 3px;
+      color: var(--accent-line);
+      font-size: 14px;
+    }
+
+    .testimonial-quote {
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.8);
+      flex: 1;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .testimonial-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--grad);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .testimonial-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .testimonial-role {
+      font-size: 11px;
+      color: var(--white-30);
+    }
+
+    /* ─── Pricing ────────────────────────────────────────────── */
+    #pricing {
+      padding: var(--section-pad) 0;
+      border-top: 1px solid var(--white-10);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: clamp(40px, 6vw, 64px);
+    }
+
+    .pricing-card {
+      border: 1px solid var(--white-10);
+      border-radius: 12px;
+      padding: clamp(24px, 3.5vw, 40px);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: relative;
+      transition: border-color 0.3s;
+    }
+
+    .pricing-card.featured {
+      border-color: transparent;
+      background: var(--white-05);
+    }
+
+    .pricing-card.featured::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: 13px;
+      background: var(--grad);
+      z-index: -1;
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--grad);
+      color: var(--white);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 12px;
+      border-radius: 20px;
+    }
+
+    .pricing-tier {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-60);
+    }
+
+    .pricing-price {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .pricing-amount {
+      font-size: clamp(36px, 4.5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .pricing-period {
+      font-size: 13px;
+      color: var(--white-60);
+    }
+
+    .pricing-desc {
+      font-size: 13px;
+      color: var(--white-60);
+      line-height: 1.55;
+    }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--white-60);
+      line-height: 1.4;
+    }
+
+    .pricing-features li::before {
+      content: "✓";
+      color: var(--accent-line);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .pricing-features li.dim { color: var(--white-60); opacity: 0.5; }
+    .pricing-features li.dim::before { content: "—"; }
+
+    .pricing-cta {
+      display: block;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .pricing-cta:hover { opacity: 0.8; transform: translateY(-1px); }
+
+    .pricing-cta.primary {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .pricing-cta.outline {
+      border: 1px solid var(--white-30);
+      color: var(--white-60);
+    }
+
+    /* ─── CTA Banner ─────────────────────────────────────────── */
+    #cta {
+      padding: var(--section-pad) 0;
+      border-top: 1px solid var(--white-10);
+    }
+
+    .cta-inner {
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #080808;
+      border: 1px solid var(--white-10);
+      padding: clamp(48px, 8vw, 100px) clamp(32px, 6vw, 80px);
+      text-align: center;
+    }
+
+    .cta-bg-word {
+      position: absolute;
+      bottom: -8%;
+      right: -2%;
+      font-size: clamp(120px, 18vw, 240px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      user-select: none;
+      pointer-events: none;
+      opacity: 0.06;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .cta-eyebrow {
+      margin-bottom: 16px;
+    }
+
+    .cta-headline {
+      font-size: clamp(36px, 5.5vw, 72px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.0;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+
+    .cta-sub {
+      font-size: clamp(14px, 1.4vw, 16px);
+      color: var(--white-60);
+      line-height: 1.6;
+      max-width: 480px;
+      margin: 0 auto 36px;
+    }
+
+    .cta-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* ─── Footer ─────────────────────────────────────────────── */
+    footer {
+      padding: clamp(40px, 6vw, 64px) 0 clamp(24px, 4vw, 40px);
+      border-top: 1px solid var(--white-10);
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: clamp(32px, 5vw, 64px);
+      padding-bottom: clamp(32px, 5vw, 56px);
+      border-bottom: 1px solid var(--white-10);
+      margin-bottom: 28px;
+    }
+
+    .footer-brand {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .footer-tagline {
+      font-size: 13px;
+      color: var(--white-60);
+      line-height: 1.6;
+      max-width: 240px;
+      margin-bottom: 24px;
+    }
+
+    .footer-url {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent-url);
+      text-decoration: none;
+    }
+
+    .footer-url:hover { text-decoration: underline; }
+
+    .footer-col-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white-30);
+      margin-bottom: 16px;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--white-60);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--white); }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--white-60);
+    }
+
+    .footer-legal {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-legal a {
+      font-size: 12px;
+      color: var(--white-60);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-legal a:hover { color: var(--white); }
+
+    /* ─── Animations ─────────────────────────────────────────── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fade-in-delay-1 { transition-delay: 0.1s; }
+    .fade-in-delay-2 { transition-delay: 0.2s; }
+    .fade-in-delay-3 { transition-delay: 0.3s; }
+    .fade-in-delay-4 { transition-delay: 0.4s; }
+    .fade-in-delay-5 { transition-delay: 0.5s; }
+
+    /* Typing cursor */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--accent-line);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 1.1s step-end infinite;
+    }
+
+    /* ─── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero-headline { max-width: 70%; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(2) { border-right: none; }
+      .stat-item:nth-child(n+3) { border-top: 1px solid var(--white-10); }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .how-layout { grid-template-columns: 1fr; }
+      .how-visual { height: 340px; }
+      .testimonials { grid-template-columns: 1fr 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      :root { --gutter: 20px; }
+      .nav-links {
+        display: none;
+        position: fixed;
+        top: var(--nav-h); left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.96);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 36px;
+        z-index: 99;
+      }
+      .nav-links.mobile-open { display: flex; }
+      .nav-links a { font-size: 20px; }
+      .nav-menu-btn { display: flex; flex-direction: column; }
+      .hero-headline { max-width: 100%; font-size: clamp(44px, 13vw, 80px); }
+      .hero-deco-svg { opacity: 0.2; right: -10%; width: 80vw; }
+      .features-grid { grid-template-columns: 1fr; }
+      .testimonials { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────────── -->
+  <nav id="main-nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="#">Brick <span class="gradient-text">AI</span></a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#proof">Reviews</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#cta" class="nav-cta">Get started</a></li>
+      </ul>
+      <button class="nav-menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Hero ───────────────────────────────────────────────── -->
+  <section id="hero">
+
+    <!-- Decorative large "Brick" — poster's signature -->
+    <svg class="hero-deco-svg" viewBox="0 0 760 560" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="strokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#9B5FE3"/>
+          <stop offset="50%"  stop-color="#3BBFAD"/>
+          <stop offset="100%" stop-color="#4DD9C0"/>
+        </linearGradient>
+      </defs>
+      <text
+        x="50%" y="90%"
+        text-anchor="middle"
+        font-family="Geist, Inter, sans-serif"
+        font-weight="900"
+        font-size="500"
+        fill="none"
+        stroke="url(#strokeGrad)"
+        stroke-width="1.2"
+        letter-spacing="-0.04em"
+      >Brick</text>
+    </svg>
+
+    <div class="hero-content container">
+      <p class="hero-brand fade-in">Brick AI</p>
+
+      <h1 class="hero-headline fade-in fade-in-delay-1">
+        Find<br>the right<br>home.
+      </h1>
+
+      <div class="hero-rule fade-in fade-in-delay-2"></div>
+
+      <p class="hero-sub fade-in fade-in-delay-3">
+        Brick AI empowers first-home buyers by turning uncertainty into clarity.
+      </p>
+
+      <div class="hero-actions fade-in fade-in-delay-4">
+        <a href="#cta" class="btn-primary">
+          Start for free
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+    </div>
+
+    <div class="hero-scroll-hint">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Scroll
+    </div>
+  </section>
+
+  <!-- ── Stats ──────────────────────────────────────────────── -->
+  <div id="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item fade-in">
+          <div class="stat-num gradient-text">50k+</div>
+          <div class="stat-label">Homes analysed</div>
+        </div>
+        <div class="stat-item fade-in fade-in-delay-1">
+          <div class="stat-num gradient-text">4.9★</div>
+          <div class="stat-label">Average user rating</div>
+        </div>
+        <div class="stat-item fade-in fade-in-delay-2">
+          <div class="stat-num gradient-text">$18k</div>
+          <div class="stat-label">Avg. savings per buyer</div>
+        </div>
+        <div class="stat-item fade-in fade-in-delay-3">
+          <div class="stat-num gradient-text">3 min</div>
+          <div class="stat-label">To your first report</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Features ───────────────────────────────────────────── -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header fade-in">
+        <p class="eyebrow">What Brick AI does</p>
+        <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <span class="feature-num">01</span>
+          <h3 class="feature-title">AI Property Analysis</h3>
+          <p class="feature-desc">Instant deep-dive into any listing — comparable sales, flood zones, school ratings, and suburb growth trends in one view.</p>
+        </div>
+        <div class="feature-card fade-in fade-in-delay-1">
+          <span class="feature-num">02</span>
+          <h3 class="feature-title">Budget Intelligence</h3>
+          <p class="feature-desc">Know exactly what you can afford. Brick models stamp duty, LMI, council rates, and hidden costs so there are no surprises.</p>
+        </div>
+        <div class="feature-card fade-in fade-in-delay-2">
+          <span class="feature-num">03</span>
+          <h3 class="feature-title">Negotiation Coach</h3>
+          <p class="feature-desc">Get data-backed offers. Our AI tells you the realistic price range and the right tactics before you make an offer.</p>
+        </div>
+        <div class="feature-card fade-in fade-in-delay-3">
+          <span class="feature-num">04</span>
+          <h3 class="feature-title">Grant Finder</h3>
+          <p class="feature-desc">Automatically surfaces every first-home buyer grant, scheme, and concession you're eligible for across federal and state programs.</p>
+        </div>
+        <div class="feature-card fade-in fade-in-delay-4">
+          <span class="feature-num">05</span>
+          <h3 class="feature-title">Contract Review</h3>
+          <p class="feature-desc">Upload your contract of sale. Brick flags risky clauses, special conditions, and anything your conveyancer should look at.</p>
+        </div>
+        <div class="feature-card fade-in fade-in-delay-5">
+          <span class="feature-num">06</span>
+          <h3 class="feature-title">Settlement Timeline</h3>
+          <p class="feature-desc">A personalised step-by-step roadmap from deposit to keys — with deadlines, checklists, and reminders you can actually follow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How It Works ───────────────────────────────────────── -->
+  <section id="how">
+    <div class="container">
+      <div class="how-layout">
+
+        <div>
+          <div class="section-header fade-in">
+            <p class="eyebrow">How it works</p>
+            <h2 class="section-title">From confused<br>to confident.</h2>
+          </div>
+
+          <div class="steps-list">
+            <div class="step active fade-in" data-step="0">
+              <span class="step-num">01</span>
+              <div class="step-body">
+                <div class="step-line"></div>
+                <h4 class="step-title">Tell Brick your situation</h4>
+                <p class="step-desc">Your budget, location wish-list, deal-breakers. No forms — just a conversation.</p>
+              </div>
+            </div>
+            <div class="step fade-in fade-in-delay-1" data-step="1">
+              <span class="step-num">02</span>
+              <div class="step-body">
+                <div class="step-line"></div>
+                <h4 class="step-title">Get your personalised report</h4>
+                <p class="step-desc">Brick analyses thousands of data points and surfaces the clearest picture of the market for you.</p>
+              </div>
+            </div>
+            <div class="step fade-in fade-in-delay-2" data-step="2">
+              <span class="step-num">03</span>
+              <div class="step-body">
+                <div class="step-line"></div>
+                <h4 class="step-title">Ask anything, anytime</h4>
+                <p class="step-desc">"Is this suburb overpriced?" "What's the rental yield?" — Brick answers instantly, in plain English.</p>
+              </div>
+            </div>
+            <div class="step fade-in fade-in-delay-3" data-step="3">
+              <span class="step-num">04</span>
+              <div class="step-body">
+                <div class="step-line"></div>
+                <h4 class="step-title">Buy with confidence</h4>
+                <p class="step-desc">Walk into auction day knowing your number, your strategy, and every clause in your contract.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat mockup -->
+        <div class="how-visual fade-in fade-in-delay-2">
+          <div class="chat-mockup">
+            <div class="chat-header">
+              <div class="chat-avatar"></div>
+              <div>
+                <div class="chat-agent-name">Brick AI</div>
+                <div class="chat-status">Online</div>
+              </div>
+            </div>
+            <div class="chat-body" id="chat-body">
+              <div class="msg msg-ai">
+                Hey! I'm Brick. Tell me about the home you're looking for — suburb, budget, or a listing URL. I'll handle the rest. 🏡
+              </div>
+              <div class="msg msg-user">
+                I'm looking at a 3-bed in Fitzroy North around $1.1M. Is it a good buy?
+              </div>
+              <div class="msg msg-ai">
+                Great choice area. Here's what the data says for Fitzroy North 3-beds:
+                <br/><br/>
+                <strong>Median sold price</strong> — $1.08M (last 90 days)<br/>
+                <strong>Auction clearance</strong> — 76%<br/>
+                <strong>12-month growth</strong> — +4.2%<br/>
+                <br/>
+                At $1.1M you're near the top of median. I'd want to see the council rates, flood overlay, and comparable sales within 400m before committing.
+                <br/><br/>
+                <span class="msg-tag">📎 Full suburb report ready</span>
+              </div>
+            </div>
+            <div class="chat-input-bar">
+              <div class="chat-input-fake" id="typing-display">Can you check the contract?<span class="cursor"></span></div>
+              <div class="chat-send-btn">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Testimonials ───────────────────────────────────────── -->
+  <section id="proof">
+    <div class="container">
+      <div class="section-header fade-in">
+        <p class="eyebrow">What buyers say</p>
+        <h2 class="section-title">Real people.<br>Real clarity.</h2>
+      </div>
+
+      <div class="testimonials">
+        <div class="testimonial fade-in">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"I was completely lost before Brick. After one session I understood my borrowing power, what grants I qualified for, and exactly what to offer. We bought in 6 weeks."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">SL</div>
+            <div>
+              <div class="testimonial-name">Sarah L.</div>
+              <div class="testimonial-role">First-home buyer · Melbourne</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial fade-in fade-in-delay-1">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"Brick found two clauses in our contract that our conveyancer missed. Saved us a potentially huge problem. Worth every cent."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">JM</div>
+            <div>
+              <div class="testimonial-name">James M.</div>
+              <div class="testimonial-role">First-home buyer · Sydney</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial fade-in fade-in-delay-2">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"The negotiation coach is unreal. I went into auction knowing my absolute ceiling and the vendor's price history. Bought $22k under what I was prepared to pay."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">PT</div>
+            <div>
+              <div class="testimonial-name">Priya T.</div>
+              <div class="testimonial-role">First-home buyer · Brisbane</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Pricing ────────────────────────────────────────────── -->
+  <section id="pricing">
+    <div class="container">
+      <div class="section-header fade-in" style="text-align:center; align-items:center; display:flex; flex-direction:column;">
+        <p class="eyebrow">Pricing</p>
+        <h2 class="section-title" style="text-align:center;">Clear pricing.<br>No hidden costs.</h2>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="pricing-card fade-in">
+          <div class="pricing-tier">Starter</div>
+          <div>
+            <div class="pricing-price">
+              <span class="pricing-amount">Free</span>
+            </div>
+            <p class="pricing-desc">Perfect for exploring the market before you commit.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>5 property analyses / month</li>
+            <li>Suburb snapshot reports</li>
+            <li>Grant eligibility checker</li>
+            <li class="dim">Contract review</li>
+            <li class="dim">Negotiation coach</li>
+            <li class="dim">Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta outline">Get started free</a>
+        </div>
+
+        <div class="pricing-card featured fade-in fade-in-delay-1">
+          <div class="pricing-badge">Most Popular</div>
+          <div class="pricing-tier">Buyer</div>
+          <div>
+            <div class="pricing-price">
+              <span class="pricing-amount">$29</span>
+              <span class="pricing-period">/ month</span>
+            </div>
+            <p class="pricing-desc">Everything you need from first search to settlement.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>Unlimited property analyses</li>
+            <li>Full suburb deep-dives</li>
+            <li>Grant eligibility checker</li>
+            <li>Contract review (up to 5)</li>
+            <li>Negotiation coach</li>
+            <li class="dim">Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta primary">Start Buyer plan</a>
+        </div>
+
+        <div class="pricing-card fade-in fade-in-delay-2">
+          <div class="pricing-tier">Pro</div>
+          <div>
+            <div class="pricing-price">
+              <span class="pricing-amount">$79</span>
+              <span class="pricing-period">/ month</span>
+            </div>
+            <p class="pricing-desc">For serious buyers and investors who need the full picture.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>Everything in Buyer</li>
+            <li>Unlimited contract reviews</li>
+            <li>Investment yield modelling</li>
+            <li>Portfolio tracking</li>
+            <li>Settlement timeline manager</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta outline">Start Pro plan</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA Banner ─────────────────────────────────────────── -->
+  <section id="cta">
+    <div class="container">
+      <div class="cta-inner fade-in">
+        <div class="cta-bg-word">Home.</div>
+        <p class="eyebrow cta-eyebrow">Ready to start?</p>
+        <h2 class="cta-headline">Find your<br><span class="gradient-text">right home.</span></h2>
+        <p class="cta-sub">Join thousands of Australians who bought smarter with Brick AI. Free to start — no credit card needed.</p>
+        <div class="cta-actions">
+          <a href="#" class="btn-primary">
+            Get started free
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#" class="btn-ghost">brickai.com</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────── -->
+  <footer>
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <div class="footer-brand">Brick <span class="gradient-text">AI</span></div>
+          <p class="footer-tagline">Empowering first-home buyers by turning uncertainty into clarity.</p>
+          <a href="https://brickai.com" class="footer-url">brickai.com</a>
+        </div>
+        <div>
+          <div class="footer-col-title">Product</div>
+          <ul class="footer-links">
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">Changelog</a></li>
+            <li><a href="#">Roadmap</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Company</div>
+          <ul class="footer-links">
+            <li><a href="#">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Press</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Support</div>
+          <ul class="footer-links">
+            <li><a href="#">Help centre</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Status</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copy">© 2025 Brick AI. All rights reserved.</p>
+        <div class="footer-legal">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Scripts ────────────────────────────────────────────── -->
+  <script>
+    /* Nav scroll effect */
+    const nav = document.getElementById('main-nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+
+    /* Mobile nav toggle */
+    const menuBtn = document.querySelector('.nav-menu-btn');
+    const navLinks = document.querySelector('.nav-links');
+    menuBtn.addEventListener('click', () => {
+      const open = navLinks.classList.toggle('mobile-open');
+      menuBtn.setAttribute('aria-expanded', open);
+      menuBtn.querySelectorAll('span')[0].style.transform = open ? 'translateY(7px) rotate(45deg)' : '';
+      menuBtn.querySelectorAll('span')[1].style.opacity  = open ? '0' : '';
+      menuBtn.querySelectorAll('span')[2].style.transform = open ? 'translateY(-7px) rotate(-45deg)' : '';
+    });
+    // Close menu on link click
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        navLinks.classList.remove('mobile-open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+        menuBtn.querySelectorAll('span').forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+      });
+    });
+
+    /* Intersection Observer — fade-in */
+    const fadeEls = document.querySelectorAll('.fade-in');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    fadeEls.forEach(el => io.observe(el));
+
+    /* How-it-works step cycling */
+    const steps = document.querySelectorAll('.step');
+    let currentStep = 0;
+
+    steps.forEach((step, i) => {
+      step.addEventListener('click', () => {
+        steps[currentStep].classList.remove('active');
+        currentStep = i;
+        steps[currentStep].classList.add('active');
+      });
+    });
+
+    setInterval(() => {
+      steps[currentStep].classList.remove('active');
+      currentStep = (currentStep + 1) % steps.length;
+      steps[currentStep].classList.add('active');
+    }, 3200);
+
+    /* Typing animation — only runs when chat mockup is visible */
+    const phrases = [
+      'Can you check the contract?',
+      'What grants am I eligible for?',
+      'Is $1.1M a fair price?',
+      'What should I offer at auction?',
+    ];
+    let phraseIdx = 0;
+    let charIdx = 0;
+    let deleting = false;
+    let typingTimer = null;
+    let typingActive = false;
+    const displayEl = document.getElementById('typing-display');
+
+    function typeLoop() {
+      if (!typingActive) return;
+      const phrase = phrases[phraseIdx];
+      if (!deleting) {
+        charIdx++;
+        if (charIdx > phrase.length) {
+          deleting = true;
+          typingTimer = setTimeout(typeLoop, 1800);
+          return;
+        }
+      } else {
+        charIdx--;
+        if (charIdx === 0) {
+          deleting = false;
+          phraseIdx = (phraseIdx + 1) % phrases.length;
+          typingTimer = setTimeout(typeLoop, 300);
+          return;
+        }
+      }
+      displayEl.innerHTML = phrase.slice(0, charIdx) + '<span class="cursor"></span>';
+      typingTimer = setTimeout(typeLoop, deleting ? 40 : 70);
+    }
+
+    const chatObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !typingActive) {
+          typingActive = true;
+          typeLoop();
+        } else if (!e.isIntersecting) {
+          typingActive = false;
+          clearTimeout(typingTimer);
+        }
+      });
+    }, { threshold: 0.3 });
+    chatObserver.observe(document.querySelector('.how-visual'));
+  </script>
+</body>
+</html>
