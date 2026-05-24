@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brick AI — Find The Right Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      color: #000;
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      font-feature-settings: "tnum" 0;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #CBCBCB; border-radius: 2px; }
+
+    /* ── Nav ──────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid #EEEEEE;
+      height: 66px;
+    }
+
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 40px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-logo {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      color: #000;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 26px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: #000;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: #545454; }
+
+    .nav-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-text-btn {
+      font-size: 14px;
+      font-weight: 500;
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-text-btn:hover { color: #545454; }
+
+    .btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #000;
+      color: #fff;
+      border: 0;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      line-height: 1;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-pill:hover { background: #1F1F1F; }
+
+    .btn-pill-lg {
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px 26px;
+    }
+
+    .btn-pill-white {
+      background: #fff;
+      color: #000;
+      border: 0;
+    }
+
+    .btn-pill-white:hover { background: #F6F6F6; }
+
+    .btn-pill-outline-white {
+      background: transparent;
+      color: #fff;
+      border: 1px solid #fff;
+    }
+
+    .btn-pill-outline-white:hover { background: rgba(255,255,255,0.1); }
+
+    .nav-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .nav-menu-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: #000;
+      margin: 5px 0;
+    }
+
+    /* ── Hero ─────────────────────────────────────────────── */
+    #hero {
+      padding: 64px 40px 80px;
+      background: #fff;
+    }
+
+    .hero-layout {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .hero-h1 {
+      font-size: clamp(44px, 5.5vw, 72px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 0.98;
+      margin: 0;
+    }
+
+    /* Mode tabs — exact Uber pattern */
+    .hero-tabs {
+      display: flex;
+      gap: 0;
+      margin-top: 32px;
+      border-bottom: 1px solid #EEEEEE;
+    }
+
+    .hero-tab {
+      padding: 12px 0;
+      margin-right: 32px;
+      background: transparent;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #757575;
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+
+    .hero-tab.active {
+      color: #000;
+      border-bottom-color: #000;
+    }
+
+    /* Hero chat widget */
+    .hero-widget {
+      margin-top: 24px;
+    }
+
+    .hero-chat {
+      background: #fff;
+      border: 1px solid #E2E2E2;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 340px;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #EEEEEE;
+      background: #fff;
+    }
+
+    .chat-avatar {
+      width: 28px;
+      height: 28px;
+      background: #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .chat-avatar svg { width: 14px; height: 14px; fill: #fff; }
+
+    .chat-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #000;
+    }
+
+    .chat-status {
+      font-size: 12px;
+      color: #6B6B6B;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .chat-status-dot {
+      width: 7px;
+      height: 7px;
+      background: #23A55A;
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scrollbar-width: none;
+    }
+
+    .chat-messages::-webkit-scrollbar { display: none; }
+
+    .chat-msg {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .chat-msg.user { flex-direction: row-reverse; }
+
+    .chat-bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.45;
+      color: #000;
+    }
+
+    .chat-msg.ai .chat-bubble {
+      background: #F6F6F6;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-msg.user .chat-bubble {
+      background: #000;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-typing {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 10px 14px;
+      background: #F6F6F6;
+      border-radius: 16px;
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #AFAFAF;
+      border-radius: 50%;
+    }
+
+    .typing-dot:nth-child(1) { animation: typing 1.2s infinite 0s; }
+    .typing-dot:nth-child(2) { animation: typing 1.2s infinite 0.2s; }
+    .typing-dot:nth-child(3) { animation: typing 1.2s infinite 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-3px); }
+    }
+
+    .chat-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid #EEEEEE;
+      background: #fff;
+    }
+
+    .chat-input-bar input {
+      flex: 1;
+      border: 0;
+      outline: none;
+      background: #F6F6F6;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      color: #000;
+    }
+
+    .chat-input-bar input::placeholder { color: #AFAFAF; }
+
+    .chat-send-btn {
+      width: 36px;
+      height: 36px;
+      background: #000;
+      border: 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .chat-send-btn:hover { background: #333; }
+
+    .hero-cta-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-ghost-underline {
+      background: transparent;
+      border: 0;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: #000;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: 0;
+      border-radius: 999px;
+    }
+
+    .btn-ghost-underline:hover { color: #545454; }
+
+    /* Drive panel */
+    .hero-drive-content {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .hero-drive-content.show { display: block; }
+    .hero-widget.hide { display: none; }
+
+    .hero-drive-sub {
+      font-size: 17px;
+      color: #545454;
+      line-height: 1.55;
+      margin: 0 0 24px;
+      max-width: 480px;
+    }
+
+    /* Right panel — property map */
+    .hero-map-panel {
+      position: relative;
+      height: 480px;
+      border-radius: 16px;
+      background: #F6F6F6;
+      overflow: hidden;
+    }
+
+    .hero-map-panel svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Floating property card */
+    .map-float-card {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      right: 24px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 18px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.16);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .map-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .map-card-title {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.005em;
+    }
+
+    .map-card-sub {
+      font-size: 13px;
+      color: #757575;
+      margin-top: 2px;
+    }
+
+    .map-card-price {
+      margin-left: auto;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      font-feature-settings: "tnum" 1;
+      white-space: nowrap;
+    }
+
+    /* ── Suggestions ──────────────────────────────────────── */
+    #suggestions {
+      padding: 40px 40px 80px;
+      background: #fff;
+    }
+
+    .suggestions-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .suggestions-h2 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin: 0 0 28px;
+    }
+
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .tile {
+      background: #F6F6F6;
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: background 0.15s;
+    }
+
+    .tile:hover { background: #EEEEEE; }
+
+    .tile-body { flex: 1; }
+
+    .tile-title {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .tile-desc {
+      font-size: 14px;
+      color: #545454;
+      line-height: 1.5;
+      margin: 8px 0 16px;
+    }
+
+    .tile-cta {
+      background: #fff;
+      border: 0;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      color: #000;
+      display: inline-block;
+      transition: background 0.15s;
+    }
+
+    .tile-cta:hover { background: #F6F6F6; border: 1px solid #EEEEEE; }
+
+    .tile-icon-box {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #000;
+    }
+
+    /* ── How it works (dark strip) ────────────────────────── */
+    #how {
+      padding: 80px 40px;
+      background: #000;
+      color: #fff;
+    }
+
+    .how-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .how-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #AFAFAF;
+      margin-bottom: 12px;
+    }
+
+    .how-h2 {
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin: 0 0 20px;
+    }
+
+    .how-sub {
+      font-size: 17px;
+      color: #CBCBCB;
+      line-height: 1.55;
+      margin: 0 0 32px;
+      max-width: 520px;
+    }
+
+    .how-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border-top: 1px solid #2E2E2E;
+    }
+
+    .how-step {
+      display: flex;
+      gap: 18px;
+      padding: 20px 0;
+      border-bottom: 1px solid #2E2E2E;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .how-step:not(.active) { opacity: 0.45; }
+    .how-step:not(.active):hover { opacity: 0.7; }
+
+    .how-step-num {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #AFAFAF;
+      min-width: 26px;
+      padding-top: 3px;
+      transition: color 0.2s;
+    }
+
+    .how-step.active .how-step-num { color: #fff; }
+
+    .how-step-body { flex: 1; }
+
+    .how-step-bar {
+      width: 18px;
+      height: 2px;
+      background: #2E2E2E;
+      margin-bottom: 9px;
+      transition: background 0.3s, width 0.3s;
+    }
+
+    .how-step.active .how-step-bar { background: #fff; width: 28px; }
+
+    .how-step-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #757575;
+      margin-bottom: 4px;
+      transition: color 0.2s;
+    }
+
+    .how-step.active .how-step-title { color: #fff; }
+
+    .how-step-desc {
+      font-size: 13px;
+      color: #757575;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .how-step.active .how-step-desc { display: block; }
+
+    /* Right — 2×2 stat grid */
+    .how-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .how-stat-card {
+      background: #1F1F1F;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .how-stat-num {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-feature-settings: "tnum" 1;
+      line-height: 1;
+    }
+
+    .how-stat-label {
+      font-size: 13px;
+      color: #AFAFAF;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* ── Testimonials (Editorial style) ───────────────────── */
+    #proof {
+      padding: 80px 40px;
+      background: #fff;
+    }
+
+    .proof-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .proof-h2 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin: 0 0 28px;
+    }
+
+    .editorial-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .editorial-card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editorial-img {
+      height: 200px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .editorial-tag {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .editorial-quote {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      line-height: 1.3;
+      margin: 0 0 10px;
+    }
+
+    .editorial-body {
+      font-size: 14px;
+      color: #545454;
+      line-height: 1.55;
+      margin: 0 0 14px;
+      flex: 1;
+    }
+
+    .editorial-author {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .author-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .author-role {
+      font-size: 12px;
+      color: #757575;
+      font-weight: 400;
+      margin-top: 1px;
+    }
+
+    /* ── Pricing ──────────────────────────────────────────── */
+    #pricing {
+      padding: 80px 40px;
+      background: #F6F6F6;
+      border-top: 1px solid #EEEEEE;
+    }
+
+    .pricing-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .pricing-h2 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin: 0 0 28px;
+      text-align: center;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .pricing-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: box-shadow 0.2s;
+    }
+
+    .pricing-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+
+    .pricing-card.featured {
+      background: #000;
+      color: #fff;
+    }
+
+    .pricing-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #AFAFAF;
+      width: fit-content;
+    }
+
+    .pricing-tier {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #757575;
+    }
+
+    .pricing-amount {
+      font-size: clamp(36px, 4vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      font-feature-settings: "tnum" 1;
+    }
+
+    .pricing-period {
+      font-size: 13px;
+      color: #757575;
+      margin-left: 3px;
+    }
+
+    .pricing-desc {
+      font-size: 13px;
+      color: #757575;
+      line-height: 1.55;
+    }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      flex: 1;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: #545454;
+      line-height: 1.45;
+    }
+
+    .pricing-card.featured .pricing-features li { color: #CBCBCB; }
+
+    .pricing-features li::before {
+      content: "✓";
+      font-weight: 700;
+      color: #000;
+      flex-shrink: 0;
+    }
+
+    .pricing-card.featured .pricing-features li::before { color: #fff; }
+
+    .pricing-features li.dim { color: #AFAFAF; opacity: 0.5; }
+    .pricing-features li.dim::before { content: "—"; }
+
+    .pricing-cta {
+      display: block;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px 20px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 0.15s, opacity 0.15s;
+      font-family: inherit;
+    }
+
+    .pricing-cta.outline {
+      border: 1px solid #CBCBCB;
+      color: #000;
+      background: transparent;
+    }
+
+    .pricing-cta.outline:hover { background: #F6F6F6; }
+
+    .pricing-cta.white {
+      background: #fff;
+      color: #000;
+    }
+
+    .pricing-cta.white:hover { background: #EEEEEE; }
+
+    .pricing-cta.dark {
+      background: #000;
+      color: #fff;
+    }
+
+    .pricing-cta.dark:hover { background: #1F1F1F; }
+
+    /* ── CTA strip ────────────────────────────────────────── */
+    #cta {
+      padding: 80px 40px;
+      background: #000;
+      color: #fff;
+    }
+
+    .cta-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .cta-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #AFAFAF;
+      margin-bottom: 12px;
+    }
+
+    .cta-h2 {
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin: 0 0 16px;
+    }
+
+    .cta-sub {
+      font-size: 16px;
+      color: #CBCBCB;
+      line-height: 1.55;
+      max-width: 520px;
+      margin: 0;
+    }
+
+    .cta-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    footer {
+      padding: 64px 40px 40px;
+      background: #000;
+      color: #fff;
+      border-top: 1px solid #2E2E2E;
+    }
+
+    .footer-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .footer-logo {
+      font-size: 40px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      margin-bottom: 32px;
+    }
+
+    .footer-cols {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .footer-col-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: #CBCBCB;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover { color: #fff; }
+
+    .footer-bottom {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid #2E2E2E;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #757575;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-legal {
+      display: flex;
+      gap: 18px;
+    }
+
+    .footer-legal a {
+      font-size: 12px;
+      color: #757575;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-legal a:hover { color: #CBCBCB; }
+
+    /* ── Fade in ──────────────────────────────────────────── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+    .d5 { transition-delay: 0.40s; }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .hero-layout { grid-template-columns: 1fr; gap: 40px; }
+      .hero-map-panel { height: 360px; max-width: 560px; }
+      .how-inner { grid-template-columns: 1fr; }
+      .tiles-grid { grid-template-columns: repeat(2, 1fr); }
+      .editorial-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+      .cta-inner { grid-template-columns: 1fr; }
+      .cta-btns { flex-direction: row; }
+      .footer-cols { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      #hero, #suggestions, #how, #proof, #pricing, #cta, footer {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .nav-inner { padding: 0 20px; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        position: fixed;
+        top: 66px; left: 0; right: 0; bottom: 0;
+        background: #fff;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        z-index: 99;
+        border-top: 1px solid #EEEEEE;
+      }
+      .nav-links a { font-size: 20px; }
+      .nav-menu-btn { display: flex; flex-direction: column; margin-left: auto; }
+      .tiles-grid { grid-template-columns: 1fr; }
+      .editorial-grid { grid-template-columns: 1fr; }
+      .footer-cols { grid-template-columns: 1fr; }
+      .how-stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ────────────────────────────────────────────────── -->
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-logo" href="#">Brick AI</a>
+
+      <ul class="nav-links">
+        <li><a href="#suggestions">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#proof">Reviews</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <a href="#" class="nav-text-btn">Log in</a>
+        <a href="#cta" class="btn-pill">Get started</a>
+      </div>
+
+      <button class="nav-menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Hero ───────────────────────────────────────────────── -->
+  <section id="hero">
+    <div class="hero-layout">
+
+      <!-- Left: copy + widget -->
+      <div>
+        <h1 class="hero-h1 fade-in">Find the right home.</h1>
+
+        <!-- Mode tabs -->
+        <div class="hero-tabs fade-in d1">
+          <button class="hero-tab active" id="tab-buy" onclick="switchTab('buy')">Buy a home</button>
+          <button class="hero-tab" id="tab-invest" onclick="switchTab('invest')">Invest</button>
+        </div>
+
+        <!-- Chat widget (Buy a home) -->
+        <div class="hero-widget fade-in d2" id="widget-buy">
+          <div class="hero-chat">
+            <div class="chat-header">
+              <div class="chat-avatar">
+                <svg viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 3a3 3 0 110 6 3 3 0 010-6zm0 10.5a6.5 6.5 0 01-5-2.34C5.07 12.2 7.38 11.5 10 11.5s4.93.7 5 1.66A6.5 6.5 0 0110 15.5z"/></svg>
+              </div>
+              <span class="chat-title">Brick AI</span>
+              <span class="chat-status"><span class="chat-status-dot"></span> Online</span>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+              <div class="chat-msg ai">
+                <div class="chat-bubble">👋 Hi! I'm Brick. Tell me about the home you're looking for — suburb, budget, must-haves. I'll find matches and run the numbers.</div>
+              </div>
+              <div class="chat-msg user" id="chat-msg-user" style="display:none;">
+                <div class="chat-bubble" id="chat-bubble-user"></div>
+              </div>
+              <div class="chat-msg ai" id="chat-msg-ai2" style="display:none;">
+                <div class="chat-typing">
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                </div>
+              </div>
+              <div class="chat-msg ai" id="chat-msg-ai3" style="display:none;">
+                <div class="chat-bubble" id="chat-bubble-ai3"></div>
+              </div>
+            </div>
+            <div class="chat-input-bar">
+              <input type="text" id="chat-input" placeholder="Ask about suburbs, budgets, grants…" />
+              <button class="chat-send-btn" onclick="sendChat()" aria-label="Send">
+                <i data-lucide="arrow-up" style="width:16px;height:16px;color:#fff;"></i>
+              </button>
+            </div>
+          </div>
+          <div class="hero-cta-row">
+            <button class="btn-pill btn-pill-lg" onclick="location.href='#cta'">Get started free</button>
+            <button class="btn-ghost-underline" onclick="location.href='#how'">See how it works</button>
+          </div>
+        </div>
+
+        <!-- Invest widget -->
+        <div class="hero-drive-content" id="widget-invest">
+          <div class="hero-chat">
+            <div class="chat-header">
+              <div class="chat-avatar">
+                <svg viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 3a3 3 0 110 6 3 3 0 010-6zm0 10.5a6.5 6.5 0 01-5-2.34C5.07 12.2 7.38 11.5 10 11.5s4.93.7 5 1.66A6.5 6.5 0 0110 15.5z"/></svg>
+              </div>
+              <span class="chat-title">Brick AI</span>
+              <span class="chat-status"><span class="chat-status-dot"></span> Online</span>
+            </div>
+            <div class="chat-messages">
+              <div class="chat-msg ai">
+                <div class="chat-bubble">📈 Tell me your yield targets, vacancy tolerance, and preferred tenant profile. I'll surface suburbs with the right momentum for your strategy.</div>
+              </div>
+            </div>
+            <div class="chat-input-bar">
+              <input type="text" placeholder="e.g. 5% yield, inner-west Sydney, young professionals…" />
+              <button class="chat-send-btn" aria-label="Send">
+                <i data-lucide="arrow-up" style="width:16px;height:16px;color:#fff;"></i>
+              </button>
+            </div>
+          </div>
+          <div class="hero-cta-row" style="margin-top:14px;">
+            <button class="btn-pill btn-pill-lg" onclick="location.href='#cta'">Start investing</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: suburb map panel -->
+      <div class="hero-map-panel fade-in d2">
+        <!-- SVG suburb map — property theme -->
+        <svg viewBox="0 0 600 480" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <!-- Base tile -->
+          <rect width="600" height="480" fill="#E4E8EA"/>
+          <!-- Streets -->
+          <g stroke="#fff" stroke-linecap="round" fill="none">
+            <path d="M-10 180 L 650 160" stroke-width="20"/>
+            <path d="M-10 340 L 650 360" stroke-width="14"/>
+            <path d="M-10 420 L 650 440" stroke-width="10"/>
+            <path d="M150 -10 L 140 500" stroke-width="18"/>
+            <path d="M380 -10 L 370 500" stroke-width="12"/>
+            <path d="M520 -10 L 510 500" stroke-width="8"/>
+          </g>
+          <!-- Suburb blocks -->
+          <g fill="#D0D5D8">
+            <rect x="40"  y="210" width="90"  height="60" rx="3"/>
+            <rect x="60"  y="280" width="70"  height="50" rx="3"/>
+            <rect x="170" y="210" width="80"  height="55" rx="3"/>
+            <rect x="175" y="275" width="65"  height="55" rx="3"/>
+            <rect x="400" y="210" width="100" height="65" rx="3"/>
+            <rect x="410" y="285" width="80"  height="50" rx="3"/>
+            <rect x="535" y="215" width="55"  height="60" rx="3"/>
+          </g>
+          <!-- Green zone (suburb highlight) -->
+          <rect x="158" y="195" width="210" height="145" rx="6" fill="#D9E5D8" opacity="0.8"/>
+          <!-- Property pins -->
+          <!-- Pin 1 — selected (large) -->
+          <g transform="translate(230,240)">
+            <circle r="18" fill="#000" stroke="#fff" stroke-width="3"/>
+            <text x="0" y="5" text-anchor="middle" font-family="Hanken Grotesk,sans-serif" font-size="10" font-weight="700" fill="#fff">$1.7M</text>
+          </g>
+          <!-- Pin 2 -->
+          <g transform="translate(295,295)">
+            <circle r="14" fill="#fff" stroke="#000" stroke-width="2"/>
+            <text x="0" y="4" text-anchor="middle" font-family="Hanken Grotesk,sans-serif" font-size="9" font-weight="700" fill="#000">$1.4M</text>
+          </g>
+          <!-- Pin 3 -->
+          <g transform="translate(182,268)">
+            <circle r="12" fill="#fff" stroke="#000" stroke-width="2"/>
+            <text x="0" y="4" text-anchor="middle" font-family="Hanken Grotesk,sans-serif" font-size="8" font-weight="700" fill="#000">$1.1M</text>
+          </g>
+          <!-- Pin 4 -->
+          <g transform="translate(460,235)">
+            <circle r="12" fill="#fff" stroke="#CBCBCB" stroke-width="1.5"/>
+            <text x="0" y="4" text-anchor="middle" font-family="Hanken Grotesk,sans-serif" font-size="8" font-weight="600" fill="#545454">$2.1M</text>
+          </g>
+          <!-- Suburb label -->
+          <text x="260" y="172" text-anchor="middle" font-family="Hanken Grotesk,sans-serif" font-size="12" font-weight="700" fill="#545454" letter-spacing="0.06em">ST IVES</text>
+        </svg>
+
+        <!-- Floating property card -->
+        <div class="map-float-card">
+          <div class="map-card-icon">
+            <i data-lucide="house" style="width:20px;height:20px;color:#fff;"></i>
+          </div>
+          <div>
+            <div class="map-card-title">4 bed · 2 bath · St Ives</div>
+            <div class="map-card-sub">Good buy · Growth +8.2% · 420m²</div>
+          </div>
+          <div class="map-card-price">$1.72M</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Suggestions (features) ─────────────────────────────── -->
+  <section id="suggestions">
+    <div class="suggestions-inner">
+
+      <h2 class="suggestions-h2 fade-in">What Brick AI does</h2>
+
+      <div class="tiles-grid">
+        <div class="tile fade-in">
+          <div class="tile-body">
+            <div class="tile-title">AI property analysis</div>
+            <p class="tile-desc">Instant deep-dive into any listing — comparable sales, flood zones, school ratings, and suburb growth trends in one view.</p>
+            <a href="#cta" class="tile-cta">Get started</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="search" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d1">
+          <div class="tile-body">
+            <div class="tile-title">Budget intelligence</div>
+            <p class="tile-desc">Know exactly what you can afford. Brick models stamp duty, LMI, council rates, and hidden costs so there are no surprises.</p>
+            <a href="#cta" class="tile-cta">Get started</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="calculator" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d2">
+          <div class="tile-body">
+            <div class="tile-title">Negotiation coach</div>
+            <p class="tile-desc">Get data-backed offers. Our AI tells you the realistic price range and the right tactics before you make an offer.</p>
+            <a href="#cta" class="tile-cta">Get started</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="handshake" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d3">
+          <div class="tile-body">
+            <div class="tile-title">Grant finder</div>
+            <p class="tile-desc">Automatically surfaces every first-home buyer grant, scheme, and concession you're eligible for across federal and state programs.</p>
+            <a href="#cta" class="tile-cta">Get started</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="gift" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d4">
+          <div class="tile-body">
+            <div class="tile-title">Contract review</div>
+            <p class="tile-desc">Upload your contract of sale. Brick flags risky clauses, special conditions, and anything your conveyancer should look at.</p>
+            <a href="#cta" class="tile-cta">Get started</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="file-text" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d5">
+          <div class="tile-body">
+            <div class="tile-title">Settlement timeline</div>
+            <p class="tile-desc">A personalised step-by-step roadmap from deposit to keys — with deadlines, checklists, and reminders you can actually follow.</p>
+            <a href="#cta" class="tile-cta">Get started</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="calendar-check" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── How it works (dark strip) ──────────────────────────── -->
+  <section id="how">
+    <div class="how-inner">
+
+      <div>
+        <div class="how-eyebrow fade-in">How it works</div>
+        <h2 class="how-h2 fade-in d1">From confused<br>to confident.</h2>
+        <p class="how-sub fade-in d2">
+          Brick AI empowers first-home buyers by turning uncertainty into clarity — one conversation at a time.
+        </p>
+
+        <div class="how-steps fade-in d2">
+          <div class="how-step active" data-step="0">
+            <span class="how-step-num">01</span>
+            <div class="how-step-body">
+              <div class="how-step-bar"></div>
+              <h4 class="how-step-title">Tell Brick your situation</h4>
+              <p class="how-step-desc">Your budget, location wish-list, deal-breakers. No forms — just a conversation.</p>
+            </div>
+          </div>
+          <div class="how-step" data-step="1">
+            <span class="how-step-num">02</span>
+            <div class="how-step-body">
+              <div class="how-step-bar"></div>
+              <h4 class="how-step-title">Get your personalised report</h4>
+              <p class="how-step-desc">Brick analyses thousands of data points and surfaces the clearest picture of the market for you.</p>
+            </div>
+          </div>
+          <div class="how-step" data-step="2">
+            <span class="how-step-num">03</span>
+            <div class="how-step-body">
+              <div class="how-step-bar"></div>
+              <h4 class="how-step-title">Ask anything, anytime</h4>
+              <p class="how-step-desc">"Is this suburb overpriced?" "What's the rental yield?" — Brick answers instantly, in plain English.</p>
+            </div>
+          </div>
+          <div class="how-step" data-step="3">
+            <span class="how-step-num">04</span>
+            <div class="how-step-body">
+              <div class="how-step-bar"></div>
+              <h4 class="how-step-title">Buy with confidence</h4>
+              <p class="how-step-desc">Walk into auction day knowing your number, your strategy, and every clause in your contract.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: 2×2 stats -->
+      <div class="how-stats-grid fade-in d3">
+        <div class="how-stat-card">
+          <div class="how-stat-num">50k+</div>
+          <div class="how-stat-label">Homes analysed to date</div>
+        </div>
+        <div class="how-stat-card">
+          <div class="how-stat-num">4.9★</div>
+          <div class="how-stat-label">Average user rating</div>
+        </div>
+        <div class="how-stat-card">
+          <div class="how-stat-num">$18k</div>
+          <div class="how-stat-label">Avg. savings per buyer</div>
+        </div>
+        <div class="how-stat-card">
+          <div class="how-stat-num">3 min</div>
+          <div class="how-stat-label">To your first report</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Testimonials (Editorial) ───────────────────────────── -->
+  <section id="proof">
+    <div class="proof-inner">
+      <h2 class="proof-h2 fade-in">Real people. Real clarity.</h2>
+
+      <div class="editorial-grid">
+
+        <!-- Card 1 -->
+        <div class="editorial-card fade-in">
+          <div class="editorial-img" style="background:#1F1F1F;">
+            <div style="position:absolute;inset:20% 25% 30%;background:#fff;border-radius:50%;opacity:0.08;"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 120 80" width="120" height="80" fill="none">
+                <rect x="10" y="20" width="40" height="30" rx="3" fill="#2E2E2E"/>
+                <rect x="60" y="15" width="50" height="35" rx="3" fill="#2E2E2E"/>
+                <rect x="20" y="55" width="80" height="8" rx="2" fill="#2E2E2E" opacity="0.6"/>
+              </svg>
+            </div>
+            <div class="editorial-tag" style="background:rgba(255,255,255,0.15);color:#fff;">Melbourne</div>
+          </div>
+          <h3 class="editorial-quote">"We bought in 6 weeks."</h3>
+          <p class="editorial-body">I was completely lost before Brick. After one session I understood my borrowing power, what grants I qualified for, and exactly what to offer.</p>
+          <div class="editorial-author">
+            <div class="author-avatar">SL</div>
+            <div>
+              <div>Sarah L.</div>
+              <div class="author-role">First-home buyer · Melbourne</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="editorial-card fade-in d1">
+          <div class="editorial-img" style="background:#E4E8EA;">
+            <div style="position:absolute;inset:25% 20% 25%;background:#000;border-radius:12px;opacity:0.85;display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 80 60" width="80" height="60" fill="none">
+                <rect x="8" y="8" width="64" height="44" rx="4" fill="#1F1F1F"/>
+                <rect x="14" y="14" width="48" height="4" rx="2" fill="#545454"/>
+                <rect x="14" y="22" width="36" height="4" rx="2" fill="#545454"/>
+                <rect x="14" y="30" width="42" height="4" rx="2" fill="#545454"/>
+              </svg>
+            </div>
+            <div class="editorial-tag" style="background:rgba(255,255,255,0.9);color:#000;">Contract</div>
+          </div>
+          <h3 class="editorial-quote">"Worth every cent."</h3>
+          <p class="editorial-body">Brick found two clauses in our contract that our conveyancer missed. Saved us a potentially huge problem.</p>
+          <div class="editorial-author">
+            <div class="author-avatar">JM</div>
+            <div>
+              <div>James M.</div>
+              <div class="author-role">First-home buyer · Sydney</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="editorial-card fade-in d2">
+          <div class="editorial-img" style="background:#D9E5D8;">
+            <div style="position:absolute;inset:20% 30% 25%;background:#1F8A5B;border-radius:50%;opacity:0.85;"></div>
+            <div class="editorial-tag" style="background:rgba(255,255,255,0.9);color:#000;">Brisbane</div>
+          </div>
+          <h3 class="editorial-quote">"Bought $22k under asking."</h3>
+          <p class="editorial-body">The negotiation coach is unreal. I went into auction knowing my absolute ceiling and the vendor's price history.</p>
+          <div class="editorial-author">
+            <div class="author-avatar">PT</div>
+            <div>
+              <div>Priya T.</div>
+              <div class="author-role">First-home buyer · Brisbane</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Pricing ─────────────────────────────────────────────── -->
+  <section id="pricing">
+    <div class="pricing-inner">
+      <h2 class="pricing-h2 fade-in">Clear pricing. No hidden costs.</h2>
+
+      <div class="pricing-grid">
+        <div class="pricing-card fade-in">
+          <div class="pricing-tier">Starter</div>
+          <div>
+            <span class="pricing-amount">Free</span>
+            <p class="pricing-desc" style="margin-top:8px;">Perfect for exploring the market before you commit.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>5 property analyses / month</li>
+            <li>Suburb snapshot reports</li>
+            <li>Grant eligibility checker</li>
+            <li class="dim">Contract review</li>
+            <li class="dim">Negotiation coach</li>
+            <li class="dim">Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta outline">Get started free</a>
+        </div>
+
+        <div class="pricing-card featured fade-in d1">
+          <div class="pricing-badge">Most popular</div>
+          <div class="pricing-tier">Buyer</div>
+          <div>
+            <span class="pricing-amount">$29</span><span class="pricing-period">/ month</span>
+            <p class="pricing-desc" style="margin-top:8px;">Everything you need from first search to settlement.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>Unlimited property analyses</li>
+            <li>Full suburb deep-dives</li>
+            <li>Grant eligibility checker</li>
+            <li>Contract review (up to 5)</li>
+            <li>Negotiation coach</li>
+            <li class="dim">Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta white">Start Buyer plan</a>
+        </div>
+
+        <div class="pricing-card fade-in d2">
+          <div class="pricing-tier">Pro</div>
+          <div>
+            <span class="pricing-amount">$79</span><span class="pricing-period">/ month</span>
+            <p class="pricing-desc" style="margin-top:8px;">For serious buyers and investors who need the full picture.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>Everything in Buyer</li>
+            <li>Unlimited contract reviews</li>
+            <li>Investment yield modelling</li>
+            <li>Portfolio tracking</li>
+            <li>Settlement timeline manager</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta dark">Start Pro plan</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA strip ───────────────────────────────────────────── -->
+  <section id="cta">
+    <div class="cta-inner fade-in">
+      <div>
+        <div class="cta-eyebrow">Ready to start?</div>
+        <h2 class="cta-h2">Find your right home.</h2>
+        <p class="cta-sub">Join thousands of Australians who bought smarter with Brick AI. Free to start — no credit card needed.</p>
+      </div>
+      <div class="cta-btns">
+        <a href="#" class="btn-pill btn-pill-lg btn-pill-white">
+          Get started free
+          <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
+        </a>
+        <a href="#" class="btn-pill btn-pill-lg btn-pill-outline-white">Log in</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ──────────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">Brick AI</div>
+
+      <div class="footer-cols">
+        <div>
+          <div class="footer-col-title">Product</div>
+          <ul class="footer-links">
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">Changelog</a></li>
+            <li><a href="#">Roadmap</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Company</div>
+          <ul class="footer-links">
+            <li><a href="#">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Press</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Support</div>
+          <ul class="footer-links">
+            <li><a href="#">Help centre</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Status</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Legal</div>
+          <ul class="footer-links">
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Terms of service</a></li>
+            <li><a href="#">Cookie policy</a></li>
+            <li><a href="#">Accessibility</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2025 Brick AI Labs. All rights reserved.</span>
+        <div class="footer-legal">
+          <a href="#">Privacy</a>
+          <a href="#">Accessibility</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // Scroll reveal
+    const io = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.08 }
+    );
+    document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+
+    // Mobile nav
+    document.querySelector('.nav-menu-btn').addEventListener('click', () => {
+      document.querySelector('.nav-links').classList.toggle('open');
+    });
+
+    // Tab switch
+    function switchTab(mode) {
+      document.querySelectorAll('.hero-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + mode).classList.add('active');
+      const buyWidget = document.getElementById('widget-buy');
+      const investWidget = document.getElementById('widget-invest');
+      if (mode === 'buy') {
+        buyWidget.classList.remove('hide');
+        investWidget.classList.remove('show');
+      } else {
+        buyWidget.classList.add('hide');
+        investWidget.classList.add('show');
+      }
+    }
+
+    // Chat demo interaction
+    const demoReplies = {
+      default: "Great choice! Fitzroy North has a median house price of $1.08M with 76% clearance rate. On a $1.1M budget you're competitive. Want me to pull comparable sales from the last 90 days?",
+    };
+    const suggestions = [
+      "3-bed house in Fitzroy North, budget $1.1M",
+      "What grants am I eligible for as a first-home buyer?",
+      "Is Reservoir good value right now?",
+    ];
+    let suggIdx = 0;
+
+    function sendChat() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim() || suggestions[suggIdx++ % suggestions.length];
+      input.value = '';
+
+      const userMsg = document.getElementById('chat-msg-user');
+      const userBubble = document.getElementById('chat-bubble-user');
+      userBubble.textContent = text;
+      userMsg.style.display = 'flex';
+
+      const typing = document.getElementById('chat-msg-ai2');
+      typing.style.display = 'flex';
+      scrollChat();
+
+      setTimeout(() => {
+        typing.style.display = 'none';
+        const aiMsg = document.getElementById('chat-msg-ai3');
+        const aiBubble = document.getElementById('chat-bubble-ai3');
+        aiBubble.textContent = demoReplies.default;
+        aiMsg.style.display = 'flex';
+        scrollChat();
+      }, 1600);
+    }
+
+    function scrollChat() {
+      const el = document.getElementById('chat-messages');
+      el.scrollTop = el.scrollHeight;
+    }
+
+    document.getElementById('chat-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendChat();
+    });
+
+    // Cycle placeholder suggestions
+    setInterval(() => {
+      const input = document.getElementById('chat-input');
+      if (!input.matches(':focus')) {
+        input.placeholder = suggestions[suggIdx++ % suggestions.length];
+      }
+    }, 3500);
+
+    
+    let cur = 0;
+    const steps = document.querySelectorAll('.how-step');
+    steps.forEach(s => s.addEventListener('click', () => {
+      steps.forEach(x => x.classList.remove('active'));
+      s.classList.add('active');
+      cur = +s.dataset.step;
+    }));
+    setInterval(() => {
+      steps.forEach(x => x.classList.remove('active'));
+      cur = (cur + 1) % steps.length;
+      steps[cur].classList.add('active');
+    }, 3200);
+  </script>
+</body>
+</html>
