@@ -415,9 +415,15 @@
 
     /* Right panel — property map */
     /* ── Hero map panel (Leaflet) ────────────────────────────── */
+    .hero-map-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
     .hero-map-panel {
       position: relative;
-      height: 480px;
+      height: 440px;
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 4px 24px rgba(0,0,0,0.10);
@@ -426,7 +432,6 @@
     #map-v12 {
       width: 100%;
       height: 100%;
-      border-radius: 16px;
     }
 
     .leaflet-control-zoom a {
@@ -514,7 +519,7 @@
     .map-card-close { position: absolute; top: 12px; right: 14px; background: #F6F6F6; border: 0; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #6B6B6B; }
     .map-card-close:hover { background: #E2E2E2; }
 
-    .map-toolbar { position: absolute; top: 14px; left: 14px; z-index: 900; display: flex; gap: 6px; }
+    .map-toolbar { display: flex; gap: 6px; }
     .map-filter-pill { background: #fff; border: 1px solid #E2E2E2; border-radius: 999px; padding: 6px 12px; font-family: "Hanken Grotesk", sans-serif; font-size: 12px; font-weight: 600; color: #000; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: background 0.15s; white-space: nowrap; }
     .map-filter-pill.active { background: #000; color: #fff; border-color: #000; }
     .map-filter-pill:hover:not(.active) { background: #F6F6F6; }
@@ -1472,7 +1477,7 @@
       </div>
 
       <!-- Right: Leaflet interactive property map -->
-      <div class="hero-map-panel fade-in d2">
+      <div class="hero-map-wrapper fade-in d2">
 
         <div class="map-toolbar">
           <button class="map-filter-pill active" onclick="filterPins('all', this)">All</button>
@@ -1480,32 +1485,36 @@
           <button class="map-filter-pill" onclick="filterPins('invest', this)">Investment</button>
         </div>
 
-        <div id="map-v12"></div>
+        <div class="hero-map-panel">
 
-        <div class="map-property-card" id="map-prop-card">
-          <button class="map-card-close" onclick="closePropertyCard()" aria-label="Close">✕</button>
-          <div class="map-card-row1">
-            <div class="map-card-img"><i data-lucide="house" style="width:24px;height:24px;color:#AFAFAF;"></i></div>
-            <div class="map-card-main">
-              <div class="map-card-address" id="prop-address">14 Fisher Rd, Dee Why</div>
-              <div class="map-card-meta" id="prop-meta">4 bed · 2 bath · 512m²</div>
-              <div class="map-card-verdict" id="prop-verdict">✓ Good buy</div>
+          <div id="map-v12"></div>
+
+          <div class="map-property-card" id="map-prop-card">
+            <button class="map-card-close" onclick="closePropertyCard()" aria-label="Close">✕</button>
+            <div class="map-card-row1">
+              <div class="map-card-img"><i data-lucide="house" style="width:24px;height:24px;color:#AFAFAF;"></i></div>
+              <div class="map-card-main">
+                <div class="map-card-address" id="prop-address">14 Fisher Rd, Dee Why</div>
+                <div class="map-card-meta" id="prop-meta">4 bed · 2 bath · 512m²</div>
+                <div class="map-card-verdict" id="prop-verdict">✓ Good buy</div>
+              </div>
+              <div class="map-card-price-block">
+                <div class="price" id="prop-price">$2.15M</div>
+                <div class="price-sub" id="prop-price-sub">↑ +7.4% YoY</div>
+              </div>
             </div>
-            <div class="map-card-price-block">
-              <div class="price" id="prop-price">$2.15M</div>
-              <div class="price-sub" id="prop-price-sub">↑ +7.4% YoY</div>
+            <div class="map-card-divider"></div>
+            <div class="map-card-stats">
+              <div><div class="map-stat-label">Median suburb</div><div class="map-stat-val" id="prop-median">$2.08M</div></div>
+              <div><div class="map-stat-label">Clearance rate</div><div class="map-stat-val" id="prop-clearance">74%</div></div>
+              <div><div class="map-stat-label">Days on market</div><div class="map-stat-val" id="prop-dom">22</div></div>
+            </div>
+            <div class="map-card-actions">
+              <button class="map-card-btn-primary" onclick="location.href='#cta'">Join waitlist</button>
+              <button class="map-card-btn-ghost">Save</button>
             </div>
           </div>
-          <div class="map-card-divider"></div>
-          <div class="map-card-stats">
-            <div><div class="map-stat-label">Median suburb</div><div class="map-stat-val" id="prop-median">$2.08M</div></div>
-            <div><div class="map-stat-label">Clearance rate</div><div class="map-stat-val" id="prop-clearance">74%</div></div>
-            <div><div class="map-stat-label">Days on market</div><div class="map-stat-val" id="prop-dom">22</div></div>
-          </div>
-          <div class="map-card-actions">
-            <button class="map-card-btn-primary" onclick="location.href='#cta'">Join waitlist</button>
-            <button class="map-card-btn-ghost">Save</button>
-          </div>
+
         </div>
 
       </div>
