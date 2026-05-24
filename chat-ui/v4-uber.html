@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brick AI chat · Uber design language</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #000000;
+      --white: #FFFFFF;
+      --grey-50: #F6F6F6;
+      --grey-100: #EEEEEE;
+      --grey-200: #E2E2E2;
+      --grey-500: #757575;
+      --grey-700: #2E2E2E;
+      --grey-800: #1F1F1F;
+      --grey-900: #141414;
+      --font-body: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 160ms;
+      --header-height: 56px;
+      --input-height: 72px;
+      --sidebar-width: 296px;
+      --panel-width: 368px;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      min-height: 100vh;
+      background: var(--black);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      background: var(--grey-900);
+      border-right: 1px solid var(--grey-700);
+      min-width: 0;
+    }
+
+    .sidebar-top {
+      padding: 24px 20px 16px;
+    }
+
+    .sidebar-logo {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 18px;
+    }
+
+    .new-chat {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 24px;
+      background: var(--white);
+      color: var(--black);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background-color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
+    }
+
+    .new-chat:hover {
+      background: var(--grey-200);
+    }
+
+    .new-chat:active {
+      transform: scale(0.97);
+    }
+
+    .new-chat:focus-visible,
+    .conversation-item:focus-visible,
+    .icon-button:focus-visible,
+    .send-button:focus-visible,
+    .attach-button:focus-visible,
+    .profile-settings:focus-visible,
+    .report-link:focus-visible,
+    .suggestion-chip:focus-visible,
+    .composer-textarea:focus-visible {
+      outline: 2px solid var(--white);
+      outline-offset: 2px;
+    }
+
+    .conversation-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0 20px;
+    }
+
+    .conversation-item {
+      width: 100%;
+      text-align: left;
+      padding: 14px 18px 14px 20px;
+      border-left: 2px solid transparent;
+      background: transparent;
+      transition: background-color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .conversation-item:hover {
+      background: #1A1A1A;
+    }
+
+    .conversation-item.active {
+      background: var(--grey-800);
+      border-left-color: var(--white);
+    }
+
+    .conversation-title-row,
+    .conversation-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .conversation-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--white);
+      letter-spacing: -0.01em;
+    }
+
+    .conversation-time,
+    .conversation-preview,
+    .sidebar-label,
+    .mono-copy,
+    .meta-note,
+    .message-time,
+    .date-separator span,
+    .row-label,
+    .analysis-label,
+    .analysis-scale,
+    .header-caption,
+    .profile-meta,
+    .typing-label,
+    .composer-note,
+    .analysis-note,
+    .card-badge,
+    .stage-label {
+      font-family: var(--font-mono);
+    }
+
+    .conversation-time {
+      font-size: 10px;
+      color: var(--grey-500);
+      white-space: nowrap;
+    }
+
+    .conversation-preview {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--grey-500);
+      line-height: 1.45;
+    }
+
+    .sidebar-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--grey-700);
+    }
+
+    .profile-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .profile-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--black);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-settings,
+    .icon-button,
+    .attach-button,
+    .send-button,
+    .suggestion-chip {
+      min-width: 48px;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      transition: color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .profile-settings,
+    .icon-button,
+    .attach-button {
+      color: var(--grey-500);
+    }
+
+    .profile-settings:hover,
+    .icon-button:hover,
+    .attach-button:hover {
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .workspace {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--black);
+    }
+
+    .chat-header {
+      height: var(--header-height);
+      border-bottom: 1px solid var(--grey-700);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      gap: 16px;
+      background: var(--black);
+    }
+
+    .header-main {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .header-name {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--white);
+    }
+
+    .header-caption {
+      font-size: 11px;
+      color: var(--grey-500);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--white);
+      flex: 0 0 auto;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--panel-width);
+      min-height: calc(100vh - var(--header-height));
+      min-width: 0;
+    }
+
+    .chat-column {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--black);
+    }
+
+    .message-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 28px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      scroll-behavior: smooth;
+    }
+
+    .date-separator {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--grey-500);
+    }
+
+    .date-separator::before,
+    .date-separator::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--grey-700);
+    }
+
+    .date-separator span {
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    .message-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      max-width: 760px;
+    }
+
+    .message-row.user {
+      margin-left: auto;
+      justify-content: flex-end;
+      max-width: 620px;
+    }
+
+    .ai-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--black);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex: 0 0 auto;
+      margin-top: 2px;
+    }
+
+    .message-content {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .message-text {
+      font-size: 14px;
+      line-height: 1.55;
+      letter-spacing: -0.01em;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .message-time {
+      font-size: 10px;
+      color: var(--grey-500);
+    }
+
+    .user-bubble {
+      background: var(--grey-800);
+      border: 1px solid var(--grey-700);
+      border-radius: 16px 16px 4px 16px;
+      padding: 10px 16px;
+      color: var(--white);
+      font-size: 14px;
+      line-height: 1.55;
+      letter-spacing: -0.01em;
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+
+    .message-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .typing-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 10px 14px;
+      background: var(--grey-700);
+      border-radius: 14px 14px 14px 4px;
+      width: fit-content;
+    }
+
+    .typing-dots {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--white);
+      animation: typing-bounce 1s infinite ease-in-out;
+    }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .typing-label {
+      font-size: 10px;
+      color: var(--grey-500);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    @keyframes typing-bounce {
+      0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.55;
+      }
+      40% {
+        transform: translateY(-4px);
+        opacity: 1;
+      }
+    }
+
+    .context-panel {
+      border-left: 1px solid var(--grey-700);
+      background: var(--black);
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel-title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .panel-copy {
+      font-size: 13px;
+      color: var(--grey-500);
+      line-height: 1.5;
+    }
+
+    .property-card,
+    .analysis-card,
+    .brief-card {
+      background: var(--grey-900);
+      border: 1px solid var(--grey-700);
+      border-radius: 8px;
+      padding: 20px;
+      transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
+    }
+
+    .property-card:hover,
+    .analysis-card:hover,
+    .brief-card:hover {
+      border-color: var(--white);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .property-card-header,
+    .analysis-card-header,
+    .brief-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .property-address,
+    .analysis-heading,
+    .brief-heading {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--white);
+    }
+
+    .card-badge,
+    .stage-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 22px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--grey-700);
+      color: var(--grey-500);
+      font-size: 10px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      letter-spacing: 0.06em;
+    }
+
+    .data-rows,
+    .brief-rows {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .data-row,
+    .brief-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--grey-700);
+      padding: 8px 0;
+    }
+
+    .row-label,
+    .brief-label {
+      font-size: 11px;
+      color: var(--grey-500);
+      line-height: 1.45;
+    }
+
+    .row-value,
+    .brief-value {
+      text-align: right;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.45;
+    }
+
+    .verdict-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 2px solid var(--white);
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+
+    .verdict-copy {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    .report-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--grey-500);
+      text-decoration: none;
+      transition: color var(--duration-fast) var(--ease-standard);
+    }
+
+    .report-link:hover {
+      color: var(--white);
+    }
+
+    .analysis-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .analysis-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .analysis-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .analysis-label {
+      font-size: 11px;
+      color: var(--grey-500);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .analysis-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--grey-700);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--white);
+    }
+
+    .analysis-scale,
+    .analysis-note,
+    .composer-note,
+    .meta-note,
+    .profile-meta {
+      font-size: 11px;
+      color: var(--grey-500);
+      line-height: 1.5;
+    }
+
+    .brief-card {
+      gap: 0;
+    }
+
+    .suggestion-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .suggestion-chip {
+      min-width: 0;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: transparent;
+      border: 1px solid var(--grey-700);
+      color: var(--grey-500);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .suggestion-chip:hover {
+      border-color: var(--white);
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .input-bar {
+      height: var(--input-height);
+      border-top: 1px solid var(--grey-700);
+      background: var(--black);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .composer {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .composer-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .composer-textarea {
+      width: 100%;
+      min-height: 48px;
+      max-height: 132px;
+      resize: none;
+      border-radius: 8px;
+      border: 1px solid var(--grey-700);
+      background: var(--grey-900);
+      color: var(--white);
+      padding: 13px 14px;
+      line-height: 1.5;
+      transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .composer-textarea::placeholder {
+      color: var(--grey-500);
+    }
+
+    .composer-textarea:focus-visible {
+      border-color: var(--white);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .send-button {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      background: var(--white);
+      color: var(--black);
+      align-self: center;
+    }
+
+    .send-button:hover:not(:disabled) {
+      background: var(--grey-200);
+    }
+
+    .send-button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .send-button:disabled {
+      background: var(--grey-700);
+      color: var(--grey-500);
+      cursor: not-allowed;
+    }
+
+    .send-button svg,
+    .attach-button svg,
+    .profile-settings svg,
+    .icon-button svg,
+    .new-chat svg,
+    .profile-avatar svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+    }
+
+    .sidebar-label,
+    .mono-copy {
+      font-size: 11px;
+      color: var(--grey-500);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1200px) {
+      :root {
+        --panel-width: 320px;
+      }
+    }
+
+    @media (max-width: 1040px) {
+      body {
+        overflow: auto;
+      }
+
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .context-panel {
+        border-left: 0;
+        border-top: 1px solid var(--grey-700);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .chat-header,
+      .message-feed,
+      .context-panel,
+      .input-bar {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .message-row,
+      .message-row.user {
+        max-width: 100%;
+      }
+
+      .composer {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+      }
+
+      .panel-title-row,
+      .property-card-header,
+      .analysis-card-header,
+      .brief-card-header,
+      .data-row,
+      .brief-row,
+      .verdict-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .row-value,
+      .brief-value {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Conversations">
+      <div class="sidebar-top">
+        <div class="sidebar-logo">Brick AI</div>
+        <button class="new-chat" type="button" id="new-chat-button">
+          <i data-lucide="plus"></i>
+          <span>New chat</span>
+        </button>
+      </div>
+
+      <div class="conversation-list" id="conversation-list">
+        <button class="conversation-item active" type="button" data-title="Brick AI" data-caption="Property assistant · Fitzroy North brief">
+          <div class="conversation-title-row">
+            <span class="conversation-title">Fitzroy North brief</span>
+            <span class="conversation-time">2m</span>
+          </div>
+          <div class="conversation-preview">3-bed at $1.1M · compare price fit, risk and suburb momentum.</div>
+        </button>
+        <button class="conversation-item" type="button" data-title="Brick AI" data-caption="Property assistant · contract review">
+          <div class="conversation-title-row">
+            <span class="conversation-title">Contract review</span>
+            <span class="conversation-time">19m</span>
+          </div>
+          <div class="conversation-preview">Check special conditions, cooling-off timing and flood overlay notes.</div>
+        </button>
+        <button class="conversation-item" type="button" data-title="Brick AI" data-caption="Property assistant · grants overview">
+          <div class="conversation-title-row">
+            <span class="conversation-title">Grants overview</span>
+            <span class="conversation-time">1h</span>
+          </div>
+          <div class="conversation-preview">Victoria first-home buyer support · stamp duty and deposit pathways.</div>
+        </button>
+        <button class="conversation-item" type="button" data-title="Brick AI" data-caption="Property assistant · offer strategy">
+          <div class="conversation-title-row">
+            <span class="conversation-title">Offer strategy</span>
+            <span class="conversation-time">Yesterday</span>
+          </div>
+          <div class="conversation-preview">Auction walk-away range · what to offer and when to hold.</div>
+        </button>
+        <button class="conversation-item" type="button" data-title="Brick AI" data-caption="Property assistant · shortlist review">
+          <div class="conversation-title-row">
+            <span class="conversation-title">Shortlist review</span>
+            <span class="conversation-time">Tue</span>
+          </div>
+          <div class="conversation-preview">Carlton North vs Preston · commute trade-offs and renovation load.</div>
+        </button>
+        <button class="conversation-item" type="button" data-title="Brick AI" data-caption="Property assistant · monthly budget">
+          <div class="conversation-title-row">
+            <span class="conversation-title">Monthly budget</span>
+            <span class="conversation-time">Sun</span>
+          </div>
+          <div class="conversation-preview">Cash to close · rate sensitivity and reserve buffer for year one.</div>
+        </button>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="profile-block">
+          <div class="profile-avatar" aria-hidden="true">
+            <i data-lucide="user"></i>
+          </div>
+          <div>
+            <div class="profile-name">Sarah L.</div>
+            <div class="profile-meta">Buyer profile live</div>
+          </div>
+        </div>
+        <button class="profile-settings" type="button" aria-label="Open settings">
+          <i data-lucide="settings-2"></i>
+        </button>
+      </div>
+    </aside>
+
+    <section class="workspace" aria-label="Chat workspace">
+      <header class="chat-header">
+        <div class="header-main">
+          <span class="online-dot" aria-hidden="true"></span>
+          <div class="header-title">
+            <div class="header-name" id="header-name">Brick AI</div>
+            <div class="header-caption" id="header-caption">Property assistant · Fitzroy North brief</div>
+          </div>
+        </div>
+        <div class="header-actions" aria-label="Chat actions">
+          <button class="icon-button" type="button" aria-label="Search chat">
+            <i data-lucide="search"></i>
+          </button>
+          <button class="icon-button" type="button" aria-label="View details">
+            <i data-lucide="info"></i>
+          </button>
+          <button class="icon-button" type="button" aria-label="More options">
+            <i data-lucide="more-horizontal"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace-grid">
+        <div class="chat-column">
+          <div class="message-feed" id="message-feed">
+            <div class="date-separator"><span>Today</span></div>
+
+            <div class="message-row ai">
+              <div class="ai-avatar" aria-hidden="true">B</div>
+              <div class="message-content">
+                <div class="message-text">Tell me the suburb, budget, or listing link and I’ll turn it into a clearer buying brief.</div>
+                <div class="message-time">09:14</div>
+              </div>
+            </div>
+
+            <div class="message-row user">
+              <div class="message-content">
+                <div class="user-bubble">I’m looking at a 3-bed in Fitzroy North around $1.1M. Is it a good buy for a first-home buyer?</div>
+                <div class="message-time">09:15</div>
+              </div>
+            </div>
+
+            <div class="message-row ai">
+              <div class="ai-avatar" aria-hidden="true">B</div>
+              <div class="message-content">
+                <div class="message-text">Fitzroy North remains competitive. Recent comparable 3-bed sales sit around <strong>$1.08M</strong>, with auction clearance near <strong>76%</strong> and 12-mo growth at <strong>+4.2%</strong>. At $1.1M, I’d want to check contract conditions, overlay risks, and the strongest comparable sale within 400 metres before you commit.</div>
+                <div class="message-time">09:16</div>
+              </div>
+            </div>
+
+            <div class="message-row ai">
+              <div class="ai-avatar" aria-hidden="true">B</div>
+              <div class="message-content">
+                <div class="message-text">I’ve pulled the current listing summary into the side panel so you can compare price fit, suburb signal, and next checks in one place.</div>
+                <div class="message-time">09:17</div>
+              </div>
+            </div>
+
+            <div class="date-separator"><span>This afternoon</span></div>
+
+            <div class="message-row user">
+              <div class="message-content">
+                <div class="user-bubble">What makes it worth viewing before I ask my broker and conveyancer to spend more time on it?</div>
+                <div class="message-time">14:03</div>
+              </div>
+            </div>
+
+            <div class="message-row ai">
+              <div class="ai-avatar" aria-hidden="true">B</div>
+              <div class="message-content">
+                <div class="message-text">The layout, land size and price positioning are all defensible for the area. If the contract comes back clean and the closest comparable sale supports the ask, it stays in range for a first-home buyer who wants inner-north scarcity without stretching far past median.</div>
+                <div class="message-time">14:04</div>
+              </div>
+            </div>
+
+            <div class="message-row ai hidden" id="typing-row" aria-live="polite" aria-label="Brick AI is typing">
+              <div class="ai-avatar" aria-hidden="true">B</div>
+              <div class="message-content">
+                <div class="typing-pill">
+                  <div class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                  <div class="typing-label">Brick AI is typing</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-bar">
+            <div class="composer">
+              <button class="attach-button" type="button" aria-label="Attach file">
+                <i data-lucide="paperclip"></i>
+              </button>
+              <div class="composer-field">
+                <textarea class="composer-textarea" id="composer-textarea" placeholder="Ask about this property..." rows="1"></textarea>
+              </div>
+              <button class="send-button" id="send-button" type="button" aria-label="Send message" disabled>
+                <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="context-panel" aria-label="Listing analysis">
+          <section class="panel-section">
+            <div class="panel-title-row">
+              <div class="panel-title">Current analysis</div>
+              <div class="stage-label">Live brief</div>
+            </div>
+            <div class="panel-copy">A single view of the key numbers, suburb context and next checks before you spend more time on the listing.</div>
+          </section>
+
+          <section class="panel-section">
+            <div class="property-card">
+              <div class="property-card-header">
+                <div class="property-address">26 McKean Street, Fitzroy North</div>
+                <div class="card-badge">Listing</div>
+              </div>
+              <div class="data-rows">
+                <div class="data-row">
+                  <div class="row-label">Asking price ·</div>
+                  <div class="row-value">$1,095,000</div>
+                </div>
+                <div class="data-row">
+                  <div class="row-label">Suburb median ·</div>
+                  <div class="row-value">$1,082,000</div>
+                </div>
+                <div class="data-row">
+                  <div class="row-label">12-mo growth ·</div>
+                  <div class="row-value">+4.2%</div>
+                </div>
+                <div class="data-row">
+                  <div class="row-label">Configuration ·</div>
+                  <div class="row-value">3 bed · 2 bath · 312m²</div>
+                </div>
+              </div>
+              <div class="verdict-row">
+                <div class="verdict-copy">Within range · Recommend viewing</div>
+                <a class="report-link" href="#">View report →</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="analysis-card">
+              <div class="analysis-card-header">
+                <div>
+                  <div class="analysis-heading">Suburb analysis</div>
+                  <div class="analysis-note">White bars reflect relative confidence across the current brief.</div>
+                </div>
+                <div class="card-badge">Fitzroy North</div>
+              </div>
+              <div class="analysis-list">
+                <div class="analysis-item">
+                  <div class="analysis-top">
+                    <div class="analysis-label">Price fit</div>
+                    <div class="analysis-value">82%</div>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 82%"></div></div>
+                  <div class="analysis-scale">Comparable sales keep the ask close to market.</div>
+                </div>
+                <div class="analysis-item">
+                  <div class="analysis-top">
+                    <div class="analysis-label">Auction clearance</div>
+                    <div class="analysis-value">76%</div>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 76%"></div></div>
+                  <div class="analysis-scale">Demand remains firm for family-sized stock.</div>
+                </div>
+                <div class="analysis-item">
+                  <div class="analysis-top">
+                    <div class="analysis-label">Transport access</div>
+                    <div class="analysis-value">88%</div>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 88%"></div></div>
+                  <div class="analysis-scale">Strong tram and cycling access for inner-north commuting.</div>
+                </div>
+                <div class="analysis-item">
+                  <div class="analysis-top">
+                    <div class="analysis-label">Renovation risk</div>
+                    <div class="analysis-value">34%</div>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 34%"></div></div>
+                  <div class="analysis-scale">Low visible risk, but drainage and overlay checks still matter.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="brief-card">
+              <div class="brief-card-header">
+                <div>
+                  <div class="brief-heading">Next checks</div>
+                  <div class="analysis-note">Keep the process severe and measurable before you move.</div>
+                </div>
+                <div class="card-badge">Buyer flow</div>
+              </div>
+              <div class="brief-rows">
+                <div class="brief-row">
+                  <div class="brief-label">Broker</div>
+                  <div class="brief-value">Confirm repayment comfort at +1% rates</div>
+                </div>
+                <div class="brief-row">
+                  <div class="brief-label">Conveyancer</div>
+                  <div class="brief-value">Review special conditions and overlay language</div>
+                </div>
+                <div class="brief-row">
+                  <div class="brief-label">Agent</div>
+                  <div class="brief-value">Request the closest 3-bed comparable within 400m</div>
+                </div>
+              </div>
+              <div class="suggestion-row">
+                <button class="suggestion-chip" type="button" data-suggestion="Can you check the contract?">Check the contract</button>
+                <button class="suggestion-chip" type="button" data-suggestion="Is $1.1M a fair price?">Check the price</button>
+                <button class="suggestion-chip" type="button" data-suggestion="What should I offer at auction?">Plan the offer</button>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+
+      const textarea = document.getElementById('composer-textarea');
+      const sendButton = document.getElementById('send-button');
+      const messageFeed = document.getElementById('message-feed');
+      const typingRow = document.getElementById('typing-row');
+      const newChatButton = document.getElementById('new-chat-button');
+      const headerName = document.getElementById('header-name');
+      const headerCaption = document.getElementById('header-caption');
+      const conversationItems = Array.from(document.querySelectorAll('.conversation-item'));
+      const suggestionChips = Array.from(document.querySelectorAll('.suggestion-chip'));
+
+      const promptPhrases = [
+        'Can you check the contract?',
+        'What grants am I eligible for?',
+        'Is $1.1M a fair price?',
+        'What should I offer at auction?'
+      ];
+
+      const aiReplies = [
+        'I can do that. I’ll look for special conditions, cooling-off timing, deposit structure and any wording that shifts risk back to you.',
+        'At this price point, the next question is whether the closest comparable sale supports the ask without assuming perfect presentation or a hotter street.',
+        'For a first-home buyer, I’d keep your walk-away line strict and make the offer strategy conditional on clean contract and finance checks.',
+        'If you want, I can turn this into a clean broker and conveyancer checklist so every follow-up stays measurable.'
+      ];
+
+      let promptIndex = 0;
+      let promptTimer = null;
+      let replyIndex = 0;
+
+      function autoResize() {
+        textarea.style.height = '48px';
+        textarea.style.height = Math.min(textarea.scrollHeight, 132) + 'px';
+      }
+
+      function updateSendState() {
+        sendButton.disabled = textarea.value.trim().length === 0;
+      }
+
+      function scrollFeed() {
+        messageFeed.scrollTop = messageFeed.scrollHeight;
+      }
+
+      function setPromptPhrase() {
+        if (!textarea.value.trim()) {
+          textarea.placeholder = promptPhrases[promptIndex];
+        }
+        promptIndex = (promptIndex + 1) % promptPhrases.length;
+      }
+
+      function startPromptCycle() {
+        setPromptPhrase();
+        promptTimer = window.setInterval(setPromptPhrase, 3200);
+      }
+
+      function currentTime() {
+        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      }
+
+      function appendUserMessage(text) {
+        const row = document.createElement('div');
+        row.className = 'message-row user';
+        row.innerHTML = `
+          <div class="message-content">
+            <div class="user-bubble"></div>
+            <div class="message-time">${currentTime()}</div>
+          </div>
+        `;
+        row.querySelector('.user-bubble').textContent = text;
+        messageFeed.appendChild(row);
+      }
+
+      function appendAiMessage(text) {
+        const row = document.createElement('div');
+        row.className = 'message-row ai';
+        row.innerHTML = `
+          <div class="ai-avatar" aria-hidden="true">B</div>
+          <div class="message-content">
+            <div class="message-text"></div>
+            <div class="message-time">${currentTime()}</div>
+          </div>
+        `;
+        row.querySelector('.message-text').textContent = text;
+        messageFeed.appendChild(row);
+      }
+
+      function sendMessage(text) {
+        appendUserMessage(text);
+        textarea.value = '';
+        autoResize();
+        updateSendState();
+        typingRow.classList.remove('hidden');
+        scrollFeed();
+
+        window.setTimeout(() => {
+          typingRow.classList.add('hidden');
+          appendAiMessage(aiReplies[replyIndex % aiReplies.length]);
+          replyIndex += 1;
+          scrollFeed();
+        }, 1200);
+      }
+
+      textarea.addEventListener('input', () => {
+        autoResize();
+        updateSendState();
+      });
+
+      textarea.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          if (!sendButton.disabled) {
+            sendMessage(textarea.value.trim());
+          }
+        }
+      });
+
+      sendButton.addEventListener('click', () => {
+        if (!sendButton.disabled) {
+          sendMessage(textarea.value.trim());
+        }
+      });
+
+      newChatButton.addEventListener('click', () => {
+        textarea.value = '';
+        autoResize();
+        updateSendState();
+        textarea.focus();
+      });
+
+      suggestionChips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          textarea.value = chip.dataset.suggestion || '';
+          autoResize();
+          updateSendState();
+          textarea.focus();
+        });
+      });
+
+      conversationItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          conversationItems.forEach((conversation) => conversation.classList.remove('active'));
+          item.classList.add('active');
+          headerName.textContent = item.dataset.title || 'Brick AI';
+          headerCaption.textContent = item.dataset.caption || 'Property assistant';
+        });
+      });
+
+      autoResize();
+      updateSendState();
+      startPromptCycle();
+      scrollFeed();
+    });
+  </script>
+</body>
+</html>

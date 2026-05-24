@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brick AI chat · Uber-quality property assistant</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #000000;
+      --white: #FFFFFF;
+      --grey-50: #F6F6F6;
+      --grey-100: #EEEEEE;
+      --grey-200: #E2E2E2;
+      --grey-300: #CBCBCB;
+      --grey-400: #AFAFAF;
+      --grey-500: #757575;
+      --grey-700: #2E2E2E;
+      --grey-800: #1F1F1F;
+      --grey-900: #141414;
+      --font: "Hanken Grotesk", system-ui, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+      --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 160ms;
+      --sidebar-width: 280px;
+      --focus-ring-dark: 0 0 0 2px #FFFFFF;
+      --focus-ring-light: 0 0 0 2px #000000;
+      color-scheme: light;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--white);
+      color: var(--black);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      background: none;
+      padding: 0;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+      background: var(--white);
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      height: 100vh;
+      background: var(--grey-900);
+      border-right: 1px solid var(--grey-700);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 20px 24px 16px;
+    }
+
+    .sidebar-logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      margin: 0 0 16px;
+    }
+
+    .sidebar-new-btn {
+      width: 100%;
+      background: var(--white);
+      color: var(--black);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .sidebar-new-btn:hover {
+      background: var(--grey-200);
+    }
+
+    .sidebar-new-btn:active {
+      transform: scale(0.97);
+    }
+
+    .sidebar-new-btn:focus-visible,
+    .sidebar .list-row:focus-visible,
+    .sidebar-settings-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring-dark);
+    }
+
+    .conversation-list {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 12px;
+    }
+
+    .list-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--grey-100);
+      background: var(--white);
+      text-align: left;
+      transition: background var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard), padding var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .list-row:hover {
+      background: var(--grey-50);
+    }
+
+    .list-row:active {
+      transform: scale(0.995);
+    }
+
+    .list-row.active {
+      background: var(--grey-50);
+      border-left: 3px solid var(--black);
+      padding-left: 21px;
+    }
+
+    .list-row:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px var(--black);
+    }
+
+    .row-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--grey-50);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--grey-500);
+    }
+
+    .row-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .row-title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      color: var(--black);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .row-sub {
+      font-size: 13px;
+      color: var(--grey-500);
+      margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .row-trailing {
+      font-size: 13px;
+      color: var(--grey-500);
+      font-feature-settings: "tnum";
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .sidebar .list-row {
+      padding: 12px 16px;
+      gap: 12px;
+      border-bottom: 1px solid var(--grey-800);
+      background: transparent;
+      color: var(--white);
+    }
+
+    .sidebar .list-row:hover {
+      background: var(--grey-800);
+    }
+
+    .sidebar .list-row.active {
+      background: var(--grey-800);
+      border-left: 3px solid var(--white);
+      padding-left: 13px;
+    }
+
+    .sidebar .list-row:focus-visible {
+      box-shadow: inset 0 0 0 2px var(--white);
+    }
+
+    .sidebar .row-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--grey-700);
+      color: var(--grey-500);
+    }
+
+    .sidebar .row-title {
+      font-size: 14px;
+      color: var(--white);
+    }
+
+    .sidebar .row-sub {
+      font-size: 12px;
+      color: var(--grey-500);
+    }
+
+    .sidebar .row-trailing {
+      font-size: 11px;
+      color: var(--grey-500);
+      font-family: var(--mono);
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid var(--grey-700);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-user {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .sidebar-user-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--white);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sidebar-settings-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      color: var(--grey-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .sidebar-settings-btn:hover {
+      color: var(--white);
+      background: var(--grey-800);
+    }
+
+    .sidebar-settings-btn:active {
+      transform: scale(0.97);
+    }
+
+    .chat-area {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--white);
+    }
+
+    .chat-header {
+      height: 56px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--grey-100);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: var(--white);
+      flex-shrink: 0;
+    }
+
+    .chat-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .mobile-menu-btn,
+    .header-icon-btn,
+    .input-icon-btn,
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+      flex-shrink: 0;
+    }
+
+    .mobile-menu-btn,
+    .header-icon-btn,
+    .input-icon-btn {
+      background: var(--grey-50);
+      color: var(--grey-500);
+    }
+
+    .mobile-menu-btn:hover,
+    .header-icon-btn:hover,
+    .input-icon-btn:hover {
+      background: var(--grey-100);
+      color: var(--black);
+    }
+
+    .mobile-menu-btn:active,
+    .header-icon-btn:active,
+    .input-icon-btn:active,
+    .send-btn:active {
+      transform: scale(0.97);
+    }
+
+    .mobile-menu-btn:focus-visible,
+    .header-icon-btn:focus-visible,
+    .input-icon-btn:focus-visible,
+    .send-btn:focus-visible,
+    .verdict-link:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring-light);
+    }
+
+    .chat-agent {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .chat-agent-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      color: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .chat-agent-meta {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .chat-header-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--black);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chat-header-subtitle-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .chat-header-subtitle {
+      font-size: 13px;
+      color: var(--grey-500);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--black);
+      flex-shrink: 0;
+    }
+
+    .chat-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      background: var(--grey-50);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 0;
+    }
+
+    .date-sep {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--grey-500);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      width: 100%;
+    }
+
+    .date-sep::before,
+    .date-sep::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--grey-100);
+    }
+
+    .msg-ai {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      max-width: 75%;
+    }
+
+    .msg-ai-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--black);
+      color: var(--white);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .msg-ai-stack,
+    .msg-user-stack {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .msg-ai-body {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: 0 12px 12px 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--grey-800);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .msg-card-body {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    .msg-user {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .msg-user-body {
+      background: var(--black);
+      color: var(--white);
+      border-radius: 12px 12px 0 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 65%;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .msg-time {
+      font-size: 11px;
+      color: var(--grey-400);
+      margin-top: 4px;
+      font-family: var(--mono);
+    }
+
+    .msg-user .msg-time {
+      text-align: right;
+      align-self: flex-end;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      transition: box-shadow var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--grey-500);
+    }
+
+    .receipt-amount {
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      font-feature-settings: "tnum";
+      color: var(--black);
+    }
+
+    .receipt-meta {
+      font-size: 13px;
+      color: var(--grey-500);
+      margin-top: 4px;
+    }
+
+    .property-card {
+      max-width: 460px;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .property-img-hero {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      border-radius: 7px 7px 0 0;
+    }
+
+    .property-img-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .property-img-hero:hover img { transform: scale(1.03); }
+
+    .property-img-badge {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.65);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      backdrop-filter: blur(4px);
+    }
+
+    .property-img-badge i { width: 12px; height: 12px; }
+
+    .property-img-for-sale {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #000;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+
+    .property-thumbnails {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2px;
+      margin-bottom: 0;
+    }
+
+    .property-thumbnails img {
+      width: 100%;
+      height: 72px;
+      object-fit: cover;
+      display: block;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .property-thumbnails img:hover { opacity: 0.85; }
+
+    .property-card-content {
+      padding: 16px 20px 20px;
+    }
+
+    .property-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .property-address {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-top: 4px;
+      color: var(--black);
+    }
+
+    .property-meta {
+      font-size: 13px;
+      color: var(--grey-500);
+      margin-top: 2px;
+    }
+
+    .property-badge {
+      background: var(--grey-50);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--black);
+      white-space: nowrap;
+    }
+
+    .property-price-block {
+      margin-bottom: 4px;
+    }
+
+    .property-divider {
+      height: 1px;
+      background: var(--grey-100);
+      margin: 16px 0;
+    }
+
+    .receipt-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--grey-50);
+    }
+
+    .receipt-row:last-child {
+      border-bottom: none;
+    }
+
+    .receipt-row-value {
+      font-size: 14px;
+      font-weight: 600;
+      font-feature-settings: "tnum";
+      color: var(--black);
+      white-space: nowrap;
+    }
+
+    .receipt-row-value.positive {
+      color: var(--black);
+    }
+
+    .verdict-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .verdict-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--grey-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: var(--black);
+    }
+
+    .verdict-content {
+      min-width: 0;
+    }
+
+    .verdict-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--black);
+    }
+
+    .verdict-sub {
+      font-size: 12px;
+      color: var(--grey-500);
+      margin-top: 2px;
+    }
+
+    .verdict-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--black);
+      text-decoration: none;
+      white-space: nowrap;
+      margin-left: auto;
+      border-radius: 4px;
+      transition: text-decoration-color var(--duration-fast) var(--ease-standard), opacity var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .verdict-link:hover {
+      text-decoration: underline;
+    }
+
+    .suburb-card {
+      max-width: 380px;
+    }
+
+    .suburb-card .section-label {
+      display: block;
+      margin-bottom: 14px;
+    }
+
+    .suburb-bar-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .suburb-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .suburb-bar-label {
+      font-size: 13px;
+      color: var(--grey-500);
+      min-width: 160px;
+    }
+
+    .suburb-bar-track {
+      flex: 1;
+      height: 4px;
+      background: var(--grey-100);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .suburb-bar-fill {
+      height: 100%;
+      background: var(--black);
+      border-radius: 999px;
+    }
+
+    .suburb-bar-fill.metric-76 {
+      width: 76%;
+    }
+
+    .suburb-bar-fill.metric-42 {
+      width: 42%;
+    }
+
+    .suburb-bar-fill.metric-31 {
+      width: 31%;
+    }
+
+    .suburb-bar-value {
+      font-size: 13px;
+      font-weight: 600;
+      font-feature-settings: "tnum";
+      min-width: 44px;
+      text-align: right;
+      color: var(--black);
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 14px 16px;
+    }
+
+    .typing-indicator span {
+      width: 6px;
+      height: 6px;
+      background: var(--grey-400);
+      border-radius: 50%;
+      animation: typing-bounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing-bounce {
+      0%, 60%, 100% {
+        transform: translateY(0);
+      }
+      30% {
+        transform: translateY(-5px);
+      }
+    }
+
+    .input-bar {
+      padding: 12px 24px;
+      background: var(--white);
+      border-top: 1px solid var(--grey-100);
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .msg-input {
+      flex: 1;
+      resize: none;
+      min-height: 44px;
+      max-height: 160px;
+      font-family: inherit;
+      font-size: 15px;
+      line-height: 1.5;
+      padding: 12px 14px;
+      border: 1px solid var(--grey-200);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--black);
+      outline: none;
+      transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .msg-input:focus {
+      border-color: var(--black);
+      box-shadow: 0 0 0 1px var(--black);
+    }
+
+    .msg-input::placeholder {
+      color: var(--grey-400);
+    }
+
+    .send-btn {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .send-btn:hover {
+      background: #262626;
+    }
+
+    .send-btn:disabled {
+      background: var(--grey-200);
+      color: var(--grey-400);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .send-btn:disabled:hover {
+      background: var(--grey-200);
+      color: var(--grey-400);
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 199;
+    }
+
+    @media (max-width: 1080px) {
+      .msg-ai,
+      .msg-user-body {
+        max-width: 88%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        z-index: 200;
+        transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .sidebar.open {
+        left: 0;
+      }
+
+      .sidebar-overlay.visible {
+        display: block;
+      }
+
+      .chat-area {
+        width: 100%;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .chat-header {
+        padding: 0 16px;
+      }
+
+      .chat-header-title {
+        font-size: 16px;
+      }
+
+      .chat-header-subtitle {
+        max-width: 140px;
+      }
+
+      .chat-header-actions {
+        gap: 4px;
+      }
+
+      .feed {
+        padding: 16px;
+      }
+
+      .msg-ai {
+        max-width: 100%;
+      }
+
+      .msg-user-body {
+        max-width: 88%;
+      }
+
+      .input-bar {
+        padding: 12px 16px;
+      }
+
+      .suburb-bar-row {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .suburb-bar-label {
+        min-width: 100%;
+      }
+
+      .suburb-bar-value {
+        min-width: 48px;
+      }
+
+      .property-card-header,
+      .verdict-row {
+        flex-wrap: wrap;
+      }
+
+      .verdict-link {
+        margin-left: 44px;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .mobile-menu-btn {
+        display: none;
+      }
+
+      .sidebar-overlay {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-overlay"></div>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Conversation list">
+      <div class="sidebar-header">
+        <h1 class="sidebar-logo">Brick AI</h1>
+        <button type="button" class="sidebar-new-btn" aria-label="Start a new conversation">
+          <i data-lucide="plus"></i>
+          <span>New conversation</span>
+        </button>
+      </div>
+
+      <div class="conversation-list">
+        <button type="button" class="list-row active" aria-current="page">
+          <div class="row-icon"><i data-lucide="message-square"></i></div>
+          <div class="row-content">
+            <div class="row-title">Fitzroy North · $1.1M query</div>
+            <div class="row-sub">3-bed value check and suburb context</div>
+          </div>
+          <div class="row-trailing">today</div>
+        </button>
+        <button type="button" class="list-row">
+          <div class="row-icon"><i data-lucide="message-square"></i></div>
+          <div class="row-content">
+            <div class="row-title">First home grant eligibility</div>
+            <div class="row-sub">Victoria grant and stamp duty questions</div>
+          </div>
+          <div class="row-trailing">yesterday</div>
+        </button>
+        <button type="button" class="list-row">
+          <div class="row-icon"><i data-lucide="message-square"></i></div>
+          <div class="row-content">
+            <div class="row-title">Brunswick East suburb report</div>
+            <div class="row-sub">Snapshot, yields and buyer demand</div>
+          </div>
+          <div class="row-trailing">2 days ago</div>
+        </button>
+        <button type="button" class="list-row">
+          <div class="row-icon"><i data-lucide="message-square"></i></div>
+          <div class="row-content">
+            <div class="row-title">Contract review · 22 Smith St</div>
+            <div class="row-sub">Section 32 risks and negotiation notes</div>
+          </div>
+          <div class="row-trailing">3 days ago</div>
+        </button>
+        <button type="button" class="list-row">
+          <div class="row-icon"><i data-lucide="message-square"></i></div>
+          <div class="row-content">
+            <div class="row-title">Auction strategy · Collingwood</div>
+            <div class="row-sub">Bidding plan and reserve expectations</div>
+          </div>
+          <div class="row-trailing">last week</div>
+        </button>
+        <button type="button" class="list-row">
+          <div class="row-icon"><i data-lucide="message-square"></i></div>
+          <div class="row-content">
+            <div class="row-title">Borrowing power calculator</div>
+            <div class="row-sub">Income, repayments and deposit planning</div>
+          </div>
+          <div class="row-trailing">last week</div>
+        </button>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" aria-hidden="true">SL</div>
+          <div class="sidebar-user-name">Sarah L.</div>
+        </div>
+        <button type="button" class="sidebar-settings-btn" aria-label="Open settings">
+          <i data-lucide="settings"></i>
+        </button>
+      </div>
+    </aside>
+
+    <main class="chat-area">
+      <header class="chat-header">
+        <div class="chat-header-left">
+          <button type="button" class="mobile-menu-btn" aria-label="Open conversation list">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="chat-agent">
+            <div class="chat-agent-avatar" aria-hidden="true">B</div>
+            <div class="chat-agent-meta">
+              <div class="chat-header-title">Brick AI</div>
+              <div class="chat-header-subtitle-row">
+                <span class="chat-header-subtitle">Property assistant</span>
+                <span class="online-dot" aria-label="Online"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-header-actions">
+          <button type="button" class="header-icon-btn" aria-label="Search conversation">
+            <i data-lucide="search"></i>
+          </button>
+          <button type="button" class="header-icon-btn" aria-label="Conversation info">
+            <i data-lucide="info"></i>
+          </button>
+          <button type="button" class="header-icon-btn" aria-label="More actions">
+            <i data-lucide="more-horizontal"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="feed" aria-label="Chat messages">
+        <div class="date-sep">Today</div>
+
+        <div class="msg-user">
+          <div class="msg-user-stack">
+            <div class="msg-user-body">I'm looking at a 3-bed in Fitzroy North around $1.1M. Is it a good buy?</div>
+            <div class="msg-time">09:41</div>
+          </div>
+        </div>
+
+        <div class="msg-ai">
+          <div class="msg-ai-avatar">B</div>
+          <div class="msg-ai-stack">
+            <div class="msg-ai-body">Let me pull the latest data on Fitzroy North 3-bedroom properties.</div>
+            <div class="msg-time">09:42</div>
+          </div>
+        </div>
+
+        <div class="msg-ai">
+          <div class="msg-ai-avatar">B</div>
+          <div class="msg-ai-stack">
+            <div class="msg-ai-body msg-card-body">
+              <div class="card property-card">
+
+                <!-- Hero image -->
+                <div class="property-img-hero">
+                  <img
+                    src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80&fit=crop&h=400"
+                    alt="14 Rose St, Fitzroy North"
+                    loading="eager"
+                  />
+                  <div class="property-img-for-sale">For sale</div>
+                  <div class="property-img-badge">
+                    <i data-lucide="image"></i> 12 photos
+                  </div>
+                </div>
+
+                <!-- Thumbnail strip -->
+                <div class="property-thumbnails">
+                  <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=300&q=75&fit=crop&h=144" alt="Living room" loading="lazy" />
+                  <img src="https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=300&q=75&fit=crop&h=144" alt="Kitchen" loading="lazy" />
+                  <img src="https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=300&q=75&fit=crop&h=144" alt="Garden" loading="lazy" />
+                </div>
+
+                <!-- Card content -->
+                <div class="property-card-content">
+                <div class="property-card-header">
+                  <div>
+                    <div class="section-label">Property analysis</div>
+                    <div class="property-address">14 Rose St, Fitzroy North</div>
+                    <div class="property-meta">VIC 3068 · Listed 12 days ago</div>
+                  </div>
+                  <div class="property-badge">3 bed · 2 bath</div>
+                </div>
+
+                <div class="property-price-block">
+                  <div class="receipt-amount">$1,095,000</div>
+                  <div class="receipt-meta">Asking · Median for area $1,082,000</div>
+                </div>
+
+                <div class="property-divider"></div>
+
+                <div class="receipt-rows">
+                  <div class="receipt-row">
+                    <span class="section-label">12-mo growth</span>
+                    <span class="receipt-row-value positive">+4.2%</span>
+                  </div>
+                  <div class="receipt-row">
+                    <span class="section-label">Auction clearance</span>
+                    <span class="receipt-row-value">76%</span>
+                  </div>
+                  <div class="receipt-row">
+                    <span class="section-label">Land size</span>
+                    <span class="receipt-row-value">312 m²</span>
+                  </div>
+                  <div class="receipt-row">
+                    <span class="section-label">Days on market</span>
+                    <span class="receipt-row-value">12 days</span>
+                  </div>
+                </div>
+
+                <div class="property-divider"></div>
+
+                <div class="verdict-row">
+                  <div class="verdict-icon">✓</div>
+                  <div class="verdict-content">
+                    <div class="verdict-title">Within median range</div>
+                    <div class="verdict-sub">Recommend viewing · check flood overlay</div>
+                  </div>
+                  <a href="#" class="verdict-link">Full report →</a>
+                </div>
+                </div><!-- /.property-card-content -->
+              </div>
+            </div>
+            <div class="msg-time">09:42</div>
+          </div>
+        </div>
+
+        <div class="msg-ai">
+          <div class="msg-ai-avatar">B</div>
+          <div class="msg-ai-stack">
+            <div class="msg-ai-body">At $1,095,000 you're just above the suburb median of $1,082,000 for comparable 3-bedroom properties. Here's the suburb snapshot:</div>
+            <div class="msg-time">09:43</div>
+          </div>
+        </div>
+
+        <div class="msg-ai">
+          <div class="msg-ai-avatar">B</div>
+          <div class="msg-ai-stack">
+            <div class="msg-ai-body msg-card-body">
+              <div class="card suburb-card">
+                <div class="section-label">Fitzroy North · suburb snapshot</div>
+                <div class="suburb-bar-rows">
+                  <div class="suburb-bar-row">
+                    <div class="suburb-bar-label">Auction clearance</div>
+                    <div class="suburb-bar-track">
+                      <div class="suburb-bar-fill metric-76"></div>
+                    </div>
+                    <div class="suburb-bar-value">76%</div>
+                  </div>
+                  <div class="suburb-bar-row">
+                    <div class="suburb-bar-label">Price growth (12mo)</div>
+                    <div class="suburb-bar-track">
+                      <div class="suburb-bar-fill metric-42"></div>
+                    </div>
+                    <div class="suburb-bar-value">+4.2%</div>
+                  </div>
+                  <div class="suburb-bar-row">
+                    <div class="suburb-bar-label">Rental yield</div>
+                    <div class="suburb-bar-track">
+                      <div class="suburb-bar-fill metric-31"></div>
+                    </div>
+                    <div class="suburb-bar-value">3.1%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="msg-time">09:43</div>
+          </div>
+        </div>
+
+        <div class="msg-ai">
+          <div class="msg-ai-avatar">B</div>
+          <div class="msg-ai-stack">
+            <div class="msg-ai-body">Overall this looks fairly priced. I'd want to check the Section 32 and flood overlay before proceeding. Want me to review the contract once you have it?</div>
+            <div class="msg-time">09:44</div>
+          </div>
+        </div>
+
+        <div class="msg-user">
+          <div class="msg-user-stack">
+            <div class="msg-user-body">Yes please! Also what grants am I eligible for as a first home buyer in Victoria?</div>
+            <div class="msg-time">09:45</div>
+          </div>
+        </div>
+
+        <div class="msg-ai" id="typing-indicator">
+          <div class="msg-ai-avatar">B</div>
+          <div class="msg-ai-stack">
+            <div class="msg-ai-body typing-indicator" aria-label="Brick AI is typing">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="input-bar">
+        <button type="button" class="input-icon-btn" aria-label="Attach document">
+          <i data-lucide="paperclip"></i>
+        </button>
+        <textarea class="msg-input" placeholder="Ask Brick about any property or suburb..." rows="1"></textarea>
+        <button type="button" class="send-btn" aria-label="Send message" disabled>
+          <i data-lucide="arrow-up"></i>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+
+      const feed = document.querySelector('.feed');
+      const textarea = document.querySelector('.msg-input');
+      const sendBtn = document.querySelector('.send-btn');
+      const menuBtn = document.querySelector('.mobile-menu-btn');
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      const conversationRows = document.querySelectorAll('.sidebar .list-row');
+
+      function scrollFeedToBottom() {
+        requestAnimationFrame(() => {
+          feed.scrollTop = feed.scrollHeight;
+        });
+      }
+
+      scrollFeedToBottom();
+
+      conversationRows.forEach((row) => {
+        row.addEventListener('click', () => {
+          conversationRows.forEach((item) => item.classList.remove('active'));
+          row.classList.add('active');
+          sidebar.classList.remove('open');
+          overlay.classList.remove('visible');
+        });
+      });
+
+      function updateSendBtn() {
+        sendBtn.disabled = textarea.value.trim().length === 0;
+      }
+
+      function autoGrowTextarea() {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 160) + 'px';
+      }
+
+      function removeTypingIndicator() {
+        const existing = document.getElementById('typing-indicator');
+        if (existing) {
+          existing.remove();
+        }
+      }
+
+      function createTimeElement(time) {
+        const timeEl = document.createElement('div');
+        timeEl.className = 'msg-time';
+        timeEl.textContent = time;
+        return timeEl;
+      }
+
+      function createTypingIndicator() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'msg-ai';
+        wrapper.id = 'typing-indicator';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'msg-ai-avatar';
+        avatar.textContent = 'B';
+
+        const stack = document.createElement('div');
+        stack.className = 'msg-ai-stack';
+
+        const body = document.createElement('div');
+        body.className = 'msg-ai-body typing-indicator';
+        body.setAttribute('aria-label', 'Brick AI is typing');
+
+        for (let i = 0; i < 3; i += 1) {
+          body.appendChild(document.createElement('span'));
+        }
+
+        stack.appendChild(body);
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(stack);
+        return wrapper;
+      }
+
+      function sendMessage() {
+        const text = textarea.value.trim();
+        if (!text) {
+          return;
+        }
+
+        removeTypingIndicator();
+
+        const userMessage = document.createElement('div');
+        userMessage.className = 'msg-user';
+
+        const stack = document.createElement('div');
+        stack.className = 'msg-user-stack';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-user-body';
+        bubble.textContent = text;
+
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+
+        stack.appendChild(bubble);
+        stack.appendChild(createTimeElement(hours + ':' + minutes));
+        userMessage.appendChild(stack);
+        feed.appendChild(userMessage);
+
+        textarea.value = '';
+        textarea.style.height = '44px';
+        updateSendBtn();
+        scrollFeedToBottom();
+
+        window.setTimeout(() => {
+          feed.appendChild(createTypingIndicator());
+          scrollFeedToBottom();
+        }, 500);
+      }
+
+      textarea.addEventListener('input', () => {
+        autoGrowTextarea();
+        updateSendBtn();
+      });
+
+      textarea.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          if (!sendBtn.disabled) {
+            sendMessage();
+          }
+        }
+      });
+
+      sendBtn.addEventListener('click', sendMessage);
+
+      menuBtn?.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('visible');
+      });
+
+      overlay?.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('visible');
+      });
+
+      updateSendBtn();
+      autoGrowTextarea();
+    });
+  </script>
+</body>
+</html>

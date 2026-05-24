@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brick AI — Uber design language</title>
+  <meta name="description" content="Brick AI empowers first-home buyers with an Uber-style product launch page built in a severe black-and-white design language." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #000000;
+      --white: #FFFFFF;
+      --grey-50: #F6F6F6;
+      --grey-100: #EEEEEE;
+      --grey-200: #E2E2E2;
+      --grey-500: #757575;
+      --grey-700: #2E2E2E;
+      --grey-800: #1F1F1F;
+      --grey-900: #141414;
+      --blue: #276EF1;
+      --font-display: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-body: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --radius-card: 8px;
+      --radius-pill: 24px;
+      --shadow-hover-dark: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-hover-light: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --duration-fast: 160ms;
+      --duration-base: 240ms;
+      --duration-slow: 400ms;
+      --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+      --nav-height: 80px;
+      --page-margin: 16px;
+      --page-gutter: 16px;
+      --content-max: 1312px;
+      --section-y: 80px;
+    }
+
+    @media (min-width: 600px) {
+      :root {
+        --page-margin: 36px;
+        --page-gutter: 24px;
+        --section-y: 96px;
+      }
+    }
+
+    @media (min-width: 1136px) {
+      :root {
+        --page-margin: 64px;
+        --section-y: 120px;
+      }
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: var(--black);
+      color: var(--white);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    body.menu-open {
+      overflow: hidden;
+    }
+
+    a,
+    button {
+      color: inherit;
+      font: inherit;
+    }
+
+    img,
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    button {
+      border: 0;
+      background: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    p,
+    h1,
+    h2,
+    h3,
+    h4 {
+      margin: 0;
+    }
+
+    .page-shell {
+      width: min(calc(100% - (var(--page-margin) * 2)), var(--content-max));
+      margin: 0 auto;
+    }
+
+    .section {
+      padding: var(--section-y) 0;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--grey-500);
+    }
+
+    .section-heading {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4.4vw, 64px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 0.98;
+      max-width: 720px;
+    }
+
+    .section-copy {
+      max-width: 560px;
+      color: var(--grey-500);
+      font-size: 16px;
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity var(--duration-slow) var(--ease-standard), transform var(--duration-slow) var(--ease-standard);
+    }
+
+    .fade-in.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .button,
+    .text-link,
+    .nav-link,
+    .footer-link,
+    .step {
+      transition:
+        color var(--duration-fast) var(--ease-standard),
+        background-color var(--duration-fast) var(--ease-standard),
+        border-color var(--duration-fast) var(--ease-standard),
+        opacity var(--duration-fast) var(--ease-standard),
+        transform var(--duration-fast) var(--ease-standard),
+        box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .button:focus-visible,
+    .text-link:focus-visible,
+    .nav-link:focus-visible,
+    .footer-link:focus-visible,
+    .nav-toggle:focus-visible,
+    .step:focus-visible {
+      outline: 2px solid var(--white);
+      outline-offset: 3px;
+    }
+
+    .testimonials-section .text-link:focus-visible,
+    .cta-banner .button:focus-visible,
+    .cta-banner .text-link:focus-visible {
+      outline-color: var(--black);
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 12px 24px;
+      border-radius: var(--radius-pill);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button:active {
+      transform: scale(0.97);
+    }
+
+    .button-primary {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .button-primary:hover {
+      background: var(--grey-200);
+    }
+
+    .button-secondary {
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      color: var(--white);
+      background: transparent;
+    }
+
+    .button-secondary:hover {
+      border-color: var(--white);
+    }
+
+    .button-inverse {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .button-inverse:hover {
+      background: var(--grey-800);
+    }
+
+    .text-link {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--grey-500);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .text-link:hover {
+      color: var(--black);
+    }
+
+    .icon-inline,
+    .feature-icon i,
+    .chat-icon i,
+    .nav-toggle i,
+    .stat-icon i {
+      width: 1em;
+      height: 1em;
+    }
+
+    .site-nav {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 40;
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(46, 46, 46, 0.45);
+      transition: border-color var(--duration-base) var(--ease-standard), background-color var(--duration-base) var(--ease-standard);
+    }
+
+    .site-nav.is-scrolled {
+      border-bottom-color: var(--grey-700);
+    }
+
+    .nav-row {
+      min-height: var(--nav-height);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-brand {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+
+    .nav-link {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .nav-link:hover {
+      color: var(--white);
+    }
+
+    .nav-toggle {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--grey-700);
+      border-radius: 999px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+    }
+
+    .nav-toggle-bar,
+    .nav-toggle-bar::before,
+    .nav-toggle-bar::after {
+      content: "";
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 999px;
+      transition: transform var(--duration-fast) var(--ease-standard), opacity var(--duration-fast) var(--ease-standard);
+    }
+
+    .nav-toggle-bar {
+      position: relative;
+    }
+
+    .nav-toggle-bar::before {
+      position: absolute;
+      top: -6px;
+    }
+
+    .nav-toggle-bar::after {
+      position: absolute;
+      top: 6px;
+    }
+
+    .nav-toggle[aria-expanded="true"] .nav-toggle-bar {
+      background: transparent;
+    }
+
+    .nav-toggle[aria-expanded="true"] .nav-toggle-bar::before {
+      transform: translateY(6px) rotate(45deg);
+    }
+
+    .nav-toggle[aria-expanded="true"] .nav-toggle-bar::after {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      background: var(--black);
+      overflow: clip;
+      padding-top: var(--nav-height);
+      display: flex;
+      align-items: center;
+    }
+
+    .hero-inner {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 560px) 1fr;
+      align-items: center;
+      min-height: calc(100vh - var(--nav-height));
+      padding: 48px 0 56px;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(64px, 12vw, 160px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 0.93;
+      text-transform: uppercase;
+      max-width: 520px;
+    }
+
+    .hero-rule {
+      width: 48px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .hero-subtitle {
+      max-width: 360px;
+      font-size: clamp(16px, 1.8vw, 17px);
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .hero-meta {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--grey-500);
+      font-size: 13px;
+      align-items: center;
+    }
+
+    .hero-meta span + span::before {
+      content: "·";
+      margin-right: 8px;
+    }
+
+    .hero-art {
+      position: relative;
+      min-height: 520px;
+    }
+
+    .hero-deco-svg,
+    .hero-deco-svg-secondary {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .hero-deco-svg {
+      right: -16%;
+      top: 50%;
+      width: min(64vw, 920px);
+      transform: translateY(-56%);
+    }
+
+    .hero-deco-svg-secondary {
+      right: 6%;
+      bottom: 6%;
+      width: min(34vw, 440px);
+      opacity: 0.88;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--grey-500);
+      animation: float-hint 2.4s ease-in-out infinite;
+    }
+
+    @keyframes float-hint {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(6px); }
+    }
+
+    .stats-bar {
+      background: var(--grey-900);
+      border-top: 1px solid var(--grey-700);
+      border-bottom: 1px solid var(--grey-700);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .stat-card {
+      padding: 28px var(--page-gutter);
+      border-right: 1px solid var(--grey-700);
+      display: grid;
+      gap: 8px;
+    }
+
+    .stat-card:last-child {
+      border-right: 0;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: clamp(34px, 4vw, 52px);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+    }
+
+    .stat-label {
+      color: var(--grey-500);
+      font-size: 13px;
+    }
+
+    .features {
+      background: var(--black);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--grey-900);
+      border: 1px solid var(--grey-700);
+      border-radius: var(--radius-card);
+      padding: 32px;
+      display: grid;
+      gap: 20px;
+      align-content: start;
+      min-height: 280px;
+      transition: border-color var(--duration-base) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
+    }
+
+    .feature-card:hover {
+      border-color: var(--white);
+      box-shadow: var(--shadow-hover-dark);
+      transform: translateY(-2px);
+    }
+
+    .feature-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .feature-number {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--grey-500);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--grey-700);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      flex-shrink: 0;
+    }
+
+    .feature-icon i {
+      width: 24px;
+      height: 24px;
+      stroke-width: 1.5;
+    }
+
+    .feature-card h3 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .feature-card p {
+      color: var(--grey-500);
+      font-size: 15px;
+    }
+
+    .how-it-works {
+      background: var(--black);
+      border-top: 1px solid var(--grey-700);
+    }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+      gap: 48px;
+      align-items: center;
+    }
+
+    .steps-panel {
+      display: grid;
+      gap: 0;
+    }
+
+    .step {
+      width: 100%;
+      text-align: left;
+      padding: 24px 0;
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 20px;
+      border-bottom: 1px solid var(--grey-700);
+    }
+
+    .step:first-child {
+      border-top: 1px solid var(--grey-700);
+    }
+
+    .step.is-active {
+      opacity: 1;
+    }
+
+    .step:not(.is-active) {
+      opacity: 0.5;
+    }
+
+    .step:not(.is-active):hover {
+      opacity: 0.72;
+    }
+
+    .step-number {
+      font-family: var(--font-mono);
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      color: rgba(255, 255, 255, 0.1);
+      transition: color var(--duration-base) var(--ease-standard);
+    }
+
+    .step.is-active .step-number {
+      color: var(--white);
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .step-copy {
+      color: var(--grey-500);
+      font-size: 15px;
+      max-width: 300px;
+    }
+
+    .chat-shell {
+      background: var(--grey-900);
+      border: 1px solid var(--grey-700);
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 560px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .chat-header {
+      border-bottom: 1px solid var(--grey-700);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .chat-agent {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid var(--grey-700);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      background: var(--black);
+    }
+
+    .chat-badge i {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.7;
+    }
+
+    .chat-agent-name {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .chat-status {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--grey-500);
+    }
+
+    .chat-thread {
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .chat-message {
+      max-width: 78%;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .chat-message.user {
+      justify-self: end;
+      background: var(--white);
+      color: var(--black);
+      font-weight: 500;
+    }
+
+    .chat-message.agent {
+      background: var(--grey-800);
+      color: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--grey-700);
+    }
+
+    .chat-tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chat-tag {
+      border: 1px solid var(--grey-700);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--grey-500);
+    }
+
+    .chat-input {
+      border-top: 1px solid var(--grey-700);
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .chat-input-field {
+      min-height: 52px;
+      border: 1px solid var(--grey-700);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      color: var(--grey-500);
+      background: var(--black);
+      overflow: hidden;
+    }
+
+    .typewriter {
+      position: relative;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .typewriter::after {
+      content: "";
+      display: inline-block;
+      width: 1px;
+      height: 1em;
+      background: rgba(255, 255, 255, 0.9);
+      margin-left: 3px;
+      vertical-align: -2px;
+      animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .chat-send {
+      width: 52px;
+      height: 52px;
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--black);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-send:hover {
+      background: var(--grey-200);
+      transform: translateY(-1px);
+    }
+
+    .chat-send:active {
+      transform: scale(0.97);
+    }
+
+    .chat-send:focus-visible {
+      outline: 2px solid var(--white);
+      outline-offset: 3px;
+    }
+
+    .chat-send i {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+    }
+
+    .testimonials-section {
+      background: var(--grey-50);
+      color: var(--black);
+    }
+
+    .testimonials-section .eyebrow,
+    .testimonials-section .section-copy {
+      color: var(--grey-500);
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .testimonial-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-card);
+      padding: 28px;
+      display: grid;
+      gap: 20px;
+      min-height: 260px;
+      transition: box-shadow var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
+    }
+
+    .testimonial-card:hover {
+      box-shadow: var(--shadow-hover-light);
+      transform: translateY(-2px);
+    }
+
+    .testimonial-stars {
+      display: flex;
+      gap: 6px;
+      color: var(--black);
+    }
+
+    .testimonial-stars i {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      stroke-width: 1.4;
+    }
+
+    .testimonial-quote {
+      color: var(--grey-800);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .testimonial-meta {
+      margin-top: auto;
+      display: grid;
+      gap: 2px;
+    }
+
+    .testimonial-name {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .testimonial-role {
+      color: var(--grey-500);
+      font-size: 13px;
+    }
+
+    .pricing {
+      background: var(--black);
+      border-top: 1px solid var(--grey-700);
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .pricing-card {
+      position: relative;
+      background: var(--grey-900);
+      border: 1px solid var(--grey-700);
+      border-radius: var(--radius-card);
+      padding: 32px;
+      display: grid;
+      gap: 24px;
+      align-content: start;
+      transition: border-color var(--duration-base) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
+    }
+
+    .pricing-card:hover {
+      border-color: var(--white);
+      box-shadow: var(--shadow-hover-dark);
+      transform: translateY(-2px);
+    }
+
+    .pricing-card.featured {
+      background: var(--white);
+      color: var(--black);
+      border-color: var(--white);
+    }
+
+    .pricing-card.featured:hover {
+      border-color: var(--grey-200);
+      box-shadow: var(--shadow-hover-light);
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: var(--black);
+      color: var(--white);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .pricing-tier {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--grey-500);
+    }
+
+    .pricing-card.featured .pricing-tier,
+    .pricing-card.featured .pricing-copy,
+    .pricing-card.featured .pricing-features li {
+      color: rgba(0, 0, 0, 0.72);
+    }
+
+    .pricing-price {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pricing-amount {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 5vw, 60px);
+      font-weight: 800;
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+    }
+
+    .pricing-period {
+      color: var(--grey-500);
+      font-size: 15px;
+    }
+
+    .pricing-copy {
+      color: var(--grey-500);
+      font-size: 15px;
+    }
+
+    .pricing-features {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .pricing-features li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 15px;
+    }
+
+    .pricing-features i {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: currentColor;
+      stroke-width: 1.8;
+    }
+
+    .cta-banner {
+      background: var(--white);
+      color: var(--black);
+      position: relative;
+      overflow: clip;
+    }
+
+    .cta-box {
+      position: relative;
+      padding: clamp(64px, 10vw, 112px) 0;
+      display: grid;
+      gap: 24px;
+    }
+
+    .cta-background-word {
+      position: absolute;
+      right: -2%;
+      bottom: -10%;
+      font-family: var(--font-display);
+      font-size: clamp(120px, 20vw, 300px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      color: rgba(0, 0, 0, 0.04);
+      pointer-events: none;
+      user-select: none;
+      line-height: 0.9;
+    }
+
+    .cta-title {
+      position: relative;
+      z-index: 1;
+      font-family: var(--font-display);
+      font-size: clamp(44px, 8vw, 104px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 0.92;
+      text-transform: uppercase;
+      max-width: 860px;
+    }
+
+    .cta-copy {
+      position: relative;
+      z-index: 1;
+      max-width: 560px;
+      color: var(--grey-500);
+      font-size: 17px;
+    }
+
+    .cta-actions {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .footer {
+      background: var(--black);
+      border-top: 1px solid var(--grey-700);
+    }
+
+    .footer-top,
+    .footer-bottom {
+      padding: 28px 0;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
+      gap: 32px;
+      align-items: start;
+    }
+
+    .footer-brand {
+      display: grid;
+      gap: 16px;
+      max-width: 280px;
+    }
+
+    .footer-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .footer-copy {
+      color: var(--grey-500);
+      font-size: 14px;
+    }
+
+    .footer-heading {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--grey-500);
+      margin-bottom: 16px;
+    }
+
+    .footer-links {
+      display: grid;
+      gap: 12px;
+    }
+
+    .footer-link {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+    }
+
+    .footer-link:hover {
+      color: var(--white);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--grey-700);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      color: var(--grey-500);
+      font-size: 13px;
+    }
+
+    .footer-bottom-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    @media (max-width: 1135px) {
+      .hero-inner,
+      .how-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-art {
+        min-height: 360px;
+      }
+
+      .hero-deco-svg {
+        right: -8%;
+        width: min(92vw, 760px);
+      }
+
+      .hero-deco-svg-secondary {
+        right: 14%;
+      }
+
+      .footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 899px) {
+      .feature-grid,
+      .testimonials-grid,
+      .pricing-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .stat-card:nth-child(2n) {
+        border-right: 0;
+      }
+
+      .stat-card:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--grey-700);
+      }
+    }
+
+    @media (max-width: 767px) {
+      :root {
+        --nav-height: 72px;
+        --section-y: 72px;
+      }
+
+      .nav-row {
+        grid-template-columns: auto auto;
+        justify-content: space-between;
+      }
+
+      .nav-toggle {
+        display: inline-flex;
+      }
+
+      .nav-menu {
+        position: absolute;
+        top: calc(100% + 1px);
+        left: var(--page-margin);
+        right: var(--page-margin);
+        background: var(--black);
+        border: 1px solid var(--grey-700);
+        border-radius: 8px;
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+        justify-content: stretch;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-10px);
+      }
+
+      .nav-menu.is-open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+
+      .nav-cta-wrap {
+        display: none;
+      }
+
+      .hero-inner {
+        padding: 40px 0 72px;
+      }
+
+      .hero-title {
+        max-width: 100%;
+      }
+
+      .hero-subtitle {
+        max-width: 320px;
+      }
+
+      .hero-art {
+        min-height: 260px;
+      }
+
+      .hero-deco-svg {
+        right: -34%;
+        top: 54%;
+        width: 140vw;
+      }
+
+      .hero-deco-svg-secondary {
+        right: 6%;
+        width: 60vw;
+      }
+
+      .section-heading {
+        margin-bottom: 36px;
+      }
+
+      .feature-grid,
+      .testimonials-grid,
+      .pricing-grid,
+      .footer-grid,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-card {
+        border-right: 0;
+        padding: 20px 0;
+        grid-template-columns: auto 1fr;
+        align-items: baseline;
+        gap: 16px;
+        position: relative;
+      }
+
+      .stat-card::after {
+        content: "·";
+        position: absolute;
+        right: 0;
+        top: 20px;
+        color: var(--grey-500);
+      }
+
+      .stat-card:last-child::after {
+        display: none;
+      }
+
+      .stat-card:not(:last-child) {
+        border-bottom: 1px solid var(--grey-700);
+      }
+
+      .stat-card:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--grey-700);
+      }
+
+      .feature-card,
+      .pricing-card,
+      .testimonial-card {
+        padding: 24px;
+      }
+
+      .step {
+        grid-template-columns: 68px 1fr;
+      }
+
+      .chat-shell {
+        min-height: 520px;
+      }
+
+      .chat-header,
+      .chat-thread,
+      .chat-input {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .chat-message {
+        max-width: 92%;
+      }
+
+      .cta-actions {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *, *::before, *::after {
+        animation: none !important;
+        transition-duration: 1ms !important;
+        transition-delay: 0ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" id="site-nav">
+    <div class="page-shell nav-row">
+      <a class="nav-brand" href="#hero">Brick AI</a>
+      <div class="nav-menu" id="nav-menu">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="#how">How it works</a>
+        <a class="nav-link" href="#proof">Testimonials</a>
+        <a class="nav-link" href="#pricing">Pricing</a>
+        <a class="nav-link" href="#footer">Resources</a>
+      </div>
+      <div class="nav-cta-wrap">
+        <a class="button button-primary" href="#cta">Get started</a>
+      </div>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-menu">
+        <span class="nav-toggle-bar"></span>
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero" id="hero">
+      <div class="page-shell hero-inner">
+        <div class="hero-copy fade-in">
+          <div class="eyebrow">Brick AI</div>
+          <h1 class="hero-title">Find<br />the<br />right<br />home.</h1>
+          <div class="hero-rule" aria-hidden="true"></div>
+          <p class="hero-subtitle">Brick AI empowers first-home buyers by turning uncertainty into clarity.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#pricing">Get started</a>
+            <a class="button button-secondary" href="#how">See how it works</a>
+          </div>
+          <div class="hero-meta" aria-label="Product metadata">
+            <span>Mortgage clarity</span>
+            <span>Neighborhood fit</span>
+            <span>Decision support</span>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg class="hero-deco-svg" viewBox="0 0 920 500" role="presentation">
+            <text x="0" y="315" font-family="Hanken Grotesk, sans-serif" font-size="320" font-weight="900" letter-spacing="-0.04em" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.1">Brick</text>
+          </svg>
+          <svg class="hero-deco-svg-secondary" viewBox="0 0 520 240" role="presentation">
+            <text x="0" y="165" font-family="Hanken Grotesk, sans-serif" font-size="168" font-weight="900" letter-spacing="-0.04em" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.2">Brick</text>
+          </svg>
+        </div>
+      </div>
+      <a class="hero-scroll" href="#stats">
+        <span>Scroll</span>
+        <i data-lucide="arrow-down"></i>
+      </a>
+    </section>
+
+    <section class="stats-bar" id="stats">
+      <div class="page-shell stats-grid">
+        <div class="stat-card fade-in">
+          <div class="stat-value">92%</div>
+          <div class="stat-label">Confidence lift after a single guided search</div>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="stat-value">4.3x</div>
+          <div class="stat-label">Faster shortlisting across budget, risk, and location</div>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="stat-value">18 min</div>
+          <div class="stat-label">Median time to build a complete first-buy brief</div>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="stat-value">24/7</div>
+          <div class="stat-label">Always-on guidance across listings, lenders, and next steps</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section features" id="features">
+      <div class="page-shell">
+        <div class="section-heading fade-in">
+          <div class="eyebrow">Capabilities</div>
+          <h2 class="section-title">A severe planning layer for one of the biggest decisions you will make.</h2>
+          <p class="section-copy">Brick AI reduces noise, surfaces the right questions, and keeps every option measurable from the first search to the final offer.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card fade-in">
+            <div class="feature-top">
+              <span class="feature-number">01</span>
+              <div class="feature-icon"><i data-lucide="search"></i></div>
+            </div>
+            <h3>Search with intent</h3>
+            <p>Turn a vague idea into a usable brief with constraints for budget, commute, schools, and renovation appetite.</p>
+          </article>
+          <article class="feature-card fade-in">
+            <div class="feature-top">
+              <span class="feature-number">02</span>
+              <div class="feature-icon"><i data-lucide="calculator"></i></div>
+            </div>
+            <h3>Model the numbers</h3>
+            <p>Compare repayments, cash to close, ongoing costs, and downside exposure before emotion takes over.</p>
+          </article>
+          <article class="feature-card fade-in">
+            <div class="feature-top">
+              <span class="feature-number">03</span>
+              <div class="feature-icon"><i data-lucide="map-pin"></i></div>
+            </div>
+            <h3>Read the neighborhood</h3>
+            <p>Evaluate transport, local amenities, safety signals, and long-term fit in one structured decision view.</p>
+          </article>
+          <article class="feature-card fade-in">
+            <div class="feature-top">
+              <span class="feature-number">04</span>
+              <div class="feature-icon"><i data-lucide="shield-check"></i></div>
+            </div>
+            <h3>Pressure-test risk</h3>
+            <p>Spot hidden compromises early with scenario analysis for rates, repairs, bidding pressure, and cash flow.</p>
+          </article>
+          <article class="feature-card fade-in">
+            <div class="feature-top">
+              <span class="feature-number">05</span>
+              <div class="feature-icon"><i data-lucide="message-square"></i></div>
+            </div>
+            <h3>Stay aligned</h3>
+            <p>Share decisions with partners, family, or advisors using one source of truth instead of scattered notes.</p>
+          </article>
+          <article class="feature-card fade-in">
+            <div class="feature-top">
+              <span class="feature-number">06</span>
+              <div class="feature-icon"><i data-lucide="badge-check"></i></div>
+            </div>
+            <h3>Move with confidence</h3>
+            <p>Know when to wait, when to act, and what trade-offs are acceptable before you step into an offer.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section how-it-works" id="how">
+      <div class="page-shell">
+        <div class="section-heading fade-in">
+          <div class="eyebrow">How it works</div>
+          <h2 class="section-title">Every recommendation stays traceable, explainable, and ready to act on.</h2>
+        </div>
+        <div class="how-grid">
+          <div class="steps-panel fade-in" aria-label="Process steps">
+            <button class="step is-active" type="button" data-step="0" data-prompt="Show homes under $850k near strong schools with a sub-35 minute commute." data-reply="I found 12 matches. Three balance commute, school quality, and renovation risk best." aria-pressed="true">
+              <span class="step-number">01</span>
+              <span>
+                <span class="step-title">Set the brief</span>
+                <span class="step-copy">Define your budget, life constraints, and what success looks like before looking at listings.</span>
+              </span>
+            </button>
+            <button class="step" type="button" data-step="1" data-prompt="Compare monthly cost, cash to close, and downside if rates rise by 1%." data-reply="Option B has the strongest resilience. Monthly cost stays stable and reserve coverage remains above target." aria-pressed="false">
+              <span class="step-number">02</span>
+              <span>
+                <span class="step-title">Compare trade-offs</span>
+                <span class="step-copy">See what each option demands in repayments, liquidity, upgrades, and long-term flexibility.</span>
+              </span>
+            </button>
+            <button class="step" type="button" data-step="2" data-prompt="Summarize the neighborhood signal for the top three listings." data-reply="Map access, school catchments, and renovation noise all point to Oak Street as the safest long-term fit." aria-pressed="false">
+              <span class="step-number">03</span>
+              <span>
+                <span class="step-title">Read the context</span>
+                <span class="step-copy">Layer local insight over each shortlist so the decision is grounded, not just affordable.</span>
+              </span>
+            </button>
+            <button class="step" type="button" data-step="3" data-prompt="Give me an offer-ready summary with risks, questions, and next actions." data-reply="You are ready to move on Oak Street. I prepared lender questions, negotiation points, and a clean decision summary." aria-pressed="false">
+              <span class="step-number">04</span>
+              <span>
+                <span class="step-title">Move when ready</span>
+                <span class="step-copy">Convert insight into action with a final summary, open questions, and a clear next move.</span>
+              </span>
+            </button>
+          </div>
+          <div class="chat-shell fade-in" id="chat-shell">
+            <div class="chat-header">
+              <div class="chat-agent">
+                <div class="chat-badge"><i data-lucide="house"></i></div>
+                <div>
+                  <div class="chat-agent-name">Brick AI guide</div>
+                  <div class="chat-status">Buyer workflow live</div>
+                </div>
+              </div>
+              <div class="chat-status">Step cycle · 3.2s</div>
+            </div>
+            <div class="chat-thread">
+              <div class="chat-message agent">Tell me what matters most. I will reduce the field and explain every trade-off.</div>
+              <div class="chat-message user" id="chat-user-message">Show homes under $850k near strong schools with a sub-35 minute commute.</div>
+              <div class="chat-message agent" id="chat-agent-message">I found 12 matches. Three balance commute, school quality, and renovation risk best.</div>
+              <div class="chat-tag-row">
+                <span class="chat-tag">Budget locked</span>
+                <span class="chat-tag">Commute measured</span>
+                <span class="chat-tag">Risk screened</span>
+              </div>
+            </div>
+            <div class="chat-input">
+              <div class="chat-input-field">
+                <span class="typewriter" id="typewriter-text" aria-label="Animated example prompt"></span>
+              </div>
+              <button class="chat-send" type="button" aria-label="Send example prompt">
+                <i data-lucide="arrow-up-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section testimonials-section" id="proof">
+      <div class="page-shell">
+        <div class="section-heading fade-in">
+          <div class="eyebrow">Testimonials</div>
+          <h2 class="section-title">Clearer decisions for buyers who do not want to guess.</h2>
+          <p class="section-copy">Brick AI brings structure to a process that usually feels emotional, fragmented, and hard to compare.</p>
+        </div>
+        <div class="testimonials-grid">
+          <article class="testimonial-card fade-in">
+            <div class="testimonial-stars" aria-label="Five star rating">
+              <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i>
+            </div>
+            <p class="testimonial-quote">“We stopped bouncing between tabs and finally understood which home actually fit our future, not just our feelings.”</p>
+            <div class="testimonial-meta">
+              <div class="testimonial-name">Maya Thompson</div>
+              <div class="testimonial-role">First-home buyer · Melbourne</div>
+            </div>
+          </article>
+          <article class="testimonial-card fade-in">
+            <div class="testimonial-stars" aria-label="Five star rating">
+              <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i>
+            </div>
+            <p class="testimonial-quote">“The risk view changed everything. We ruled out a place we loved once the repair and cash-flow assumptions became visible.”</p>
+            <div class="testimonial-meta">
+              <div class="testimonial-name">Jonas Reed</div>
+              <div class="testimonial-role">Buyer · London</div>
+            </div>
+          </article>
+          <article class="testimonial-card fade-in">
+            <div class="testimonial-stars" aria-label="Five star rating">
+              <i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i><i data-lucide="star"></i>
+            </div>
+            <p class="testimonial-quote">“It felt like having a calm operator in the room. Every shortlist came with reasons, risks, and what to ask next.”</p>
+            <div class="testimonial-meta">
+              <div class="testimonial-name">Alina Carter</div>
+              <div class="testimonial-role">Couple buying their first home · Toronto</div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section pricing" id="pricing">
+      <div class="page-shell">
+        <div class="section-heading fade-in">
+          <div class="eyebrow">Pricing</div>
+          <h2 class="section-title">Choose the level of guidance that matches your pace.</h2>
+        </div>
+        <div class="pricing-grid">
+          <article class="pricing-card fade-in">
+            <div>
+              <div class="pricing-tier">Explore</div>
+              <div class="pricing-price">
+                <div class="pricing-amount">Free</div>
+                <div class="pricing-period">for getting started</div>
+              </div>
+            </div>
+            <p class="pricing-copy">Build your brief, screen listings, and understand the basics without committing.</p>
+            <ul class="pricing-features">
+              <li><i data-lucide="check"></i> Guided home brief</li>
+              <li><i data-lucide="check"></i> Listing comparisons</li>
+              <li><i data-lucide="check"></i> Budget snapshots</li>
+              <li><i data-lucide="check"></i> Two saved shortlists</li>
+            </ul>
+            <a class="button button-secondary" href="#cta">Start free</a>
+          </article>
+          <article class="pricing-card featured fade-in">
+            <div class="pricing-badge">Most popular</div>
+            <div>
+              <div class="pricing-tier">Buyer</div>
+              <div class="pricing-price">
+                <div class="pricing-amount">$39</div>
+                <div class="pricing-period">per month</div>
+              </div>
+            </div>
+            <p class="pricing-copy">For first-home buyers who want deeper modeling, stronger filters, and offer-ready summaries.</p>
+            <ul class="pricing-features">
+              <li><i data-lucide="check"></i> Everything in Explore</li>
+              <li><i data-lucide="check"></i> Cash-to-close modeling</li>
+              <li><i data-lucide="check"></i> Risk and scenario analysis</li>
+              <li><i data-lucide="check"></i> Partner sharing workspace</li>
+            </ul>
+            <a class="button button-inverse" href="#cta">Get started</a>
+          </article>
+          <article class="pricing-card fade-in">
+            <div>
+              <div class="pricing-tier">Advisor</div>
+              <div class="pricing-price">
+                <div class="pricing-amount">$129</div>
+                <div class="pricing-period">per seat</div>
+              </div>
+            </div>
+            <p class="pricing-copy">For brokers, agents, and buyer advocates supporting multiple clients with one system.</p>
+            <ul class="pricing-features">
+              <li><i data-lucide="check"></i> Multi-client dashboards</li>
+              <li><i data-lucide="check"></i> Shared decision reports</li>
+              <li><i data-lucide="check"></i> Team permissions</li>
+              <li><i data-lucide="check"></i> Priority onboarding</li>
+            </ul>
+            <a class="button button-secondary" href="#cta">Talk to sales</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-banner" id="cta">
+      <div class="page-shell cta-box fade-in">
+        <div class="cta-background-word" aria-hidden="true">Home.</div>
+        <div class="eyebrow">Brick AI</div>
+        <h2 class="cta-title">Make the next move with clarity.</h2>
+        <p class="cta-copy">Build a sharper brief, compare homes with real context, and move from uncertainty to action in one place.</p>
+        <div class="cta-actions">
+          <a class="button button-inverse" href="#hero">Get started free</a>
+          <a class="text-link" href="https://brickai.com" target="_blank" rel="noreferrer">brickai.com <i class="icon-inline" data-lucide="arrow-right"></i></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="footer">
+    <div class="page-shell footer-top">
+      <div class="footer-grid fade-in">
+        <div class="footer-brand">
+          <div class="footer-title">Brick AI</div>
+          <p class="footer-copy">A severe decision layer for first-home buyers who want more certainty and less noise.</p>
+        </div>
+        <div>
+          <div class="footer-heading">Product</div>
+          <div class="footer-links">
+            <a class="footer-link" href="#features">Features</a>
+            <a class="footer-link" href="#how">Workflow</a>
+            <a class="footer-link" href="#pricing">Pricing</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-heading">Resources</div>
+          <div class="footer-links">
+            <a class="footer-link" href="#proof">Testimonials</a>
+            <a class="footer-link" href="#cta">Get started</a>
+            <a class="footer-link" href="https://brickai.com" target="_blank" rel="noreferrer">Website</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-heading">Company</div>
+          <div class="footer-links">
+            <a class="footer-link" href="#hero">About</a>
+            <a class="footer-link" href="#pricing">Buyer plan</a>
+            <a class="footer-link" href="#footer">Contact</a>
+            <a class="footer-link" href="#footer">Privacy</a>
+            <a class="footer-link" href="#footer">Terms</a>
+            <a class="footer-link" href="#footer">Cookies</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page-shell footer-bottom">
+      <div>© 2026 Brick AI</div>
+      <div class="footer-bottom-links">
+        <span>Decision support</span>
+        <span>·</span>
+        <span>Buyer intelligence</span>
+        <span>·</span>
+        <span>Home planning</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    const nav = document.getElementById('site-nav');
+    const navToggle = document.getElementById('nav-toggle');
+    const navMenu = document.getElementById('nav-menu');
+    const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+    const fadeItems = document.querySelectorAll('.fade-in');
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const userMessage = document.getElementById('chat-user-message');
+    const agentMessage = document.getElementById('chat-agent-message');
+    const typewriterNode = document.getElementById('typewriter-text');
+    const chatShell = document.getElementById('chat-shell');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let activeStep = 0;
+    let stepTimer;
+    let typeTimer;
+    let typeIndex = 0;
+    let typeTarget = steps[0]?.dataset.prompt || '';
+    let chatInView = false;
+
+    const setNavState = () => {
+      nav.classList.toggle('is-scrolled', window.scrollY > 12);
+    };
+
+    const closeMenu = () => {
+      navMenu.classList.remove('is-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('menu-open');
+    };
+
+    const openMenu = () => {
+      navMenu.classList.add('is-open');
+      navToggle.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('menu-open');
+    };
+
+    navToggle.addEventListener('click', () => {
+      const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
+      if (isOpen) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', closeMenu);
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 767) closeMenu();
+    });
+
+    document.addEventListener('click', (event) => {
+      if (window.innerWidth > 767) return;
+      if (!nav.contains(event.target)) closeMenu();
+    });
+
+    window.addEventListener('scroll', setNavState, { passive: true });
+    setNavState();
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
+
+    fadeItems.forEach((item) => revealObserver.observe(item));
+
+    const startTypewriter = () => {
+      clearTimeout(typeTimer);
+      typeIndex = 0;
+      typewriterNode.textContent = '';
+
+      if (!chatInView) return;
+      if (prefersReducedMotion) {
+        typewriterNode.textContent = typeTarget;
+        return;
+      }
+
+      const tick = () => {
+        typewriterNode.textContent = typeTarget.slice(0, typeIndex);
+        if (typeIndex < typeTarget.length) {
+          typeIndex += 1;
+          typeTimer = window.setTimeout(tick, 34);
+        }
+      };
+
+      tick();
+    };
+
+    const setActiveStep = (index) => {
+      activeStep = index;
+      steps.forEach((step, stepIndex) => {
+        const isActive = stepIndex === index;
+        step.classList.toggle('is-active', isActive);
+        step.setAttribute('aria-pressed', String(isActive));
+      });
+
+      const step = steps[index];
+      if (!step) return;
+      typeTarget = step.dataset.prompt || '';
+      userMessage.textContent = step.dataset.prompt || '';
+      agentMessage.textContent = step.dataset.reply || '';
+      startTypewriter();
+    };
+
+    const startStepCycle = () => {
+      clearInterval(stepTimer);
+      if (prefersReducedMotion) return;
+      stepTimer = window.setInterval(() => {
+        const next = (activeStep + 1) % steps.length;
+        setActiveStep(next);
+      }, 3200);
+    };
+
+    steps.forEach((step, index) => {
+      step.addEventListener('click', () => {
+        setActiveStep(index);
+        startStepCycle();
+      });
+    });
+
+    const chatObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        chatInView = entry.isIntersecting;
+        if (chatInView) {
+          startTypewriter();
+        }
+      });
+    }, { threshold: 0.35 });
+
+    chatObserver.observe(chatShell);
+    setActiveStep(0);
+    startStepCycle();
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

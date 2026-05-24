@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brick AI · Chat V9 — Editorial</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
+    :root {
+      --black: #0d0d0e;
+      --white: #FFFFFF;
+      --ink: #050507;
+      --text: #2f3237;
+      --muted: #696e77;
+      --line: #e3e5e8;
+      --grey-50: #f8f7f4;
+      --grey-100: #eeece8;
+      --grey-200: #dddbd5;
+      --grey-400: #a9a9a9;
+      --grey-500: #696e77;
+      --grey-800: #1e2228;
+      --grey-900: #111419;
+      --accent: #118f4a;
+      --accent-soft: #eef8f3;
+      --accent-mid: #dfeee6;
+      --red: #e22a2e;
+      --font: "Inter", system-ui, sans-serif;
+      --display: "Playfair Display", Georgia, serif;
+      --mono: "JetBrains Mono", monospace;
+      --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 160ms;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 15% 5%, rgba(17, 143, 74, 0.06), transparent 28rem),
+        linear-gradient(180deg, #fbfbf9 0%, #f5f5f3 100%);
+      color: var(--ink);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    button,
+    textarea,
+    input {
+      font: inherit;
+    }
+
+    button,
+    a {
+      transition: all 160ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent-mid);
+      border-radius: 2px;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      font-family: var(--font);
+    }
+
+    .topbar {
+      height: 56px;
+      background: var(--black);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .menu-btn {
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .menu-btn:hover,
+    .refresh-btn:hover,
+    .mobile-swap-button:hover {
+      background: var(--grey-800);
+    }
+
+    .menu-btn:focus-visible,
+    .refresh-btn:focus-visible,
+    .chip:focus-visible,
+    .send-btn:focus-visible,
+    .msg-input:focus-visible,
+    .mobile-swap-button:focus-visible,
+    .verdict-link:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--black);
+    }
+
+    .topbar-brand {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      font-family: var(--display);
+      white-space: nowrap;
+    }
+
+    .topbar-fill {
+      flex: 1;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .report-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--grey-500);
+      white-space: nowrap;
+    }
+
+    .topbar-divider {
+      color: var(--grey-500);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    .topbar-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      white-space: nowrap;
+    }
+
+    .topbar-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--white);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .panels {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+      --chat-w: 42%;
+    }
+
+    .chat-panel {
+      width: var(--chat-w);
+      min-width: 280px;
+      max-width: 70%;
+      flex-shrink: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--grey-50);
+      border-right: 1px solid var(--line);
+      min-height: 0;
+    }
+
+    .chat-header {
+      height: 52px;
+      padding: 0 20px;
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .chat-header-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--black);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .chat-header-copy {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-header-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .chat-header-subtitle {
+      font-size: 12px;
+      color: var(--grey-500);
+      margin-top: 1px;
+    }
+
+    .refresh-btn {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--grey-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .chat-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .msg-ai {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .msg-ai-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--black);
+      color: var(--white);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .ai-bubble,
+    .msg-ai-body {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 0 12px 12px 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(5, 5, 7, 0.04);
+      max-width: calc(100% - 40px);
+      word-break: break-word;
+    }
+
+    .msg-user {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .user-bubble,
+    .msg-user-body {
+      background: var(--black);
+      color: var(--white);
+      border-radius: 12px 0 12px 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.55;
+      letter-spacing: -0.01em;
+      max-width: 80%;
+      word-break: break-word;
+    }
+
+    .streaming-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 14px;
+      background: var(--black);
+      margin-left: 1px;
+      vertical-align: middle;
+      animation: blink 0.8s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0;
+      }
+    }
+
+    .report-update-notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-mid);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+      margin: 4px 0;
+      align-self: center;
+    }
+
+    .report-update-notice i {
+      width: 14px;
+      height: 14px;
+    }
+
+    .report-update-notice strong {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .chips-row {
+      padding: 8px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      border-top: 1px solid var(--line);
+      background: var(--white);
+      flex-shrink: 0;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 160ms var(--ease-standard);
+      box-shadow: 0 1px 3px rgba(5,5,7,0.05);
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .chip:active,
+    .send-btn:active,
+    .menu-btn:active,
+    .refresh-btn:active,
+    .mobile-swap-button:active {
+      transform: scale(0.97);
+    }
+
+    .chip.used {
+      background: var(--grey-50);
+      color: var(--grey-400);
+      border-color: var(--line);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .input-bar,
+    .chat-input-bar {
+      padding: 12px 16px;
+      background: var(--white);
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .msg-input {
+      flex: 1;
+      width: 100%;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 14px;
+      background: var(--white);
+      color: var(--ink);
+      resize: none;
+      min-height: 40px;
+      max-height: 120px;
+      line-height: 1.5;
+      transition: border-color 160ms var(--ease-standard);
+      outline: none;
+    }
+
+    .msg-input:focus {
+      border-color: var(--black);
+      box-shadow: 0 0 0 1px var(--black);
+    }
+
+    .msg-input::placeholder {
+      color: var(--grey-400);
+    }
+
+    .send-btn {
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--black);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 160ms var(--ease-standard), transform 80ms;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      background: var(--grey-800);
+      transform: scale(1.05);
+    }
+
+    .send-btn:disabled {
+      background: var(--grey-200);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .resize-handle {
+      width: 5px;
+      flex-shrink: 0;
+      background: var(--line);
+      cursor: col-resize;
+      position: relative;
+      transition: background 120ms;
+      z-index: 10;
+    }
+
+    .resize-handle:hover, .resize-handle.dragging {
+      background: var(--accent-mid);
+    }
+
+    .resize-handle::after {
+      content: '';
+      position: absolute;
+      inset: 0 -4px;
+    }
+
+    .report-canvas-wrap {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      background: var(--grey-50);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .mobile-swap-button {
+      display: none;
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: var(--white);
+      padding: 10px 16px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .mobile-swap-grip {
+      width: 40px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--grey-200);
+      display: inline-block;
+    }
+
+    .report-canvas {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--grey-50);
+      padding: 28px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-height: 0;
+    }
+
+    .report-sections-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #section-property { grid-column: 1; }
+
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+      gap: 16px;
+    }
+
+    .section-label {
+      font-family: var(--font);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .report-title {
+      font-family: var(--display);
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+      margin-top: 4px;
+    }
+
+    .report-live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-mid);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.4;
+        transform: scale(0.8);
+      }
+    }
+
+    .report-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--grey-400);
+      text-align: center;
+      padding: 40px;
+      min-height: 240px;
+    }
+
+    .report-empty.hidden {
+      display: none;
+    }
+
+    .report-empty i {
+      width: 40px;
+      height: 40px;
+    }
+
+    .report-empty p {
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .report-section {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--white);
+      overflow: hidden;
+      display: none;
+      box-shadow: 0 2px 12px rgba(5, 5, 7, 0.04);
+      transition: box-shadow 200ms var(--ease-standard);
+    }
+
+    .report-section:hover {
+      box-shadow: 0 4px 20px rgba(5, 5, 7, 0.08);
+    }
+
+    .report-section.mounted {
+      display: block;
+    }
+
+    .report-section.visible {
+      display: block;
+    }
+
+    .report-section.updated {
+      animation: section-flash 0.8s var(--ease-standard);
+    }
+
+    @keyframes section-flash {
+      0% { box-shadow: 0 0 0 3px var(--accent-mid); }
+      100% { box-shadow: 0 2px 12px rgba(5,5,7,0.04); }
+    }
+
+    .section-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      gap: 12px;
+    }
+
+    .section-hdr-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .section-hdr-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .section-hdr-icon i {
+      width: 16px;
+      height: 16px;
+    }
+
+    .section-hdr-copy {
+      min-width: 0;
+    }
+
+    .section-hdr-title {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .section-hdr-sub {
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0;
+      text-transform: none;
+      font-family: var(--font);
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: min(48vw, 440px);
+    }
+
+    .section-status {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .section-status.new {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--accent-mid);
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+
+    .section-status.updated {
+      background: #fff8e6;
+      color: #a05c00;
+      border: 1px solid #ffe3a0;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .section-status.loading {
+      background: var(--grey-50);
+      color: var(--grey-400);
+      border: 1px solid var(--line);
+    }
+
+    .section-body {
+      padding: 20px;
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, var(--line) 25%, var(--accent-soft) 50%, var(--line) 75%);
+      background-size: 200% 100%;
+      border-radius: 6px;
+      animation: shimmer 1.4s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .skeleton-line,
+    .skel-line {
+      height: 12px;
+      background: linear-gradient(90deg, var(--line) 25%, var(--accent-soft) 50%, var(--line) 75%);
+      background-size: 200% 100%;
+      border-radius: 6px;
+      animation: shimmer 1.4s infinite;
+      margin-bottom: 8px;
+    }
+
+    .skel-line.short {
+      width: 40%;
+    }
+
+    .skel-line.med {
+      width: 65%;
+    }
+
+    .skel-line.full {
+      width: 100%;
+    }
+
+    .skel-block {
+      height: 180px;
+      width: 100%;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .property-img-wrap {
+      position: relative;
+    }
+
+    .property-img {
+      width: 100%;
+      height: auto;
+      max-height: 340px;
+      object-fit: cover;
+      object-position: center 60%;
+      display: block;
+      background: var(--line);
+    }
+
+    .property-img-chips {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .property-img-chips span {
+      background: rgba(0, 0, 0, 0.65);
+      color: var(--white);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 4px;
+      backdrop-filter: blur(4px);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .property-img-chips span i {
+      width: 10px;
+      height: 10px;
+    }
+
+    .property-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .property-address {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .property-address-sub {
+      margin-top: 3px;
+    }
+
+    .property-price-block {
+      margin-bottom: 14px;
+    }
+
+    .property-price {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      font-feature-settings: "tnum";
+      line-height: 1;
+    }
+
+    .property-price-sub {
+      margin-top: 4px;
+    }
+
+    .stat-value,
+    .metric-value,
+    .stat-num,
+    .big-num,
+    .property-price,
+    .receipt-row-value,
+    .suburb-metric-value,
+    .bar-val,
+    .grant-value,
+    .afford-val,
+    .afford-score-value {
+      letter-spacing: -0.06em;
+      font-weight: 900;
+      font-feature-settings: "tnum";
+    }
+
+    .property-badge {
+      background: var(--grey-50);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .receipt-rows {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--grey-50);
+    }
+
+    .receipt-row:last-child {
+      border-bottom: none;
+    }
+
+    .receipt-row-value {
+      font-size: 14px;
+      font-weight: 600;
+      font-feature-settings: "tnum";
+      text-align: right;
+    }
+
+    .verdict-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .verdict-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--grey-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .verdict-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .verdict-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .verdict-subtitle {
+      font-size: 12px;
+      color: var(--grey-500);
+      margin-top: 1px;
+    }
+
+    .verdict-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--black);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .verdict-link:hover {
+      text-decoration: underline;
+    }
+
+    .suburb-metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .suburb-metric {
+      padding: 12px;
+      text-align: center;
+      border-right: 1px solid var(--grey-100);
+    }
+
+    .suburb-metric:last-child {
+      border-right: none;
+    }
+
+    .suburb-metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-feature-settings: "tnum";
+    }
+
+    .suburb-bars {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bar-label {
+      min-width: 130px;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 4px;
+      background: var(--grey-100);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-track.tall {
+      height: 8px;
+    }
+
+    .bar-fill {
+      width: 0;
+      height: 100%;
+      background: var(--black);
+      border-radius: 999px;
+      transition: width 0.8s var(--ease-standard);
+    }
+
+    .bar-val {
+      font-size: 13px;
+      font-weight: 600;
+      font-feature-settings: "tnum";
+      min-width: 52px;
+      text-align: right;
+    }
+
+    .grant-list,
+    .risk-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .grant-row,
+    .risk-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--grey-50);
+    }
+
+    .grant-row:last-child,
+    .risk-row:last-child {
+      border-bottom: none;
+    }
+
+    .grant-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--grey-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .grant-icon i {
+      width: 14px;
+      height: 14px;
+    }
+
+    .grant-row.eligible .grant-icon {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .grant-row.ineligible {
+      opacity: 0.5;
+    }
+
+    .grant-body,
+    .risk-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .grant-name,
+    .risk-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .grant-desc,
+    .risk-desc {
+      font-size: 12px;
+      color: var(--grey-500);
+      margin-top: 1px;
+    }
+
+    .grant-value {
+      font-size: 13px;
+      font-weight: 700;
+      font-feature-settings: "tnum";
+      white-space: nowrap;
+    }
+
+    .section-footer-note {
+      font-size: 13px;
+      color: var(--grey-500);
+      padding-top: 12px;
+      margin-top: 4px;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-footer-note strong {
+      color: var(--black);
+    }
+
+    .afford-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .afford-item {
+      background: var(--grey-50);
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .afford-val {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-feature-settings: "tnum";
+      margin-top: 4px;
+    }
+
+    .afford-score {
+      margin-top: 14px;
+    }
+
+    .afford-score-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 12px;
+    }
+
+    .afford-score-value {
+      font-size: 13px;
+      font-weight: 700;
+      font-feature-settings: "tnum";
+      white-space: nowrap;
+    }
+
+    .afford-score-note,
+    .afford-breakdown {
+      font-size: 12px;
+      color: var(--grey-500);
+      margin-top: 6px;
+    }
+
+    .afford-breakdown {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .risk-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .risk-row.low .risk-dot,
+    .risk-row.high .risk-dot {
+      background: var(--black);
+    }
+
+    .risk-row.medium .risk-dot {
+      background: var(--grey-500);
+    }
+
+    .risk-status {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--grey-500);
+      white-space: nowrap;
+    }
+
+    .risk-row.medium .risk-status {
+      color: var(--grey-800);
+    }
+
+    .report-section-anchor {
+      scroll-margin-top: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .report-sections-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #section-property { grid-column: 1; }
+
+      .section-hdr-sub {
+        max-width: 280px;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .panels {
+        flex-direction: column;
+      }
+
+      .resize-handle {
+        display: none;
+      }
+
+      .chat-panel {
+        width: 100% !important;
+        min-width: 0;
+        height: 50%;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .report-canvas-wrap {
+        min-width: 0;
+        height: 50%;
+        border-left: none;
+      }
+
+      .report-sections-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #section-property { grid-column: 1; }
+
+      .report-label,
+      .topbar-divider {
+        display: none;
+      }
+
+      .mobile-swap-button {
+        display: inline-flex;
+      }
+
+      .app.mobile-report-focus .chat-panel {
+        height: 35%;
+      }
+
+      .app.mobile-report-focus .report-canvas-wrap {
+        height: 65%;
+      }
+
+      .report-canvas {
+        padding: 16px;
+      }
+
+      .property-summary,
+      .report-header,
+      .section-hdr,
+      .verdict-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .section-hdr-sub {
+        max-width: none;
+      }
+
+      .suburb-metrics-row,
+      .afford-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .bar-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+          "label value"
+          "track track";
+        gap: 6px 10px;
+      }
+
+      .bar-label {
+        grid-area: label;
+        min-width: 0;
+      }
+
+      .bar-track {
+        grid-area: track;
+      }
+
+      .bar-val {
+        grid-area: value;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" type="button" aria-label="Open menu">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="topbar-brand">Brick AI</div>
+      </div>
+      <div class="topbar-fill"></div>
+      <div class="topbar-right">
+        <div class="report-label">Property Report</div>
+        <div class="topbar-divider">|</div>
+        <div class="topbar-name">Sarah L.</div>
+        <div class="topbar-avatar" aria-hidden="true">SL</div>
+      </div>
+    </header>
+
+    <div class="panels">
+      <section class="chat-panel" aria-label="Chat panel">
+        <div class="chat-header">
+          <div class="chat-header-avatar">B</div>
+          <div class="chat-header-copy">
+            <div class="chat-header-title">Brick AI</div>
+            <div class="chat-header-subtitle">Property assistant</div>
+          </div>
+          <button class="refresh-btn" id="reset-btn" type="button" aria-label="Reset conversation">
+            <i data-lucide="refresh-cw"></i>
+          </button>
+        </div>
+
+        <div class="chat-feed" id="chat-feed"></div>
+
+        <div class="chips-row" id="chips-row">
+          <button class="chip" data-action="property" type="button">🏠 Analyse this property</button>
+          <button class="chip" data-action="grants" type="button">🎁 Check my grants</button>
+          <button class="chip" data-action="budget" type="button">💰 Test my budget</button>
+          <button class="chip" data-action="flood" type="button">🌊 Check flood risk</button>
+          <button class="chip" data-action="suburb" type="button">📊 Suburb report</button>
+        </div>
+
+        <div class="input-bar chat-input-bar">
+          <textarea class="msg-input" id="msg-input" rows="1" placeholder="Ask about the property, grants, budget, or risks..."></textarea>
+          <button class="send-btn" id="send-btn" type="button" aria-label="Send message" disabled>
+            <i data-lucide="arrow-up"></i>
+          </button>
+        </div>
+      </section>
+
+      <div class="resize-handle" id="resize-handle" title="Drag to resize"></div>
+
+      <section class="report-canvas-wrap" aria-label="Report canvas">
+        <button class="mobile-swap-button" id="mobile-swap" type="button" aria-label="Swap panel focus">
+          <span class="mobile-swap-grip"></span>
+          <span>Swap report focus</span>
+        </button>
+
+        <div class="report-canvas" id="report-canvas">
+          <div class="report-header">
+            <div>
+              <div class="section-label">Live property report</div>
+              <div class="report-title">Fitzroy North, VIC</div>
+            </div>
+            <div class="report-live-badge">
+              <span class="live-dot"></span>
+              <span>Live</span>
+            </div>
+          </div>
+
+          <div class="report-empty" id="report-empty">
+            <i data-lucide="layout-dashboard"></i>
+            <p>Your report will appear here as you chat.</p>
+            <p class="section-label">Try asking about a property, grants, or your budget.</p>
+          </div>
+
+          <div class="report-sections-grid" id="report-sections-grid">
+
+          <section class="report-section report-section-anchor" id="section-property" data-title="Property analysis" data-subtitle="14 Rose St, Fitzroy North" data-icon="home">
+            <div class="section-hdr">
+              <div class="section-hdr-left">
+                <div class="section-hdr-icon"><i data-lucide="home"></i></div>
+                <div class="section-hdr-copy">
+                  <div class="section-hdr-title">Property analysis</div>
+                  <div class="section-hdr-sub section-label">14 Rose St, Fitzroy North</div>
+                </div>
+              </div>
+              <div class="section-status new">New</div>
+            </div>
+            <div class="section-body"></div>
+          </section>
+
+          <section class="report-section report-section-anchor" id="section-suburb" data-title="Suburb analysis" data-subtitle="Fitzroy North, VIC 3068" data-icon="map-pin">
+            <div class="section-hdr">
+              <div class="section-hdr-left">
+                <div class="section-hdr-icon"><i data-lucide="map-pin"></i></div>
+                <div class="section-hdr-copy">
+                  <div class="section-hdr-title">Suburb analysis</div>
+                  <div class="section-hdr-sub section-label">Fitzroy North, VIC 3068</div>
+                </div>
+              </div>
+              <div class="section-status new">New</div>
+            </div>
+            <div class="section-body"></div>
+          </section>
+
+          <section class="report-section report-section-anchor" id="section-grants" data-title="Grants &amp; schemes" data-subtitle="Victoria · First home buyer" data-icon="gift">
+            <div class="section-hdr">
+              <div class="section-hdr-left">
+                <div class="section-hdr-icon"><i data-lucide="gift"></i></div>
+                <div class="section-hdr-copy">
+                  <div class="section-hdr-title">Grants &amp; schemes</div>
+                  <div class="section-hdr-sub section-label">Victoria · First home buyer</div>
+                </div>
+              </div>
+              <div class="section-status new">New</div>
+            </div>
+            <div class="section-body"></div>
+          </section>
+
+          <section class="report-section report-section-anchor" id="section-afford" data-title="Affordability" data-subtitle="Based on your income" data-icon="wallet">
+            <div class="section-hdr">
+              <div class="section-hdr-left">
+                <div class="section-hdr-icon"><i data-lucide="wallet"></i></div>
+                <div class="section-hdr-copy">
+                  <div class="section-hdr-title">Affordability</div>
+                  <div class="section-hdr-sub section-label">Based on your income</div>
+                </div>
+              </div>
+              <div class="section-status new">New</div>
+            </div>
+            <div class="section-body"></div>
+          </section>
+
+          <section class="report-section report-section-anchor" id="section-risk" data-title="Risk assessment" data-subtitle="Flood · Overlay · Contract" data-icon="alert-triangle">
+            <div class="section-hdr">
+              <div class="section-hdr-left">
+                <div class="section-hdr-icon"><i data-lucide="alert-triangle"></i></div>
+                <div class="section-hdr-copy">
+                  <div class="section-hdr-title">Risk assessment</div>
+                  <div class="section-hdr-sub section-label">Flood · Overlay · Contract</div>
+                </div>
+              </div>
+              <div class="section-status new">New</div>
+            </div>
+            <div class="section-body"></div>
+          </section>
+
+          </div><!-- /.report-sections-grid -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const app = document.getElementById('app');
+    const feed = document.getElementById('chat-feed');
+    const reportCanvas = document.getElementById('report-canvas');
+    const reportEmpty = document.getElementById('report-empty');
+    const chipsRow = document.getElementById('chips-row');
+    const input = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('send-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const mobileSwapBtn = document.getElementById('mobile-swap');
+
+    // ── Resizable split ──────────────────────────────────────────────────────
+    (function initResize() {
+      const handle = document.getElementById('resize-handle');
+      const panels = handle.closest('.panels');
+      const chatPanel = panels.querySelector('.chat-panel');
+      let dragging = false;
+
+      handle.addEventListener('mousedown', e => {
+        e.preventDefault();
+        dragging = true;
+        handle.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+      });
+
+      document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const panelsRect = panels.getBoundingClientRect();
+        let newW = e.clientX - panelsRect.left;
+        const minW = 280;
+        const maxW = panelsRect.width * 0.70;
+        newW = Math.min(Math.max(newW, minW), maxW);
+        panels.style.setProperty('--chat-w', newW + 'px');
+        chatPanel.style.width = newW + 'px';
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false;
+        handle.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      });
+    })();
+
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    const SCRIPT = {
+      property: {
+        userMsg: "I'm looking at 3-bed in Fitzroy North around $1.1M — can you analyse it?",
+        aiMsg: "Sure! I've found a strong match — 14 Rose St, Fitzroy North, listed at $1,095,000. This is right at the suburb median for 3-bedroom properties. I've pulled the full analysis into your report.",
+        reportSection: 'section-property',
+        reportStatus: 'new',
+        noticeLabel: 'Property Analysis',
+        skeletonDelay: 1600
+      },
+      suburb: {
+        userMsg: "What's the suburb like? Is Fitzroy North a good area?",
+        aiMsg: "Fitzroy North is one of Melbourne's most consistently performing inner suburbs. Auction clearance is running at 76%, above the metro average. Strong rental demand too — 3.1% yield. Suburb report is in your panel.",
+        reportSection: 'section-suburb',
+        reportStatus: 'new',
+        noticeLabel: 'Suburb Analysis',
+        skeletonDelay: 1200
+      },
+      grants: {
+        userMsg: "What grants am I eligible for as a first home buyer in Victoria?",
+        aiMsg: "Good news — as a Victorian first-home buyer you're eligible for several schemes. The biggest win is the stamp duty exemption, which alone saves around $42,000 on this property. I've laid out all eligible grants in your report.",
+        reportSection: 'section-grants',
+        reportStatus: 'new',
+        noticeLabel: 'Grants & Schemes',
+        skeletonDelay: 1000
+      },
+      budget: {
+        userMsg: "I earn $95k a year. Can I actually afford this place?",
+        aiMsg: "On $95k, you can borrow around $570,000. Combined with a 5% deposit using the First Home Guarantee, you could be looking at properties up to about $600–620k comfortably. This $1.095M property would require a co-borrower or a larger deposit. I've run the numbers in your affordability report.",
+        reportSection: 'section-afford',
+        reportStatus: 'new',
+        noticeLabel: 'Affordability',
+        skeletonDelay: 1200
+      },
+      flood: {
+        userMsg: "What about flood risk and any overlays on this property?",
+        aiMsg: "Good question — always worth checking. The property sits outside the 1% AEP flood zone, so flood risk is low. There is a Heritage Overlay (HO1) which could restrict renovations — worth flagging with your conveyancer. I've added a risk summary to your report.",
+        reportSection: 'section-risk',
+        reportStatus: 'new',
+        noticeLabel: 'Risk Assessment',
+        skeletonDelay: 1000
+      }
+    };
+
+    const INITIAL_CHAT = [
+      { type: 'user', text: SCRIPT.property.userMsg },
+      { type: 'ai', text: SCRIPT.property.aiMsg },
+      { type: 'notice', label: SCRIPT.property.noticeLabel },
+      { type: 'user', text: SCRIPT.suburb.userMsg },
+      { type: 'ai', text: SCRIPT.suburb.aiMsg },
+      { type: 'notice', label: SCRIPT.suburb.noticeLabel }
+    ];
+
+    const state = {
+      completedActions: new Set(),
+      isStreaming: false,
+      afford: {
+        income: 95000,
+        borrowing: 570000,
+        deposit: 54750,
+        repayment: 4820,
+        score: 72,
+        takeHome: 6720,
+        remaining: 1900,
+        note: 'Moderate — stretching but achievable with the FHBG'
+      }
+    };
+
+    const skeletonHTML = `
+      <div class="skeleton skel-block"></div>
+      <div class="skeleton skel-line med"></div>
+      <div class="skeleton skel-line short"></div>
+    `;
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('en-AU', {
+        style: 'currency',
+        currency: 'AUD',
+        maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    function formatCompactCurrency(value) {
+      return `~${formatCurrency(value)}`;
+    }
+
+    function escapeHTML(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function refreshIcons() {
+      lucide.createIcons();
+    }
+
+    function autoResizeInput() {
+      input.style.height = '40px';
+      input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+    }
+
+    function syncSendState() {
+      sendBtn.disabled = !input.value.trim() || state.isStreaming;
+    }
+
+    function scrollFeedToBottom() {
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function scrollReportTo(el) {
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function setEmptyStateVisible(visible) {
+      reportEmpty.classList.toggle('hidden', !visible);
+    }
+
+    function applyBarFills(scope = document) {
+      scope.querySelectorAll('[data-fill]').forEach(el => {
+        el.style.width = `${el.dataset.fill}%`;
+      });
+    }
+
+    function updateSectionStatus(id, status) {
+      const section = document.getElementById(id);
+      const badge = section.querySelector('.section-status');
+      badge.className = `section-status ${status}`;
+      badge.textContent = status === 'loading' ? 'Loading' : status === 'updated' ? 'Updated' : 'New';
+    }
+
+    function getPropertyBody() {
+      return `
+        <div class="property-img-wrap">
+          <img class="property-img" src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=85&fit=clip" alt="14 Rose St" />
+          <div class="property-img-chips">
+            <span>For sale</span>
+            <span><i data-lucide="image"></i> 12 photos</span>
+          </div>
+        </div>
+        <div class="section-body">
+          <div class="property-summary">
+            <div>
+              <div class="property-address">14 Rose St, Fitzroy North</div>
+              <div class="section-label property-address-sub">VIC 3068 · Listed 12 days ago</div>
+            </div>
+            <div class="property-badge">3 bd · 2 ba</div>
+          </div>
+          <div class="property-price-block">
+            <div class="property-price">$1,095,000</div>
+            <div class="section-label property-price-sub">Asking · Suburb median $1,082,000</div>
+          </div>
+          <div class="receipt-rows">
+            <div class="receipt-row"><span class="section-label">12-mo growth</span><span class="receipt-row-value">+4.2%</span></div>
+            <div class="receipt-row"><span class="section-label">Auction clearance</span><span class="receipt-row-value">76%</span></div>
+            <div class="receipt-row"><span class="section-label">Land</span><span class="receipt-row-value">312 m²</span></div>
+            <div class="receipt-row"><span class="section-label">Days on market</span><span class="receipt-row-value">12</span></div>
+          </div>
+          <div class="verdict-row">
+            <div class="verdict-icon">✓</div>
+            <div class="verdict-content">
+              <div class="verdict-title">Within median range</div>
+              <div class="verdict-subtitle">Recommend viewing · check flood overlay</div>
+            </div>
+            <a href="#" class="verdict-link">Full report →</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function getSuburbBody() {
+      return `
+        <div class="section-body">
+          <div class="suburb-metrics-row">
+            <div class="suburb-metric">
+              <div class="suburb-metric-value">$1.08M</div>
+              <div class="section-label">Median price</div>
+            </div>
+            <div class="suburb-metric">
+              <div class="suburb-metric-value">76%</div>
+              <div class="section-label">Clearance</div>
+            </div>
+            <div class="suburb-metric">
+              <div class="suburb-metric-value">+4.2%</div>
+              <div class="section-label">12mo growth</div>
+            </div>
+            <div class="suburb-metric">
+              <div class="suburb-metric-value">3.1%</div>
+              <div class="section-label">Rental yield</div>
+            </div>
+          </div>
+          <div class="suburb-bars">
+            <div class="bar-row"><span class="section-label bar-label">Auction clearance</span><div class="bar-track"><div class="bar-fill" data-fill="76"></div></div><span class="bar-val">76%</span></div>
+            <div class="bar-row"><span class="section-label bar-label">Price growth</span><div class="bar-track"><div class="bar-fill" data-fill="42"></div></div><span class="bar-val">+4.2%</span></div>
+            <div class="bar-row"><span class="section-label bar-label">Rental yield</span><div class="bar-track"><div class="bar-fill" data-fill="31"></div></div><span class="bar-val">3.1%</span></div>
+            <div class="bar-row"><span class="section-label bar-label">Days on market</span><div class="bar-track"><div class="bar-fill" data-fill="24"></div></div><span class="bar-val">24 days</span></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function getGrantsBody() {
+      return `
+        <div class="section-body">
+          <div class="grant-list">
+            <div class="grant-row eligible">
+              <div class="grant-icon"><i data-lucide="check"></i></div>
+              <div class="grant-body">
+                <div class="grant-name">First Home Buyer Grant</div>
+                <div class="grant-desc">$10,000 for new builds under $750k</div>
+              </div>
+              <div class="grant-value">$10,000</div>
+            </div>
+            <div class="grant-row eligible">
+              <div class="grant-icon"><i data-lucide="check"></i></div>
+              <div class="grant-body">
+                <div class="grant-name">Stamp duty concession</div>
+                <div class="grant-desc">Full exemption on homes under $600k, concession to $750k</div>
+              </div>
+              <div class="grant-value">$0</div>
+            </div>
+            <div class="grant-row eligible">
+              <div class="grant-icon"><i data-lucide="check"></i></div>
+              <div class="grant-body">
+                <div class="grant-name">First Home Guarantee</div>
+                <div class="grant-desc">Buy with 5% deposit, no LMI</div>
+              </div>
+              <div class="grant-value">Eligible</div>
+            </div>
+            <div class="grant-row ineligible">
+              <div class="grant-icon"><i data-lucide="x"></i></div>
+              <div class="grant-body">
+                <div class="grant-name">HomeBuilder Grant</div>
+                <div class="grant-desc">For new construction only</div>
+              </div>
+              <div class="grant-value">N/A</div>
+            </div>
+          </div>
+          <div class="section-footer-note">Estimated savings: <strong>~$52,400</strong> in grants and concessions</div>
+        </div>
+      `;
+    }
+
+    function deriveAffordability(income = 95000) {
+      const safeIncome = Math.max(45000, income);
+      const borrowing = Math.round((safeIncome * 6) / 1000) * 1000;
+      const deposit = Math.round((borrowing * 0.096) / 50) * 50;
+      const repayment = Math.round((borrowing * 0.00846) / 10) * 10;
+      const takeHome = Math.round((safeIncome * 0.0707) / 10) * 10;
+      const remaining = takeHome - repayment;
+      const rawScore = Math.round(100 - ((repayment / Math.max(takeHome, 1)) * 60) + Math.min(12, safeIncome / 15000));
+      const score = Math.max(32, Math.min(88, rawScore));
+      let note = 'Moderate — stretching but achievable with the FHBG';
+      if (score >= 78) note = 'Comfortable — solid buffer for repayments and costs';
+      if (score <= 58) note = 'Tight — likely needs a lower price point or bigger deposit';
+      return { income: safeIncome, borrowing, deposit, repayment, takeHome, remaining, score, note };
+    }
+
+    function getAffordabilityBody() {
+      const data = state.afford;
+      return `
+        <div class="section-body">
+          <div class="afford-grid">
+            <div class="afford-item">
+              <div class="section-label">Your income</div>
+              <div class="afford-val">${formatCurrency(data.income)}</div>
+            </div>
+            <div class="afford-item">
+              <div class="section-label">Max borrowing</div>
+              <div class="afford-val">${formatCompactCurrency(data.borrowing)}</div>
+            </div>
+            <div class="afford-item">
+              <div class="section-label">Required deposit</div>
+              <div class="afford-val">${formatCurrency(data.deposit)}</div>
+            </div>
+            <div class="afford-item">
+              <div class="section-label">Monthly repayment</div>
+              <div class="afford-val">${formatCurrency(data.repayment)}</div>
+            </div>
+          </div>
+          <div class="afford-score">
+            <div class="afford-score-head">
+              <span class="section-label">Affordability score</span>
+              <span class="afford-score-value">${data.score} / 100</span>
+            </div>
+            <div class="bar-track tall">
+              <div class="bar-fill" data-fill="${data.score}"></div>
+            </div>
+            <div class="afford-score-note">${data.note}</div>
+          </div>
+          <div class="afford-breakdown">
+            <div class="section-label">Monthly income breakdown</div>
+            <div class="receipt-rows">
+              <div class="receipt-row"><span class="section-label">Take-home (est.)</span><span class="receipt-row-value">${formatCurrency(data.takeHome)}</span></div>
+              <div class="receipt-row"><span class="section-label">Mortgage</span><span class="receipt-row-value">${formatCurrency(data.repayment)}</span></div>
+              <div class="receipt-row"><span class="section-label">Remaining</span><span class="receipt-row-value">${formatCurrency(data.remaining)}</span></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function getRiskBody() {
+      return `
+        <div class="section-body">
+          <div class="risk-list">
+            <div class="risk-row low">
+              <div class="risk-dot"></div>
+              <div class="risk-body">
+                <div class="risk-name">Flood risk</div>
+                <div class="risk-desc">Outside the 1% AEP flood zone · Low risk</div>
+              </div>
+              <div class="risk-status">Low</div>
+            </div>
+            <div class="risk-row medium">
+              <div class="risk-dot"></div>
+              <div class="risk-body">
+                <div class="risk-name">Heritage overlay</div>
+                <div class="risk-desc">HO1 applies — renovation restrictions possible</div>
+              </div>
+              <div class="risk-status">Review</div>
+            </div>
+            <div class="risk-row low">
+              <div class="risk-dot"></div>
+              <div class="risk-body">
+                <div class="risk-name">Bushfire risk</div>
+                <div class="risk-desc">BAL rating not applicable for inner Melbourne</div>
+              </div>
+              <div class="risk-status">None</div>
+            </div>
+            <div class="risk-row medium">
+              <div class="risk-dot"></div>
+              <div class="risk-body">
+                <div class="risk-name">Contract review</div>
+                <div class="risk-desc">Section 32 not yet uploaded</div>
+              </div>
+              <div class="risk-status">Pending</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function getRealContent(id) {
+      switch (id) {
+        case 'section-property':
+          return getPropertyBody();
+        case 'section-suburb':
+          return getSuburbBody();
+        case 'section-grants':
+          return getGrantsBody();
+        case 'section-afford':
+          return getAffordabilityBody();
+        case 'section-risk':
+          return getRiskBody();
+        default:
+          return '<div class="section-body"></div>';
+      }
+    }
+
+    function markChipUsed(action) {
+      const chip = chipsRow.querySelector(`[data-action="${action}"]`);
+      chip?.classList.add('used');
+    }
+
+    function appendUserMessage(text) {
+      const wrap = document.createElement('div');
+      wrap.className = 'msg-user';
+      wrap.innerHTML = `<div class="msg-user-body">${escapeHTML(text)}</div>`;
+      feed.appendChild(wrap);
+      scrollFeedToBottom();
+      refreshIcons();
+    }
+
+    function appendAiMessageShell() {
+      const wrap = document.createElement('div');
+      wrap.className = 'msg-ai';
+      wrap.innerHTML = `
+        <div class="msg-ai-avatar">B</div>
+        <div class="msg-ai-body"><span class="streaming-text"></span></div>
+      `;
+      feed.appendChild(wrap);
+      scrollFeedToBottom();
+      refreshIcons();
+      return wrap.querySelector('.streaming-text');
+    }
+
+    function appendStaticAiMessage(text) {
+      const wrap = document.createElement('div');
+      wrap.className = 'msg-ai';
+      wrap.innerHTML = `
+        <div class="msg-ai-avatar">B</div>
+        <div class="msg-ai-body">${escapeHTML(text)}</div>
+      `;
+      feed.appendChild(wrap);
+      scrollFeedToBottom();
+      refreshIcons();
+    }
+
+    function appendNotice(label) {
+      const notice = document.createElement('div');
+      notice.className = 'report-update-notice';
+      notice.innerHTML = `<i data-lucide="layout-dashboard"></i> Report updated · <strong>${escapeHTML(label)}</strong>`;
+      feed.appendChild(notice);
+      scrollFeedToBottom();
+      refreshIcons();
+    }
+
+    async function streamText(element, text, speedMs = 18) {
+      element.innerHTML = '';
+      const cursor = document.createElement('span');
+      cursor.className = 'streaming-cursor';
+      element.appendChild(cursor);
+
+      const words = text.split(' ');
+      for (let i = 0; i < words.length; i += 1) {
+        const span = document.createElement('span');
+        span.textContent = `${i > 0 ? ' ' : ''}${words[i]}`;
+        element.insertBefore(span, cursor);
+        await sleep(speedMs + Math.random() * 10);
+        scrollFeedToBottom();
+      }
+      cursor.remove();
+    }
+
+    function showSection(id, status = 'new', scroll = true) {
+      setEmptyStateVisible(false);
+      const el = document.getElementById(id);
+      el.classList.add('mounted');
+      requestAnimationFrame(() => {
+        el.classList.add('visible');
+        if (status === 'updated') {
+          el.classList.add('updated');
+          setTimeout(() => el.classList.remove('updated'), 800);
+        }
+      });
+      updateSectionStatus(id, status);
+      refreshIcons();
+      applyBarFills(el);
+      if (scroll) scrollReportTo(el);
+    }
+
+    async function showSectionWithSkeleton(id, delayMs = 1400, status = 'new') {
+      setEmptyStateVisible(false);
+      const el = document.getElementById(id);
+      const body = el.querySelector('.section-body');
+      const headerHTML = el.querySelector('.section-hdr').outerHTML;
+      const actualStatus = el.classList.contains('mounted') ? 'updated' : status;
+      updateSectionStatus(id, 'loading');
+      body.innerHTML = skeletonHTML;
+      el.classList.add('mounted');
+      requestAnimationFrame(() => el.classList.add('visible'));
+      scrollReportTo(el);
+      refreshIcons();
+
+      await sleep(delayMs);
+      el.innerHTML = `${headerHTML}${getRealContent(id)}`;
+      updateSectionStatus(id, actualStatus);
+      el.classList.add('updated');
+      setTimeout(() => el.classList.remove('updated'), 800);
+      refreshIcons();
+      applyBarFills(el);
+      scrollReportTo(el);
+    }
+
+    function renderSectionImmediately(id, status = 'new') {
+      const el = document.getElementById(id);
+      el.innerHTML = `${el.querySelector('.section-hdr').outerHTML}${getRealContent(id)}`;
+      el.classList.add('mounted', 'visible');
+      updateSectionStatus(id, status);
+      setEmptyStateVisible(false);
+      refreshIcons();
+      applyBarFills(el);
+    }
+
+    function detectAction(text) {
+      const value = text.toLowerCase();
+      if (/grant|scheme|eligible/.test(value)) return 'grants';
+      if (/afford|budget|earn|salary|income/.test(value)) return 'budget';
+      if (/suburb|area|neighbourhood/.test(value)) return 'suburb';
+      if (/flood|risk|overlay|heritage/.test(value)) return 'flood';
+      if (/property|analyse|analyze|house|bed/.test(value)) return 'property';
+      return null;
+    }
+
+    function extractIncome(text) {
+      const value = text.toLowerCase();
+      const kMatch = value.match(/\$?\s*(\d{2,3}(?:\.\d+)?)\s*k\b/);
+      if (kMatch) return Math.round(Number(kMatch[1]) * 1000);
+      const fullMatch = value.match(/\$?\s*(\d{2,3}(?:,\d{3})+)/);
+      if (fullMatch) return Number(fullMatch[1].replace(/,/g, ''));
+      return null;
+    }
+
+    function buildBudgetReply(income) {
+      const model = deriveAffordability(income || 95000);
+      state.afford = model;
+      return `At ${formatCurrency(model.income)} a year, your estimated borrowing capacity is around ${formatCurrency(model.borrowing)}. Repayments land near ${formatCurrency(model.repayment)} a month, which leaves about ${formatCurrency(model.remaining)} after mortgage costs. I've updated your affordability panel with the latest numbers.`;
+    }
+
+    async function runScriptAction(action, customUserMsg) {
+      const script = SCRIPT[action];
+      if (!script || state.isStreaming) return;
+
+      state.isStreaming = true;
+      syncSendState();
+      markChipUsed(action);
+      appendUserMessage(customUserMsg || script.userMsg);
+
+      if (action === 'budget') {
+        const income = extractIncome(customUserMsg || '') || state.afford.income;
+        state.afford = deriveAffordability(income);
+      }
+
+      const aiShell = appendAiMessageShell();
+      const reply = action === 'budget' && customUserMsg ? buildBudgetReply(extractIncome(customUserMsg) || state.afford.income) : script.aiMsg;
+      await streamText(aiShell, reply);
+
+      const wasCompleted = state.completedActions.has(action);
+      await showSectionWithSkeleton(script.reportSection, script.skeletonDelay, wasCompleted ? 'updated' : script.reportStatus);
+      appendNotice(script.noticeLabel);
+      state.completedActions.add(action);
+      state.isStreaming = false;
+      syncSendState();
+    }
+
+    async function handleFreeTextSubmit() {
+      const text = input.value.trim();
+      if (!text || state.isStreaming) return;
+      input.value = '';
+      autoResizeInput();
+      syncSendState();
+
+      const action = detectAction(text);
+      if (action) {
+        await runScriptAction(action, text);
+        return;
+      }
+
+      state.isStreaming = true;
+      syncSendState();
+      appendUserMessage(text);
+      const aiShell = appendAiMessageShell();
+      await streamText(aiShell, "I've noted that. Your report will be updated as I gather more information. Try asking about grants, your budget, or the suburb in more detail.");
+      state.isStreaming = false;
+      syncSendState();
+    }
+
+    function seedChat() {
+      feed.innerHTML = '';
+      INITIAL_CHAT.forEach(entry => {
+        if (entry.type === 'user') appendUserMessage(entry.text);
+        if (entry.type === 'ai') appendStaticAiMessage(entry.text);
+        if (entry.type === 'notice') appendNotice(entry.label);
+      });
+      scrollFeedToBottom();
+    }
+
+    function resetSections() {
+      document.querySelectorAll('.report-section').forEach(section => {
+        const header = section.querySelector('.section-hdr').outerHTML;
+        section.innerHTML = `${header}<div class="section-body"></div>`;
+        section.className = 'report-section report-section-anchor';
+      });
+      renderSectionImmediately('section-property', 'new');
+      renderSectionImmediately('section-suburb', 'new');
+      document.getElementById('section-grants').className = 'report-section report-section-anchor';
+      document.getElementById('section-afford').className = 'report-section report-section-anchor';
+      document.getElementById('section-risk').className = 'report-section report-section-anchor';
+      setEmptyStateVisible(false);
+    }
+
+    function resetApp() {
+      state.completedActions = new Set(['property', 'suburb']);
+      state.isStreaming = false;
+      state.afford = deriveAffordability(95000);
+      document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('used'));
+      markChipUsed('property');
+      markChipUsed('suburb');
+      seedChat();
+      resetSections();
+      input.value = '';
+      autoResizeInput();
+      syncSendState();
+      reportCanvas.scrollTop = 0;
+      refreshIcons();
+    }
+
+    chipsRow.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', async () => {
+        await runScriptAction(chip.dataset.action);
+      });
+    });
+
+    input.addEventListener('input', () => {
+      autoResizeInput();
+      syncSendState();
+    });
+
+    input.addEventListener('keydown', async event => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        await handleFreeTextSubmit();
+      }
+    });
+
+    sendBtn.addEventListener('click', handleFreeTextSubmit);
+    resetBtn.addEventListener('click', resetApp);
+    mobileSwapBtn.addEventListener('click', () => {
+      app.classList.toggle('mobile-report-focus');
+    });
+
+    document.addEventListener('click', event => {
+      if (event.target.closest('.verdict-link')) event.preventDefault();
+    });
+
+    resetApp();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brick AI — Find The Right Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --nav-h: 64px;
+      --gutter: clamp(20px, 5vw, 64px);
+      --max-w: 1200px;
+      --section-v: clamp(72px, 9vw, 120px);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      color: #111827;
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+    }
+
+    /* ── Badge / eyebrow ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #e5e7eb;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid #f3f4f6;
+      height: var(--nav-h);
+    }
+
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .nav-logo {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #111827;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      color: #6b7280;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: #111827; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-outline-pill {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      background: transparent;
+      border: 1px solid #d1d5db;
+      border-radius: 999px;
+      padding: 6px 16px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-outline-pill:hover { border-color: #9ca3af; color: #111827; }
+
+    .btn-filled-pill {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      background: #111827;
+      border: none;
+      border-radius: 999px;
+      padding: 7px 18px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-filled-pill:hover { background: #1f2937; }
+
+    .nav-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .nav-menu-btn span {
+      display: block;
+      width: 20px;
+      height: 1.5px;
+      background: #374151;
+      margin: 5px 0;
+    }
+
+    /* ── Hero ── */
+    #hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, #eff6ff 0%, #fff 40%, #ecfdf5 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: var(--nav-h);
+    }
+
+    /* Radial overlay — same as the app */
+    #hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 25% 10%, rgba(74,95,255,0.07) 0%, transparent 55%),
+        radial-gradient(circle at 75% 90%, rgba(92,255,211,0.07) 0%, transparent 45%);
+      pointer-events: none;
+    }
+
+    /* Decorative floating keyboard keys */
+    .hero-keys {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .key-cluster {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .key-cluster-left  { left: 4%; top: 25%; }
+    .key-cluster-right { right: 4%; top: 30%; }
+
+    .key {
+      width: 72px;
+      height: 72px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06), inset 0 1px 1px rgba(255,255,255,0.9);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #9ca3af;
+      opacity: 0.6;
+    }
+
+    .key svg { width: 20px; height: 20px; color: #9ca3af; }
+
+    @keyframes float-a {
+      0%, 100% { transform: translateY(0) rotate(-4deg); }
+      50%       { transform: translateY(-14px) rotate(1deg); }
+    }
+
+    @keyframes float-b {
+      0%, 100% { transform: translateY(0) rotate(4deg); }
+      50%       { transform: translateY(12px) rotate(-1deg); }
+    }
+
+    @keyframes float-c {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50%       { transform: translateY(-10px) rotate(3deg); }
+    }
+
+    @keyframes float-d {
+      0%, 100% { transform: translateY(0) rotate(5deg); }
+      50%       { transform: translateY(8px) rotate(-2deg); }
+    }
+
+    .key-1 { animation: float-a 14s ease-in-out infinite; transform: translateX(24px); }
+    .key-2 { animation: float-b 17s ease-in-out infinite; transform: translateX(-16px); }
+    .key-3 { animation: float-c 15s ease-in-out infinite; transform: translateX(-20px); }
+    .key-4 { animation: float-d 18s ease-in-out infinite; transform: translateX(14px); }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 760px;
+      padding: clamp(56px, 8vw, 96px) var(--gutter) clamp(24px, 4vw, 40px);
+      text-align: center;
+    }
+
+    .hero-headline {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.07;
+      color: #111827;
+      margin: 20px 0 16px;
+    }
+
+    .hero-sub {
+      font-size: clamp(15px, 1.6vw, 18px);
+      color: #6b7280;
+      line-height: 1.65;
+      max-width: 520px;
+      margin: 0 auto 32px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      background: #111827;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 26px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .btn-hero-primary:hover { background: #1f2937; transform: translateY(-1px); }
+
+    .btn-hero-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #374151;
+      background: transparent;
+      border: 1px solid #d1d5db;
+      border-radius: 999px;
+      padding: 12px 26px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .btn-hero-ghost:hover { border-color: #6b7280; transform: translateY(-1px); }
+
+    /* Glass chat card */
+    .hero-card {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 var(--gutter) clamp(48px, 7vw, 80px);
+    }
+
+    .glass-card {
+      background: rgba(255,255,255,0.82);
+      border: 1px solid #e5e7eb;
+      border-radius: 28px;
+      padding: clamp(24px, 4vw, 36px);
+      box-shadow: 0 20px 70px -15px rgba(0,0,0,0.10);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .chat-row { display: flex; }
+    .chat-row.user { justify-content: flex-end; }
+    .chat-row.ai   { justify-content: flex-start; }
+
+    .bubble {
+      max-width: 80%;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 11px 16px;
+      border-radius: 18px;
+      border: 1px solid;
+    }
+
+    .bubble-user {
+      background: #111827;
+      color: #fff;
+      border-color: #111827;
+      border-bottom-right-radius: 5px;
+    }
+
+    .bubble-ai {
+      background: #f9fafb;
+      color: #111827;
+      border-color: #e5e7eb;
+      border-bottom-left-radius: 5px;
+    }
+
+    .bubble-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+
+    .chat-form-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+
+    .chat-input-row {
+      display: flex;
+      align-items: center;
+      border: 1px solid #d1d5db;
+      border-radius: 18px;
+      background: #fff;
+      padding: 6px 6px 6px 18px;
+    }
+
+    .chat-input-fake {
+      flex: 1;
+      font-size: 14px;
+      color: #9ca3af;
+      font-family: var(--font);
+      padding: 8px 0;
+    }
+
+    .chat-send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #111827;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #fff;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .chat-send-btn:hover { background: #1f2937; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: #9ca3af;
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 1.1s step-end infinite;
+    }
+
+    /* ── Stats ── */
+    #stats {
+      border-top: 1px solid #f3f4f6;
+      border-bottom: 1px solid #f3f4f6;
+      background: #fff;
+    }
+
+    .stats-grid {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: clamp(28px, 4vw, 48px) var(--gutter);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stat-item {
+      padding-right: 32px;
+      border-right: 1px solid #f3f4f6;
+    }
+
+    .stat-item:first-child { padding-left: 0; }
+    .stat-item:last-child  { border-right: none; }
+
+    .stat-num {
+      font-size: clamp(28px, 3.5vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    /* ── Section shared ── */
+    .section-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 52px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+    }
+
+    /* ── Features ── */
+    #features {
+      padding: var(--section-v) 0;
+      background: #f9fafb;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .features-header {
+      margin-bottom: clamp(40px, 5vw, 64px);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .feature-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: clamp(22px, 3vw, 32px);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+      box-shadow: 0 12px 36px rgba(0,0,0,0.07);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      color: #374151;
+    }
+
+    .feature-num {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #d1d5db;
+      margin-bottom: 8px;
+    }
+
+    .feature-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.65;
+    }
+
+    /* ── How it works ── */
+    #how {
+      padding: var(--section-v) 0;
+      background: #fff;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .how-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(48px, 8vw, 100px);
+      align-items: start;
+    }
+
+    .steps-list { margin-top: clamp(28px, 4vw, 40px); }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      padding: clamp(16px, 2.5vw, 22px) 0;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+    }
+
+    .step:first-child { border-top: 1px solid #f3f4f6; }
+
+    .step-num {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #d1d5db;
+      padding-top: 3px;
+      min-width: 26px;
+      transition: color 0.2s;
+    }
+
+    .step.active .step-num { color: #111827; }
+
+    .step-body { flex: 1; }
+
+    .step-bar {
+      width: 18px;
+      height: 2px;
+      background: #e5e7eb;
+      margin-bottom: 9px;
+      border-radius: 1px;
+      transition: background 0.3s, width 0.3s;
+    }
+
+    .step.active .step-bar { background: #111827; width: 28px; }
+
+    .step-title {
+      font-size: clamp(14px, 1.3vw, 15px);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #d1d5db;
+      margin-bottom: 4px;
+      transition: color 0.2s;
+    }
+
+    .step.active .step-title { color: #111827; }
+
+    .step-desc {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .step.active .step-desc { display: block; }
+
+    /* How visual — glass chat panel */
+    .how-visual {
+      background: rgba(255,255,255,0.82);
+      border: 1px solid #e5e7eb;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.08);
+      backdrop-filter: blur(16px);
+    }
+
+    .how-chat-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .chat-name { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+
+    .chat-online {
+      font-size: 11px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .online-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #6b7280;
+      display: inline-block;
+    }
+
+    .how-chat-body {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 260px;
+    }
+
+    .how-chat-input {
+      padding: 12px 14px;
+      border-top: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .how-input-fake {
+      flex: 1;
+      font-size: 13px;
+      color: #9ca3af;
+      font-family: var(--font);
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 8px 14px;
+    }
+
+    /* ── Testimonials ── */
+    #proof {
+      padding: var(--section-v) 0;
+      background: #f9fafb;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: clamp(36px, 5vw, 56px);
+    }
+
+    .testimonial {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: clamp(20px, 3vw, 28px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .testimonial:hover {
+      box-shadow: 0 10px 32px rgba(0,0,0,0.07);
+      transform: translateY(-2px);
+    }
+
+    .stars { font-size: 14px; letter-spacing: 1px; color: #374151; }
+
+    .t-quote {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #374151;
+      flex: 1;
+    }
+
+    .t-author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid #f3f4f6;
+      padding-top: 14px;
+    }
+
+    .t-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .t-name { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+    .t-role { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+
+    /* ── Pricing ── */
+    #pricing {
+      padding: var(--section-v) 0;
+      background: #fff;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .pricing-header { text-align: center; margin-bottom: clamp(36px, 5vw, 56px); }
+    .pricing-header .section-eyebrow { margin-bottom: 10px; }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .pricing-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 22px;
+      padding: clamp(24px, 3.5vw, 36px);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      background: #fff;
+      transition: box-shadow 0.2s;
+    }
+
+    .pricing-card:hover { box-shadow: 0 10px 36px rgba(0,0,0,0.07); }
+
+    .pricing-card.featured {
+      background: #111827;
+      border-color: #111827;
+      color: #fff;
+    }
+
+    .pricing-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #9ca3af;
+      width: fit-content;
+    }
+
+    .pricing-tier {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+
+    .pricing-card.featured .pricing-tier { color: #6b7280; }
+
+    .pricing-amount {
+      font-size: clamp(36px, 4.5vw, 50px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .pricing-period {
+      font-size: 13px;
+      color: #6b7280;
+      margin-left: 4px;
+    }
+
+    .pricing-desc {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.55;
+    }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      flex: 1;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.45;
+    }
+
+    .pricing-card.featured .pricing-features li { color: #9ca3af; }
+
+    .pricing-features li::before {
+      content: "✓";
+      font-weight: 700;
+      color: #111827;
+      flex-shrink: 0;
+    }
+
+    .pricing-card.featured .pricing-features li::before { color: #fff; }
+
+    .pricing-features li.dim { color: #d1d5db; }
+    .pricing-features li.dim::before { content: "—"; color: #374151; }
+    .pricing-card.featured .pricing-features li.dim::before { color: #4b5563; }
+
+    .pricing-cta {
+      display: block;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 13px 20px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .pricing-cta.ghost { border: 1px solid #e5e7eb; color: #374151; }
+    .pricing-cta.ghost:hover { background: #f9fafb; }
+    .pricing-cta.white { background: #fff; color: #111827; }
+    .pricing-cta.white:hover { background: #f3f4f6; }
+    .pricing-cta.dark  { background: #111827; color: #fff; }
+    .pricing-cta.dark:hover { background: #1f2937; }
+
+    /* ── CTA ── */
+    #cta {
+      padding: var(--section-v) 0;
+      background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+    }
+
+    .cta-inner {
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-inner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(99,102,241,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(16,185,129,0.10) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .cta-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 16px;
+    }
+
+    .cta-headline {
+      font-size: clamp(36px, 5.5vw, 72px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.0;
+      color: #fff;
+      margin-bottom: 18px;
+    }
+
+    .cta-sub {
+      font-size: 16px;
+      color: #6b7280;
+      line-height: 1.65;
+      max-width: 440px;
+      margin: 0 auto 36px;
+    }
+
+    .cta-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-cta-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #111827;
+      background: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 26px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-cta-primary:hover { background: #f3f4f6; }
+
+    .btn-cta-ghost {
+      display: inline-flex;
+      align-items: center;
+      font-size: 15px;
+      font-weight: 500;
+      color: #6b7280;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      padding: 12px 26px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .btn-cta-ghost:hover { border-color: rgba(255,255,255,0.35); color: #9ca3af; }
+
+    /* ── Footer ── */
+    footer {
+      background: #fff;
+      border-top: 1px solid #f3f4f6;
+      padding: clamp(48px, 7vw, 72px) 0 clamp(28px, 4vw, 40px);
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: clamp(32px, 5vw, 60px);
+      padding-bottom: clamp(36px, 5vw, 52px);
+      border-bottom: 1px solid #f3f4f6;
+      margin-bottom: 28px;
+    }
+
+    .footer-brand {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+
+    .footer-tagline {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.6;
+      max-width: 220px;
+      margin-bottom: 18px;
+    }
+
+    .footer-url {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      text-decoration: none;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 1px;
+      transition: color 0.15s;
+    }
+
+    .footer-url:hover { color: #111827; }
+
+    .footer-col-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+    .footer-links a {
+      font-size: 13px;
+      color: #6b7280;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover { color: #111827; }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .footer-copy { font-size: 12px; color: #9ca3af; }
+
+    .footer-legal { display: flex; gap: 18px; }
+
+    .footer-legal a {
+      font-size: 12px;
+      color: #9ca3af;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-legal a:hover { color: #6b7280; }
+
+    /* ── Fade in ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+    .d5 { transition-delay: 0.40s; }
+
+    /* ── Responsive ── */
+    @media (max-width: 960px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .how-layout { grid-template-columns: 1fr; }
+      .testimonials { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(2) { border-right: none; }
+      .stat-item:nth-child(n+3) { border-top: 1px solid #f3f4f6; padding-top: 22px; margin-top: 22px; }
+      .footer-top { grid-template-columns: repeat(2, 1fr); }
+      .key-cluster { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      :root { --gutter: 18px; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        position: fixed;
+        top: var(--nav-h); left: 0; right: 0; bottom: 0;
+        background: rgba(255,255,255,0.97);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        z-index: 99;
+        border-top: 1px solid #f3f4f6;
+      }
+      .nav-links a { font-size: 20px; color: #111827; }
+      .nav-menu-btn { display: flex; flex-direction: column; margin-left: 8px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .testimonials { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ──────────────────────────────────────────────────── -->
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-logo" href="#">Brick AI</a>
+
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#proof">Reviews</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <a href="#" class="btn-outline-pill">Sign in</a>
+        <a href="#cta" class="btn-filled-pill">
+          Try the chat
+        </a>
+      </div>
+
+      <button class="nav-menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Hero ─────────────────────────────────────────────────── -->
+  <section id="hero">
+
+    <!-- Floating keyboard key decorations -->
+    <div class="hero-keys" aria-hidden="true">
+      <div class="key-cluster key-cluster-left">
+        <div class="key key-1">
+          <i data-lucide="command" style="width:20px;height:20px;"></i>
+        </div>
+        <div class="key key-2">
+          <i data-lucide="corner-down-left" style="width:20px;height:20px;"></i>
+        </div>
+      </div>
+      <div class="key-cluster key-cluster-right">
+        <div class="key key-3">
+          <i data-lucide="chevron-up" style="width:20px;height:20px;"></i>
+        </div>
+        <div class="key key-4">
+          <i data-lucide="chevron-down" style="width:20px;height:20px;"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <div class="badge fade-in">Australian property intelligence</div>
+
+      <h1 class="hero-headline fade-in d1">
+        Discover Australian<br>property with Brick AI
+      </h1>
+
+      <p class="hero-sub fade-in d2">
+        Talk naturally about your property goals and let AI instantly surface recommendations tuned to price, commute, lifestyle, and more.
+      </p>
+
+      <div class="hero-actions fade-in d3">
+        <a href="#cta" class="btn-hero-primary">
+          Start for free
+          <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
+        </a>
+        <a href="#how" class="btn-hero-ghost">See how it works</a>
+      </div>
+    </div>
+
+    <!-- Glass chat card -->
+    <div class="hero-card fade-in d2">
+      <div class="glass-card">
+        <div class="chat-messages">
+          <div class="chat-row user">
+            <div class="bubble bubble-user">I'm after a two-bedroom in Melbourne around AUD 1.2M with an easy CBD commute.</div>
+          </div>
+          <div class="chat-row ai">
+            <div class="bubble bubble-ai">No worries. Brunswick, Richmond, and South Yarra match the budget and have frequent train and tram links. Do you prefer an apartment or townhouse?</div>
+          </div>
+          <div class="chat-row user">
+            <div class="bubble bubble-user">Apartment would be great — gym and secure parking are on my wishlist.</div>
+          </div>
+          <div class="chat-row ai">
+            <div class="bubble bubble-ai">
+              Got it. I've found 14 listings that fit. Here's the top pick:<br/><br/>
+              <strong>26/120 Lygon St, Brunswick</strong> — $1.18M<br/>
+              2 bed · 2 bath · gym · secured car · 8 min to city<br/><br/>
+              <span class="bubble-tag">📎 Full suburb report ready</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="chat-form-label">Start chatting now</p>
+          <div class="chat-input-row">
+            <div class="chat-input-fake" id="typing-display">Ask Brick AI for the home you want…<span class="cursor"></span></div>
+            <button class="chat-send-btn">
+              <i data-lucide="send" style="width:14px;height:14px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top:20px;text-align:center;font-size:12px;color:#9ca3af;">
+        Brick AI blends Australian listings, market signals, and your preferences to refine every recommendation.
+      </p>
+    </div>
+
+  </section>
+
+  <!-- ── Stats ─────────────────────────────────────────────────── -->
+  <div id="stats">
+    <div class="stats-grid">
+      <div class="stat-item fade-in">
+        <div class="stat-num">50k+</div>
+        <div class="stat-label">Homes analysed</div>
+      </div>
+      <div class="stat-item fade-in d1">
+        <div class="stat-num">4.9★</div>
+        <div class="stat-label">Average user rating</div>
+      </div>
+      <div class="stat-item fade-in d2">
+        <div class="stat-num">$18k</div>
+        <div class="stat-label">Avg. savings per buyer</div>
+      </div>
+      <div class="stat-item fade-in d3">
+        <div class="stat-num">3 min</div>
+        <div class="stat-label">To your first report</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Features ──────────────────────────────────────────────── -->
+  <section id="features">
+    <div class="container">
+      <div class="features-header fade-in">
+        <p class="section-eyebrow">What Brick AI does</p>
+        <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <div class="feature-icon-wrap"><i data-lucide="search" style="width:20px;height:20px;"></i></div>
+          <div class="feature-num">01</div>
+          <h3 class="feature-title">AI property analysis</h3>
+          <p class="feature-desc">Instant deep-dive into any listing — comparable sales, flood zones, school ratings, and suburb growth trends in one view.</p>
+        </div>
+        <div class="feature-card fade-in d1">
+          <div class="feature-icon-wrap"><i data-lucide="calculator" style="width:20px;height:20px;"></i></div>
+          <div class="feature-num">02</div>
+          <h3 class="feature-title">Budget intelligence</h3>
+          <p class="feature-desc">Know exactly what you can afford. Brick models stamp duty, LMI, council rates, and hidden costs so there are no surprises.</p>
+        </div>
+        <div class="feature-card fade-in d2">
+          <div class="feature-icon-wrap"><i data-lucide="handshake" style="width:20px;height:20px;"></i></div>
+          <div class="feature-num">03</div>
+          <h3 class="feature-title">Negotiation coach</h3>
+          <p class="feature-desc">Get data-backed offers. Our AI tells you the realistic price range and the right tactics before you make an offer.</p>
+        </div>
+        <div class="feature-card fade-in d3">
+          <div class="feature-icon-wrap"><i data-lucide="gift" style="width:20px;height:20px;"></i></div>
+          <div class="feature-num">04</div>
+          <h3 class="feature-title">Grant finder</h3>
+          <p class="feature-desc">Automatically surfaces every first-home buyer grant, scheme, and concession you're eligible for across federal and state programs.</p>
+        </div>
+        <div class="feature-card fade-in d4">
+          <div class="feature-icon-wrap"><i data-lucide="file-text" style="width:20px;height:20px;"></i></div>
+          <div class="feature-num">05</div>
+          <h3 class="feature-title">Contract review</h3>
+          <p class="feature-desc">Upload your contract of sale. Brick flags risky clauses, special conditions, and anything your conveyancer should look at.</p>
+        </div>
+        <div class="feature-card fade-in d5">
+          <div class="feature-icon-wrap"><i data-lucide="calendar-check" style="width:20px;height:20px;"></i></div>
+          <div class="feature-num">06</div>
+          <h3 class="feature-title">Settlement timeline</h3>
+          <p class="feature-desc">A personalised step-by-step roadmap from deposit to keys — with deadlines, checklists, and reminders you can actually follow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works ──────────────────────────────────────────── -->
+  <section id="how">
+    <div class="container">
+      <div class="how-layout">
+        <div>
+          <div class="fade-in">
+            <p class="section-eyebrow">How it works</p>
+            <h2 class="section-title">From confused<br>to confident.</h2>
+          </div>
+
+          <div class="steps-list">
+            <div class="step active fade-in" data-step="0">
+              <span class="step-num">01</span>
+              <div class="step-body">
+                <div class="step-bar"></div>
+                <h4 class="step-title">Tell Brick your situation</h4>
+                <p class="step-desc">Your budget, location wish-list, deal-breakers. No forms — just a conversation.</p>
+              </div>
+            </div>
+            <div class="step fade-in d1" data-step="1">
+              <span class="step-num">02</span>
+              <div class="step-body">
+                <div class="step-bar"></div>
+                <h4 class="step-title">Get your personalised report</h4>
+                <p class="step-desc">Brick analyses thousands of data points and surfaces the clearest picture of the market for you.</p>
+              </div>
+            </div>
+            <div class="step fade-in d2" data-step="2">
+              <span class="step-num">03</span>
+              <div class="step-body">
+                <div class="step-bar"></div>
+                <h4 class="step-title">Ask anything, anytime</h4>
+                <p class="step-desc">"Is this suburb overpriced?" "What's the rental yield?" — Brick answers instantly, in plain English.</p>
+              </div>
+            </div>
+            <div class="step fade-in d3" data-step="3">
+              <span class="step-num">04</span>
+              <div class="step-body">
+                <div class="step-bar"></div>
+                <h4 class="step-title">Buy with confidence</h4>
+                <p class="step-desc">Walk into auction day knowing your number, your strategy, and every clause in your contract.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat panel -->
+        <div class="how-visual fade-in d2">
+          <div class="how-chat-header">
+            <div class="chat-avatar">B</div>
+            <div>
+              <div class="chat-name">Brick AI</div>
+              <div class="chat-online"><span class="online-dot"></span> Online</div>
+            </div>
+          </div>
+          <div class="how-chat-body">
+            <div class="chat-row ai">
+              <div class="bubble bubble-ai">Hey! I'm Brick. Tell me about the home you're looking for — suburb, budget, or a listing URL. I'll handle the rest. 🏡</div>
+            </div>
+            <div class="chat-row user">
+              <div class="bubble bubble-user">I'm looking at a 3-bed in Fitzroy North around $1.1M. Is it a good buy?</div>
+            </div>
+            <div class="chat-row ai">
+              <div class="bubble bubble-ai">
+                Great choice area. Here's what the data says:<br/><br/>
+                <strong>Median sold price</strong> — $1.08M<br/>
+                <strong>Auction clearance</strong> — 76%<br/>
+                <strong>12-month growth</strong> — +4.2%<br/><br/>
+                <span class="bubble-tag">📎 Full suburb report ready</span>
+              </div>
+            </div>
+          </div>
+          <div class="how-chat-input">
+            <div class="how-input-fake">Can you check the contract?<span class="cursor"></span></div>
+            <button class="chat-send-btn">
+              <i data-lucide="send" style="width:13px;height:13px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Testimonials ───────────────────────────────────────────── -->
+  <section id="proof">
+    <div class="container">
+      <div class="fade-in">
+        <p class="section-eyebrow">What buyers say</p>
+        <h2 class="section-title">Real people.<br>Real clarity.</h2>
+      </div>
+
+      <div class="testimonials">
+        <div class="testimonial fade-in">
+          <div class="stars">★★★★★</div>
+          <p class="t-quote">"I was completely lost before Brick. After one session I understood my borrowing power, what grants I qualified for, and exactly what to offer. We bought in 6 weeks."</p>
+          <div class="t-author">
+            <div class="t-avatar">SL</div>
+            <div>
+              <div class="t-name">Sarah L.</div>
+              <div class="t-role">First-home buyer · Melbourne</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial fade-in d1">
+          <div class="stars">★★★★★</div>
+          <p class="t-quote">"Brick found two clauses in our contract that our conveyancer missed. Saved us a potentially huge problem. Worth every cent."</p>
+          <div class="t-author">
+            <div class="t-avatar">JM</div>
+            <div>
+              <div class="t-name">James M.</div>
+              <div class="t-role">First-home buyer · Sydney</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial fade-in d2">
+          <div class="stars">★★★★★</div>
+          <p class="t-quote">"The negotiation coach is unreal. I went into auction knowing my absolute ceiling and the vendor's price history. Bought $22k under what I was prepared to pay."</p>
+          <div class="t-author">
+            <div class="t-avatar">PT</div>
+            <div>
+              <div class="t-name">Priya T.</div>
+              <div class="t-role">First-home buyer · Brisbane</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Pricing ────────────────────────────────────────────────── -->
+  <section id="pricing">
+    <div class="container">
+      <div class="pricing-header fade-in">
+        <p class="section-eyebrow">Pricing</p>
+        <h2 class="section-title">Clear pricing.<br>No hidden costs.</h2>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="pricing-card fade-in">
+          <div class="pricing-tier">Starter</div>
+          <div>
+            <span class="pricing-amount">Free</span>
+            <p class="pricing-desc" style="margin-top:8px;">Perfect for exploring the market before you commit.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>5 property analyses / month</li>
+            <li>Suburb snapshot reports</li>
+            <li>Grant eligibility checker</li>
+            <li class="dim">Contract review</li>
+            <li class="dim">Negotiation coach</li>
+            <li class="dim">Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta ghost">Get started free</a>
+        </div>
+
+        <div class="pricing-card featured fade-in d1">
+          <div class="pricing-badge">Most popular</div>
+          <div class="pricing-tier">Buyer</div>
+          <div>
+            <span class="pricing-amount">$29</span><span class="pricing-period">/ month</span>
+            <p class="pricing-desc" style="margin-top:8px;">Everything you need from first search to settlement.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>Unlimited property analyses</li>
+            <li>Full suburb deep-dives</li>
+            <li>Grant eligibility checker</li>
+            <li>Contract review (up to 5)</li>
+            <li>Negotiation coach</li>
+            <li class="dim">Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta white">Start Buyer plan</a>
+        </div>
+
+        <div class="pricing-card fade-in d2">
+          <div class="pricing-tier">Pro</div>
+          <div>
+            <span class="pricing-amount">$79</span><span class="pricing-period">/ month</span>
+            <p class="pricing-desc" style="margin-top:8px;">For serious buyers and investors who need the full picture.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>Everything in Buyer</li>
+            <li>Unlimited contract reviews</li>
+            <li>Investment yield modelling</li>
+            <li>Portfolio tracking</li>
+            <li>Settlement timeline manager</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta dark">Start Pro plan</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ───────────────────────────────────────────────────── -->
+  <section id="cta">
+    <div class="container">
+      <div class="cta-inner fade-in">
+        <p class="cta-eyebrow">Ready to start?</p>
+        <h2 class="cta-headline">Find your<br>right home.</h2>
+        <p class="cta-sub">Join thousands of Australians who bought smarter with Brick AI. Free to start — no credit card needed.</p>
+        <div class="cta-actions">
+          <a href="#" class="btn-cta-primary">
+            Get started free
+            <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
+          </a>
+          <a href="#" class="btn-cta-ghost">brickai.com</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ────────────────────────────────────────────────── -->
+  <footer>
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <div class="footer-brand">Brick AI</div>
+          <p class="footer-tagline">Empowering first-home buyers by turning uncertainty into clarity.</p>
+          <a href="https://brickai.com" class="footer-url">brickai.com</a>
+        </div>
+        <div>
+          <div class="footer-col-title">Product</div>
+          <ul class="footer-links">
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">Changelog</a></li>
+            <li><a href="#">Roadmap</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Company</div>
+          <ul class="footer-links">
+            <li><a href="#">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Press</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Support</div>
+          <ul class="footer-links">
+            <li><a href="#">Help centre</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Status</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copy">© 2025 Brick AI Labs. All rights reserved.</p>
+        <div class="footer-legal">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // Scroll reveal
+    const io = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+
+    // Mobile nav
+    document.querySelector('.nav-menu-btn').addEventListener('click', () => {
+      document.querySelector('.nav-links').classList.toggle('open');
+    });
+
+    // Steps
+    let cur = 0;
+    const steps = document.querySelectorAll('.step');
+    steps.forEach(s => s.addEventListener('click', () => {
+      steps.forEach(x => x.classList.remove('active'));
+      s.classList.add('active');
+      cur = +s.dataset.step;
+    }));
+    setInterval(() => {
+      steps.forEach(x => x.classList.remove('active'));
+      cur = (cur + 1) % steps.length;
+      steps[cur].classList.add('active');
+    }, 3200);
+  </script>
+</body>
+</html>

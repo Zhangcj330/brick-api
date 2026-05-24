@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brick AI — Landing (Uber-inspired)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #000000;
+      --white:   #ffffff;
+      --grey-50: #F6F6F6;
+      --grey-100:#EEEEEE;
+      --grey-200:#E2E2E2;
+      --grey-400:#AFAFAF;
+      --grey-500:#757575;
+      --grey-700:#2E2E2E;
+      --font: 'Inter', -apple-system, sans-serif;
+    }
+
+    html { background: var(--white); color: var(--black); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: var(--font); cursor: pointer; }
+    input  { font-family: var(--font); }
+
+    /* ── NAV ─────────────────────────────────────────────────── */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--white);
+      border-bottom: 1px solid var(--grey-100);
+      padding: 0 40px;
+      display: flex; align-items: center; height: 64px; gap: 40px;
+    }
+    .nav-logo {
+      font-size: 22px; font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+      flex-shrink: 0;
+    }
+    .nav-links {
+      display: flex; gap: 28px; list-style: none;
+    }
+    .nav-links li { font-size: 14px; font-weight: 500; color: var(--black); cursor: pointer; }
+    .nav-links li:hover { color: var(--grey-500); }
+    .nav-right {
+      margin-left: auto; display: flex; align-items: center; gap: 8px;
+    }
+    .btn-ghost {
+      background: none; border: none; padding: 8px 16px;
+      font-size: 14px; font-weight: 500; border-radius: 999px;
+      transition: background 120ms;
+    }
+    .btn-ghost:hover { background: var(--grey-50); }
+    .btn-primary {
+      background: var(--black); color: var(--white); border: none;
+      padding: 10px 20px; border-radius: 999px;
+      font-size: 14px; font-weight: 600; line-height: 1;
+      transition: background 120ms;
+    }
+    .btn-primary:hover { background: #222; }
+
+    /* ── HERO ────────────────────────────────────────────────── */
+    .hero {
+      padding: 72px 40px 80px;
+      max-width: 1280px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .hero-kicker {
+      display: inline-block;
+      font-size: 11px; font-weight: 800;
+      letter-spacing: 0.10em; text-transform: uppercase;
+      color: var(--grey-500); margin-bottom: 20px;
+    }
+
+    .hero-h1 {
+      font-size: clamp(44px, 4.5vw, 64px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 0.96;
+      color: var(--black);
+    }
+
+    .hero-sub {
+      margin-top: 20px;
+      font-size: 17px; font-weight: 400; line-height: 1.55;
+      color: var(--grey-500);
+      max-width: 420px;
+    }
+
+    /* Tab strip */
+    .tab-strip {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--grey-100);
+      margin-top: 36px;
+    }
+    .tab-btn {
+      background: none; border: none; padding: 12px 0; margin-right: 32px;
+      font-size: 15px; font-weight: 700; color: var(--grey-400);
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color 120ms, border-color 120ms;
+    }
+    .tab-btn.active { color: var(--black); border-bottom-color: var(--black); }
+
+    /* Input fields */
+    .input-group {
+      display: flex; flex-direction: column; gap: 8px;
+      margin-top: 20px;
+    }
+    .field {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      background: var(--grey-50);
+      border-radius: 8px;
+    }
+    .field-dot {
+      width: 10px; height: 10px; border-radius: 999px; flex-shrink: 0;
+      background: var(--black);
+    }
+    .field-dot.dest { border-radius: 2px; background: var(--black); }
+    .field input {
+      flex: 1; border: none; background: transparent;
+      font-size: 15px; font-weight: 500; color: var(--black);
+      outline: none;
+    }
+    .field input::placeholder { color: var(--grey-400); }
+
+    .hero-cta-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 14px; flex-wrap: wrap;
+    }
+    .btn-hero-primary {
+      background: var(--black); color: var(--white); border: none;
+      padding: 14px 28px; border-radius: 999px;
+      font-size: 15px; font-weight: 600; line-height: 1;
+      transition: background 120ms;
+    }
+    .btn-hero-primary:hover { background: #222; }
+    .btn-text {
+      background: none; border: none;
+      font-size: 14px; font-weight: 500; color: var(--black);
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+
+    /* ── HERO RIGHT — chat card ─────────────────────────────── */
+    .chat-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.07);
+    }
+    .chat-card-label {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.10em;
+      text-transform: uppercase; color: var(--grey-400);
+      margin-bottom: 20px;
+    }
+    .chat-messages { display: flex; flex-direction: column; gap: 12px; }
+    .msg {
+      display: flex;
+      font-size: 14px; line-height: 1.55;
+    }
+    .msg.user { justify-content: flex-end; }
+    .msg-bubble {
+      max-width: 82%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: 1px solid;
+    }
+    .msg.user .msg-bubble {
+      background: var(--black); color: var(--white);
+      border-color: var(--black); border-radius: 16px 16px 2px 16px;
+    }
+    .msg.ai .msg-bubble {
+      background: var(--grey-50); color: var(--black);
+      border-color: var(--grey-200); border-radius: 16px 16px 16px 2px;
+    }
+    .ai-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+      background: var(--grey-50); color: var(--grey-500);
+      border-radius: 999px; padding: 3px 10px; margin-bottom: 8px;
+    }
+    .chat-input-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 20px;
+      background: var(--grey-50); border-radius: 999px; padding: 8px 8px 8px 18px;
+    }
+    .chat-input-row input {
+      flex: 1; border: none; background: transparent;
+      font-size: 14px; color: var(--black); outline: none;
+    }
+    .chat-input-row input::placeholder { color: var(--grey-400); }
+    .chat-send {
+      width: 36px; height: 36px; border-radius: 999px;
+      background: var(--black); color: var(--white);
+      border: none; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .chat-send svg { width: 14px; height: 14px; }
+
+    /* ── TRUST BAR ───────────────────────────────────────────── */
+    .trust-bar {
+      background: var(--grey-50);
+      border-top: 1px solid var(--grey-100);
+      border-bottom: 1px solid var(--grey-100);
+      padding: 20px 40px;
+    }
+    .trust-bar-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center; gap: 48px; flex-wrap: wrap;
+    }
+    .trust-stat .num {
+      font-size: 26px; font-weight: 900; letter-spacing: -0.045em; line-height: 1;
+    }
+    .trust-stat .lbl {
+      font-size: 12px; color: var(--grey-500); margin-top: 2px;
+    }
+    .trust-divider { width: 1px; height: 36px; background: var(--grey-200); }
+
+    /* ── FEATURES ────────────────────────────────────────────── */
+    .features {
+      padding: 96px 40px;
+    }
+    .features-inner {
+      max-width: 1280px; margin: 0 auto;
+    }
+    .section-kicker {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.10em;
+      text-transform: uppercase; color: var(--grey-500); margin-bottom: 16px;
+    }
+    .section-h2 {
+      font-size: clamp(32px, 3.2vw, 48px);
+      font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+      max-width: 640px;
+    }
+    .feature-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2px; margin-top: 56px;
+      border: 1px solid var(--grey-200); border-radius: 12px; overflow: hidden;
+    }
+    .feature-card {
+      padding: 36px 32px;
+      background: var(--white);
+      border-right: 1px solid var(--grey-200);
+    }
+    .feature-card:last-child { border-right: none; }
+    .feature-icon {
+      width: 44px; height: 44px; background: var(--black); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+    .feature-icon svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .feature-h3 {
+      font-size: 18px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .feature-p {
+      font-size: 14px; line-height: 1.6; color: var(--grey-500);
+    }
+
+    /* ── HOW IT WORKS ────────────────────────────────────────── */
+    .how {
+      background: var(--black); color: var(--white);
+      padding: 96px 40px;
+    }
+    .how-inner { max-width: 1280px; margin: 0 auto; }
+    .how .section-kicker { color: #666; }
+    .how .section-h2 { color: var(--white); }
+    .steps {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 48px;
+      margin-top: 56px;
+    }
+    .step-num {
+      font-size: 48px; font-weight: 900; letter-spacing: -0.06em; color: #333; line-height: 1;
+    }
+    .step-h3 {
+      font-size: 20px; font-weight: 800; letter-spacing: -0.025em; margin: 16px 0 10px;
+    }
+    .step-p { font-size: 14px; line-height: 1.6; color: #888; }
+    .step-divider { width: 32px; height: 2px; background: #fff; margin-top: 24px; }
+
+    /* ── CTA BAND ────────────────────────────────────────────── */
+    .cta-band {
+      padding: 96px 40px;
+    }
+    .cta-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 48px; align-items: center;
+    }
+    .cta-h2 {
+      font-size: clamp(32px, 3.2vw, 52px);
+      font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+      max-width: 600px;
+    }
+    .cta-sub { font-size: 16px; color: var(--grey-500); margin-top: 12px; max-width: 480px; }
+    .cta-actions { display: flex; gap: 12px; margin-top: 28px; }
+
+    /* ── FOOTER ──────────────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--grey-100);
+      padding: 40px;
+    }
+    .footer-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { font-size: 20px; font-weight: 900; letter-spacing: -0.04em; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { font-size: 13px; color: var(--grey-500); }
+    .footer-links a:hover { color: var(--black); }
+    .footer-copy { font-size: 12px; color: var(--grey-400); }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="nav-logo">Brick AI</div>
+  <ul class="nav-links">
+    <li>For buyers</li>
+    <li>For investors</li>
+    <li>How it works</li>
+    <li>Pricing</li>
+  </ul>
+  <div class="nav-right">
+    <button class="btn-ghost">Sign in</button>
+    <button class="btn-primary">Try free</button>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section style="background:#fff;">
+  <div class="hero">
+
+    <!-- Left -->
+    <div>
+      <span class="hero-kicker">Australian Property Intelligence</span>
+      <h1 class="hero-h1">Find your next<br>home with AI.</h1>
+      <p class="hero-sub">Tell Brick AI what you're after. It surfaces Australian listings tuned to your budget, commute, and lifestyle — instantly.</p>
+
+      <div class="tab-strip">
+        <button class="tab-btn active">Find a home</button>
+        <button class="tab-btn">Investment view</button>
+      </div>
+
+      <div class="input-group">
+        <div class="field">
+          <div class="field-dot"></div>
+          <input placeholder="Where do you want to live?" />
+        </div>
+        <div class="field">
+          <div class="field-dot dest"></div>
+          <input placeholder="Budget, e.g. $1.2M" />
+        </div>
+      </div>
+
+      <div class="hero-cta-row">
+        <button class="btn-hero-primary">See properties</button>
+        <button class="btn-text">Or just chat with AI →</button>
+      </div>
+    </div>
+
+    <!-- Right — chat preview -->
+    <div class="chat-card">
+      <div class="chat-card-label">Live conversation</div>
+      <div class="chat-messages">
+        <div class="ai-badge">✦ Brick AI</div>
+        <div class="msg ai">
+          <div class="msg-bubble">What suburb are you exploring, and what matters most — schools, commute, or lifestyle?</div>
+        </div>
+        <div class="msg user">
+          <div class="msg-bubble">Looking in Brunswick, around $1.2M. Easy CBD tram is a must.</div>
+        </div>
+        <div class="msg ai">
+          <div class="msg-bubble">Brunswick East ticks all the boxes — frequent 96 tram, under $1.2M median for townhouses, and low vacancy. Want me to filter for 2-bed with outdoor space?</div>
+        </div>
+        <div class="msg user">
+          <div class="msg-bubble">Yes please — and pet friendly.</div>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <input placeholder="Ask about any Australian suburb…" />
+        <button class="chat-send">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── TRUST BAR ── -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-stat"><div class="num">14,000+</div><div class="lbl">Australian listings analysed</div></div>
+    <div class="trust-divider"></div>
+    <div class="trust-stat"><div class="num">3 sec</div><div class="lbl">Average suburb insight</div></div>
+    <div class="trust-divider"></div>
+    <div class="trust-stat"><div class="num">580+</div><div class="lbl">Suburbs covered</div></div>
+    <div class="trust-divider"></div>
+    <div class="trust-stat"><div class="num">4.9 ★</div><div class="lbl">Buyer satisfaction</div></div>
+  </div>
+</div>
+
+<!-- ── FEATURES ── -->
+<section class="features">
+  <div class="features-inner">
+    <div class="section-kicker">What Brick AI does</div>
+    <h2 class="section-h2">Everything you need to buy with confidence.</h2>
+    <div class="feature-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <h3 class="feature-h3">Natural language search</h3>
+        <p class="feature-p">Describe what you want in plain English. Brick AI translates your preferences into a precise property shortlist across Australia.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3 class="feature-h3">Suburb intelligence</h3>
+        <p class="feature-p">Growth trends, school catchments, commute times, and infrastructure pipelines — surfaced automatically for every suburb you explore.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <h3 class="feature-h3">Property report analysis</h3>
+        <p class="feature-p">Upload a strata or pest report and get a plain-English verdict in seconds. No more decoding industry jargon on your own.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="how">
+  <div class="how-inner">
+    <div class="section-kicker">How it works</div>
+    <h2 class="section-h2">From brief to shortlist in minutes.</h2>
+    <div class="steps">
+      <div>
+        <div class="step-num">01</div>
+        <h3 class="step-h3">Tell us what you want</h3>
+        <p class="step-p">Describe your ideal home in plain language — budget, suburb vibe, commute needs, must-haves. No forms, no filters.</p>
+        <div class="step-divider"></div>
+      </div>
+      <div>
+        <div class="step-num">02</div>
+        <h3 class="step-h3">AI surfaces the right match</h3>
+        <p class="step-p">Brick AI cross-references 14,000+ listings against your brief, then ranks by fit — not just price or recency.</p>
+        <div class="step-divider"></div>
+      </div>
+      <div>
+        <div class="step-num">03</div>
+        <h3 class="step-h3">Buy with confidence</h3>
+        <p class="step-p">Get suburb reports, strata analysis, and a clear verdict on every property — so you walk into any inspection ready.</p>
+        <div class="step-divider"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA BAND ── -->
+<section class="cta-band">
+  <div class="cta-inner">
+    <div>
+      <h2 class="cta-h2">Start your property search today.</h2>
+      <p class="cta-sub">No credit card required. Talk to Brick AI and get your first suburb shortlist in under a minute.</p>
+      <div class="cta-actions">
+        <button class="btn-hero-primary">Try Brick AI free</button>
+        <button class="btn-ghost" style="border:1px solid var(--grey-200);">See how it works</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">Brick AI</div>
+    <div class="footer-links">
+      <a href="#">For buyers</a>
+      <a href="#">For investors</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+    <div class="footer-copy">© 2025 Brick AI Labs. Not financial advice.</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#FFFDF8" />
+  <title>Brick AI — Find the Right Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --paper: #FFFDF8;
+      --limestone: #F6F1E7;
+      --ink: #171614;
+      --slate: #6E736B;
+      --chalk: #ECE5D7;
+      --accent: #B6523B;
+      --accent-soft: rgba(182, 82, 59, 0.12);
+      --positive: #355B4C;
+      --dark: #11100F;
+      --dark-border: rgba(255, 253, 248, 0.14);
+      --shadow: 0 16px 40px rgba(23, 22, 20, 0.08);
+      --shadow-strong: 0 18px 50px rgba(23, 22, 20, 0.14);
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 24px;
+      --nav-h: 78px;
+      --container: 1240px;
+      --gutter: clamp(20px, 4vw, 44px);
+      --section-pad: clamp(72px, 10vw, 132px);
+      --display: 'Instrument Serif', Georgia, serif;
+      --body: 'Geist', system-ui, sans-serif;
+      --mono: 'IBM Plex Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--body);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    body.menu-open { overflow: hidden; }
+
+    a, button, input, textarea, select { font: inherit; }
+
+    img, svg { display: block; max-width: 100%; }
+
+    button {
+      border: 0;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .container {
+      width: min(var(--container), calc(100% - (var(--gutter) * 2)));
+      margin: 0 auto;
+    }
+
+    .section {
+      padding: var(--section-pad) 0;
+      position: relative;
+    }
+
+    .section-paper { background: var(--paper); }
+    .section-limestone { background: var(--limestone); }
+    .section-dark { background: var(--dark); color: var(--paper); }
+    .rule-top { border-top: 1px solid var(--chalk); }
+    .rule-top-ink { border-top: 1px solid var(--ink); }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.4;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--slate);
+    }
+
+    .eyebrow-accent { color: var(--accent); }
+
+    .section-header {
+      display: grid;
+      gap: 18px;
+      margin-bottom: clamp(40px, 6vw, 64px);
+    }
+
+    .section-title,
+    .hero-title,
+    .cta-title {
+      margin: 0;
+      font-family: var(--display);
+      font-style: italic;
+      letter-spacing: -0.02em;
+      line-height: 0.95;
+      font-weight: 400;
+    }
+
+    .section-title {
+      font-size: clamp(40px, 5.8vw, 76px);
+      max-width: 10ch;
+    }
+
+    .section-lead,
+    .hero-copy,
+    .cta-copy,
+    .feature-copy,
+    .step-copy,
+    .quote-copy,
+    .pricing-copy,
+    .footer-copy,
+    .hero-note,
+    .table-note,
+    .chat-copy,
+    .stats-label {
+      margin: 0;
+      color: var(--slate);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    .mono-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.4;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .accent-rule {
+      width: clamp(72px, 12vw, 124px);
+      height: 2px;
+      background: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .btn,
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 12px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: transform 0.22s var(--ease), box-shadow 0.22s var(--ease), background-color 0.22s var(--ease), color 0.22s var(--ease), border-color 0.22s var(--ease);
+      white-space: nowrap;
+    }
+
+    .btn {
+      background: var(--ink);
+      color: var(--paper);
+      box-shadow: 0 10px 24px rgba(23, 22, 20, 0.12);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(23, 22, 20, 0.18);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 18px rgba(23, 22, 20, 0.15);
+    }
+
+    .btn-ghost {
+      border: 1.5px solid var(--ink);
+      color: var(--ink);
+      background: transparent;
+    }
+
+    .btn-ghost:hover {
+      transform: translateY(-1px);
+      background: rgba(23, 22, 20, 0.04);
+    }
+
+    .btn-ghost:active {
+      transform: translateY(0);
+      background: rgba(23, 22, 20, 0.08);
+    }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      height: var(--nav-h);
+      background: rgba(255, 253, 248, 0.92);
+      border-bottom: 1px solid transparent;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: box-shadow 0.25s var(--ease), border-color 0.25s var(--ease), background-color 0.25s var(--ease);
+    }
+
+    .site-nav.is-scrolled {
+      border-bottom-color: var(--chalk);
+      box-shadow: 0 12px 26px rgba(23, 22, 20, 0.07);
+      background: rgba(255, 253, 248, 0.96);
+    }
+
+    .nav-inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .nav-logo {
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      font-size: 20px;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links a {
+      color: var(--slate);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a[aria-current='page'] { color: var(--ink); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-menu-btn {
+      display: none;
+      width: 46px;
+      height: 46px;
+      border: 1px solid var(--chalk);
+      border-radius: 10px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .nav-menu-btn span {
+      position: absolute;
+      left: 12px;
+      width: 20px;
+      height: 1.5px;
+      background: var(--ink);
+      transition: transform 0.22s var(--ease), opacity 0.22s var(--ease), top 0.22s var(--ease);
+    }
+
+    .nav-menu-btn span:nth-child(1) { top: 15px; }
+    .nav-menu-btn span:nth-child(2) { top: 22px; }
+    .nav-menu-btn span:nth-child(3) { top: 29px; }
+    .nav-menu-btn.is-open span:nth-child(1) { top: 22px; transform: rotate(45deg); }
+    .nav-menu-btn.is-open span:nth-child(2) { opacity: 0; }
+    .nav-menu-btn.is-open span:nth-child(3) { top: 22px; transform: rotate(-45deg); }
+
+    .mobile-panel {
+      display: none;
+      position: fixed;
+      inset: var(--nav-h) 0 0;
+      background: rgba(255, 253, 248, 0.98);
+      border-top: 1px solid var(--chalk);
+      padding: 28px var(--gutter) 40px;
+      z-index: 25;
+      overflow-y: auto;
+    }
+
+    .mobile-panel.is-open { display: block; }
+
+    .mobile-links {
+      list-style: none;
+      margin: 0 0 28px;
+      padding: 0;
+      display: grid;
+      gap: 18px;
+    }
+
+    .mobile-links a {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 24px;
+      line-height: 1.1;
+      font-family: var(--display);
+      font-style: italic;
+    }
+
+    .mobile-panel .btn { width: 100%; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(56px, 9vw, 100px) 0 clamp(64px, 11vw, 120px);
+      min-height: calc(100vh - var(--nav-h));
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--chalk);
+    }
+
+    .hero-layout {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
+      gap: clamp(32px, 7vw, 72px);
+      align-items: end;
+    }
+
+    .hero-copy-wrap {
+      max-width: 760px;
+    }
+
+    .hero-title {
+      font-size: clamp(68px, 11vw, 138px);
+      max-width: 7ch;
+      margin-bottom: 24px;
+    }
+
+    .hero-copy {
+      max-width: 32rem;
+      margin: 22px 0 32px;
+      font-size: clamp(17px, 1.7vw, 20px);
+    }
+
+    .hero-note {
+      margin-top: 22px;
+      font-size: 14px;
+      max-width: 34rem;
+    }
+
+    .hero-art {
+      min-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .hero-outline {
+      width: min(100%, 620px);
+      opacity: 1;
+    }
+
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--slate);
+    }
+
+    .hero-kicker::after {
+      content: '';
+      width: 64px;
+      height: 1px;
+      background: var(--chalk);
+    }
+
+    .stats-bar {
+      background: var(--limestone);
+      border-top: 1px solid var(--chalk);
+      border-bottom: 1px solid var(--chalk);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stat {
+      padding: 28px clamp(18px, 2.2vw, 28px);
+      border-right: 1px solid var(--chalk);
+    }
+
+    .stat:last-child { border-right: 0; }
+
+    .stats-value {
+      margin: 0 0 8px;
+      color: var(--positive);
+      font-size: clamp(30px, 4vw, 44px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      font-weight: 700;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0 clamp(24px, 3vw, 32px);
+      border-bottom: 1px solid var(--chalk);
+    }
+
+    .feature-item {
+      padding: 24px 0 30px;
+      border-top: 1px solid var(--ink);
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .feature-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: baseline;
+    }
+
+    .feature-title {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .feature-number { color: var(--accent); }
+
+    .how-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+      gap: clamp(28px, 6vw, 72px);
+      align-items: start;
+    }
+
+    .steps-list {
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--ink);
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 78px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--chalk);
+      cursor: pointer;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .step:hover { transform: translateX(4px); }
+    .step:not(.active) { opacity: 0.56; }
+    .step.active { opacity: 1; }
+
+    .step-number {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: clamp(20px, 2.2vw, 28px);
+      line-height: 1;
+    }
+
+    .step-title {
+      margin: 0 0 8px;
+      font-size: clamp(22px, 2vw, 28px);
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+    }
+
+    .step-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+      color: var(--slate);
+    }
+
+    .step-meta::before {
+      content: '';
+      width: 36px;
+      height: 2px;
+      background: var(--chalk);
+      transition: background-color 0.22s ease, width 0.22s ease;
+    }
+
+    .step.active .step-meta::before {
+      background: var(--accent);
+      width: 52px;
+    }
+
+    .chat-shell {
+      background: rgba(255, 253, 248, 0.62);
+      border: 1px solid rgba(23, 22, 20, 0.12);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--chalk);
+      background: rgba(246, 241, 231, 0.8);
+    }
+
+    .chat-id {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--paper);
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .chat-status {
+      color: var(--positive);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .chat-status::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .chat-body {
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+      background: linear-gradient(180deg, rgba(255, 253, 248, 0.92), rgba(246, 241, 231, 0.64));
+    }
+
+    .msg {
+      max-width: min(88%, 420px);
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      box-shadow: 0 8px 20px rgba(23, 22, 20, 0.05);
+    }
+
+    .msg-ai {
+      background: rgba(255, 253, 248, 0.96);
+      border: 1px solid rgba(23, 22, 20, 0.08);
+      color: var(--ink);
+      border-bottom-left-radius: 6px;
+    }
+
+    .msg-user {
+      margin-left: auto;
+      background: var(--ink);
+      color: var(--paper);
+      border-bottom-right-radius: 6px;
+    }
+
+    .msg-tag {
+      display: inline-flex;
+      margin-top: 12px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(53, 91, 76, 0.12);
+      color: var(--positive);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .chat-input {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px 18px;
+      border-top: 1px solid var(--chalk);
+      background: rgba(255, 253, 248, 0.9);
+    }
+
+    .chat-input-field {
+      flex: 1;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      border: 1px solid rgba(23, 22, 20, 0.12);
+      border-radius: 12px;
+      color: var(--slate);
+      background: rgba(246, 241, 231, 0.72);
+      font-size: 14px;
+    }
+
+    .chat-send {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--ink);
+      color: var(--paper);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 1.5px;
+      height: 1em;
+      margin-left: 2px;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+      vertical-align: -2px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .quotes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(20px, 2.4vw, 28px);
+    }
+
+    .quote-card {
+      padding: 28px 0 8px;
+      border-top: 1px solid var(--ink);
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .quote-mark {
+      font-family: var(--display);
+      font-style: italic;
+      color: var(--accent);
+      font-size: 86px;
+      line-height: 0.65;
+    }
+
+    .quote-copy {
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.7;
+    }
+
+    .quote-meta {
+      display: grid;
+      gap: 5px;
+      color: var(--slate);
+      font-size: 14px;
+    }
+
+    .pricing-wrap {
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pricing-plan {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      border-right: 1px solid var(--chalk);
+      min-height: 100%;
+    }
+
+    .pricing-plan:last-child { border-right: 0; }
+
+    .pricing-head,
+    .pricing-row,
+    .pricing-foot {
+      padding: 24px;
+    }
+
+    .pricing-head {
+      display: grid;
+      gap: 12px;
+      border-bottom: 1px solid var(--chalk);
+      background: rgba(246, 241, 231, 0.42);
+    }
+
+    .pricing-name {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .pricing-badge {
+      display: inline-flex;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(182, 82, 59, 0.1);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 10px;
+      line-height: 1.3;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .pricing-price {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: clamp(38px, 4.2vw, 54px);
+      line-height: 1;
+      letter-spacing: -0.05em;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .pricing-price span {
+      font-size: 15px;
+      line-height: 1.3;
+      letter-spacing: 0;
+      color: var(--slate);
+      font-weight: 500;
+    }
+
+    .pricing-row {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .pricing-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--ink);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .pricing-feature::before {
+      content: '—';
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .pricing-foot {
+      border-top: 1px solid var(--chalk);
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .table-note {
+      margin-top: 18px;
+      font-size: 14px;
+    }
+
+    .cta-panel {
+      padding: clamp(52px, 8vw, 88px) 0;
+    }
+
+    .cta-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      border-top: 1px solid var(--dark-border);
+      border-bottom: 1px solid var(--dark-border);
+      padding: clamp(32px, 5vw, 48px) 0;
+    }
+
+    .cta-title {
+      font-size: clamp(48px, 7vw, 92px);
+      margin-bottom: 16px;
+      max-width: 9ch;
+    }
+
+    .cta-copy { color: rgba(255, 253, 248, 0.74); max-width: 34rem; }
+
+    .cta-actions { justify-content: flex-end; }
+
+    .section-dark .btn {
+      background: var(--paper);
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    .section-dark .btn-ghost {
+      border-color: rgba(255, 253, 248, 0.36);
+      color: var(--paper);
+    }
+
+    .section-dark .btn-ghost:hover {
+      background: rgba(255, 253, 248, 0.08);
+    }
+
+    .site-footer {
+      padding: 28px 0 36px;
+      background: var(--paper);
+    }
+
+    .footer-top,
+    .footer-bottom {
+      display: grid;
+      gap: 24px;
+    }
+
+    .footer-top {
+      grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr));
+      padding: 28px 0 34px;
+      border-top: 1px solid var(--chalk);
+      border-bottom: 1px solid var(--chalk);
+    }
+
+    .footer-brand {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 0 0 12px;
+    }
+
+    .footer-brand span { color: var(--accent); }
+
+    .footer-title {
+      margin: 0 0 14px;
+      color: var(--slate);
+    }
+
+    .footer-links {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 10px;
+    }
+
+    .footer-links a,
+    .footer-link-inline {
+      color: var(--ink);
+      text-decoration: none;
+      line-height: 1.5;
+    }
+
+    .footer-links a:hover,
+    .footer-link-inline:hover { color: var(--accent); }
+
+    .footer-bottom {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      padding-top: 16px;
+    }
+
+    .footer-legal {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.08s; }
+    .reveal-delay-2 { transition-delay: 0.16s; }
+    .reveal-delay-3 { transition-delay: 0.24s; }
+    .reveal-delay-4 { transition-delay: 0.32s; }
+    .reveal-delay-5 { transition-delay: 0.4s; }
+
+    @media (max-width: 1080px) {
+      .hero-layout,
+      .how-layout,
+      .cta-grid,
+      .footer-top {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-title { max-width: 8ch; }
+      .hero-art { min-height: 300px; }
+      .cta-actions { justify-content: flex-start; }
+      .pricing-wrap,
+      .quotes-grid,
+      .features-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(2) { border-right: 0; }
+      .stat:nth-child(n + 3) { border-top: 1px solid var(--chalk); }
+    }
+
+    @media (max-width: 760px) {
+      :root { --nav-h: 72px; }
+
+      .nav-links,
+      .nav-actions .btn {
+        display: none;
+      }
+
+      .nav-menu-btn { display: inline-block; }
+      .hero {
+        min-height: auto;
+        padding-top: 40px;
+      }
+      .hero-title {
+        font-size: clamp(58px, 17vw, 94px);
+        max-width: 6.4ch;
+      }
+      .hero-art {
+        min-height: 220px;
+        justify-content: flex-start;
+      }
+      .hero-outline {
+        width: min(100%, 420px);
+        opacity: 0.92;
+      }
+      .features-grid,
+      .quotes-grid,
+      .pricing-wrap,
+      .stats-grid { grid-template-columns: 1fr; }
+      .feature-item,
+      .quote-card { padding-right: 0; }
+      .pricing-plan,
+      .stat { border-right: 0; }
+      .pricing-plan:not(:last-child),
+      .stat:not(:last-child) { border-bottom: 1px solid var(--chalk); }
+      .step { grid-template-columns: 58px minmax(0, 1fr); }
+      .chat-header { align-items: flex-start; }
+      .footer-bottom { grid-template-columns: 1fr; }
+      .btn,
+      .btn-ghost { width: 100%; }
+      .btn-row { align-items: stretch; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+      .step:hover,
+      .btn:hover,
+      .btn-ghost:hover { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" id="main-nav">
+    <div class="container nav-inner">
+      <a class="nav-logo" href="#hero" aria-label="Brick AI home">Brick <span>AI</span></a>
+      <ul class="nav-links" aria-label="Primary">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#testimonials">Stories</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a class="btn" href="#cta">Start free</a>
+        <button class="nav-menu-btn" id="nav-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open navigation menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-panel" id="mobile-menu">
+    <ul class="mobile-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How it works</a></li>
+      <li><a href="#testimonials">Stories</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#cta">Get started</a></li>
+    </ul>
+    <a class="btn" href="#cta">Start free</a>
+  </div>
+
+  <main>
+    <section class="hero" id="hero">
+      <div class="container hero-layout">
+        <div class="hero-copy-wrap">
+          <p class="eyebrow eyebrow-accent hero-kicker reveal">Brick AI</p>
+          <h1 class="hero-title reveal reveal-delay-1">Find the<br />Right Home.</h1>
+          <div class="accent-rule reveal reveal-delay-2" aria-hidden="true"></div>
+          <p class="hero-copy reveal reveal-delay-3">Brick AI empowers first-home buyers by turning uncertainty into clarity.</p>
+          <div class="btn-row reveal reveal-delay-4">
+            <a class="btn" href="#cta">
+              Start for free
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a class="btn-ghost" href="#how-it-works">See how it works</a>
+          </div>
+          <p class="hero-note reveal reveal-delay-5">Australia-first market guidance, suburb intelligence, grant checks, contract review, and negotiation support in one calm place.</p>
+        </div>
+        <div class="hero-art reveal reveal-delay-2" aria-hidden="true">
+          <svg class="hero-outline" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg" role="presentation">
+            <text x="50%" y="72%" text-anchor="middle" fill="none" stroke="rgba(182, 82, 59, 0.12)" stroke-width="2" font-family="Geist, system-ui, sans-serif" font-size="300" font-weight="800" letter-spacing="-0.05em">Brick</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-bar" aria-label="Key outcomes">
+      <div class="container stats-grid">
+        <article class="stat reveal">
+          <p class="stats-value">50k+</p>
+          <p class="stats-label">Homes analysed across major Australian markets.</p>
+        </article>
+        <article class="stat reveal reveal-delay-1">
+          <p class="stats-value">4.9★</p>
+          <p class="stats-label">Average rating from first-home buyers using Brick AI.</p>
+        </article>
+        <article class="stat reveal reveal-delay-2">
+          <p class="stats-value">$18k</p>
+          <p class="stats-label">Average negotiated savings surfaced before offer.</p>
+        </article>
+        <article class="stat reveal reveal-delay-3">
+          <p class="stats-value">3 min</p>
+          <p class="stats-label">To generate a personalised suburb and listing brief.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-paper" id="features">
+      <div class="container">
+        <header class="section-header reveal">
+          <p class="eyebrow">What Brick AI covers</p>
+          <h2 class="section-title">A calmer way to buy your first home.</h2>
+          <p class="section-lead">Editorially simple on the surface. Deeply practical underneath. Brick AI keeps the signal, removes the noise, and helps you move from browsing to buying with conviction.</p>
+        </header>
+        <div class="features-grid">
+          <article class="feature-item reveal">
+            <div class="feature-head">
+              <h3 class="feature-title">AI Property Analysis</h3>
+              <span class="mono-label feature-number">01</span>
+            </div>
+            <p class="feature-copy">Instantly unpack any listing with comparable sales, flood overlays, school zones, council context, and suburb momentum in one readable brief.</p>
+          </article>
+          <article class="feature-item reveal reveal-delay-1">
+            <div class="feature-head">
+              <h3 class="feature-title">Budget Intelligence</h3>
+              <span class="mono-label feature-number">02</span>
+            </div>
+            <p class="feature-copy">See the real number, not just the headline price. Brick models stamp duty, lender costs, rates, inspections, and the cash you need left over.</p>
+          </article>
+          <article class="feature-item reveal reveal-delay-2">
+            <div class="feature-head">
+              <h3 class="feature-title">Negotiation Coach</h3>
+              <span class="mono-label feature-number">03</span>
+            </div>
+            <p class="feature-copy">Go into private sale or auction with a grounded range, a bidding plan, and clear signals on where emotion starts to outrun value.</p>
+          </article>
+          <article class="feature-item reveal reveal-delay-3">
+            <div class="feature-head">
+              <h3 class="feature-title">Grant Finder</h3>
+              <span class="mono-label feature-number">04</span>
+            </div>
+            <p class="feature-copy">Surface federal and state schemes, concessions, and first-home buyer grants you may qualify for without spending hours reading policy pages.</p>
+          </article>
+          <article class="feature-item reveal reveal-delay-4">
+            <div class="feature-head">
+              <h3 class="feature-title">Contract Review</h3>
+              <span class="mono-label feature-number">05</span>
+            </div>
+            <p class="feature-copy">Upload a contract of sale and get an immediate list of clauses, special conditions, dates, and questions worth raising with your conveyancer.</p>
+          </article>
+          <article class="feature-item reveal reveal-delay-5">
+            <div class="feature-head">
+              <h3 class="feature-title">Settlement Timeline</h3>
+              <span class="mono-label feature-number">06</span>
+            </div>
+            <p class="feature-copy">Keep every deadline visible from deposit to keys with a timeline that translates legal process into actions you can actually follow.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-limestone rule-top" id="how-it-works">
+      <div class="container how-layout">
+        <div>
+          <header class="section-header reveal">
+            <p class="eyebrow">How it works</p>
+            <h2 class="section-title">From uncertainty to a clear next step.</h2>
+            <p class="section-lead">Every stage is designed to feel less like filling out a form and more like getting a sharp, trustworthy briefing exactly when you need it.</p>
+          </header>
+          <div class="steps-list" id="steps-list">
+            <article class="step active reveal" data-step="0">
+              <div class="step-number">01</div>
+              <div>
+                <div class="step-meta mono-label">Start with your situation</div>
+                <h3 class="step-title">Tell Brick what you can afford and where you want to live.</h3>
+                <p class="step-copy">Budget, preferred suburbs, commute, non-negotiables, and deal-breakers. No sprawling setup flow required.</p>
+              </div>
+            </article>
+            <article class="step reveal reveal-delay-1" data-step="1">
+              <div class="step-number">02</div>
+              <div>
+                <div class="step-meta mono-label">Receive a briefing</div>
+                <h3 class="step-title">Get a personalised market read in plain English.</h3>
+                <p class="step-copy">Brick analyses thousands of data points and returns a report that explains what matters, what to watch, and what to ignore.</p>
+              </div>
+            </article>
+            <article class="step reveal reveal-delay-2" data-step="2">
+              <div class="step-number">03</div>
+              <div>
+                <div class="step-meta mono-label">Ask follow-up questions</div>
+                <h3 class="step-title">Pressure-test listings, suburbs, and contract details.</h3>
+                <p class="step-copy">Ask natural questions like “Is this over market?” or “What should I offer?” and keep the decision moving.</p>
+              </div>
+            </article>
+            <article class="step reveal reveal-delay-3" data-step="3">
+              <div class="step-number">04</div>
+              <div>
+                <div class="step-meta mono-label">Buy with confidence</div>
+                <h3 class="step-title">Walk into negotiation day knowing your number.</h3>
+                <p class="step-copy">Brick helps you line up the price range, clauses, grants, and next deadlines before you make the call.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="chat-shell reveal reveal-delay-2" id="chat-shell">
+          <div class="chat-header">
+            <div class="chat-id">
+              <div class="chat-badge">B</div>
+              <div>
+                <div class="mono-label">Brick AI</div>
+                <p class="chat-copy">Property brief · Fitzroy North</p>
+              </div>
+            </div>
+            <div class="chat-status mono-label">Online</div>
+          </div>
+          <div class="chat-body">
+            <div class="msg msg-ai">Tell me the suburb, budget, or listing link and I’ll turn it into a clearer buying brief.</div>
+            <div class="msg msg-user">I’m looking at a 3-bed in Fitzroy North around $1.1M. Is it a good buy?</div>
+            <div class="msg msg-ai">
+              Fitzroy North remains competitive. Recent comparable 3-bed sales sit around <strong>$1.08M</strong>, with auction clearance near <strong>76%</strong> and 12‑month growth at <strong>+4.2%</strong>.
+              <br /><br />
+              At $1.1M, I’d want to check contract conditions, overlay risks, and the strongest comparable sale within 400 metres before you commit.
+              <span class="msg-tag">Full suburb report ready</span>
+            </div>
+          </div>
+          <div class="chat-input">
+            <div class="chat-input-field" id="typing-display" aria-live="polite">Can you check the contract?<span class="cursor"></span></div>
+            <div class="chat-send" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-paper rule-top" id="testimonials">
+      <div class="container">
+        <header class="section-header reveal">
+          <p class="eyebrow">Buyer stories</p>
+          <h2 class="section-title">A few words from people who needed clarity fast.</h2>
+        </header>
+        <div class="quotes-grid">
+          <article class="quote-card reveal">
+            <div class="quote-mark">&ldquo;</div>
+            <p class="quote-copy">I was completely lost at the start. After one session I understood my borrowing power, the grants I qualified for, and what a sensible offer actually looked like.</p>
+            <div class="quote-meta">
+              <strong>Sarah L.</strong>
+              <span>First-home buyer · Melbourne</span>
+            </div>
+          </article>
+          <article class="quote-card reveal reveal-delay-1">
+            <div class="quote-mark">&ldquo;</div>
+            <p class="quote-copy">Brick flagged two contract conditions we would have missed. It didn’t replace our conveyancer; it made the whole conversation sharper and much less stressful.</p>
+            <div class="quote-meta">
+              <strong>James M.</strong>
+              <span>First-home buyer · Sydney</span>
+            </div>
+          </article>
+          <article class="quote-card reveal reveal-delay-2">
+            <div class="quote-mark">&ldquo;</div>
+            <p class="quote-copy">The negotiation guidance paid for itself. We bought for less than our ceiling because we finally had a rational range instead of a guess.</p>
+            <div class="quote-meta">
+              <strong>Priya T.</strong>
+              <span>First-home buyer · Brisbane</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-paper rule-top-ink" id="pricing">
+      <div class="container">
+        <header class="section-header reveal">
+          <p class="eyebrow">Pricing</p>
+          <h2 class="section-title">Clean pricing. No hidden costs.</h2>
+          <p class="section-lead">Choose a plan that matches where you are in the journey — from early suburb research to offer strategy and contract review.</p>
+        </header>
+        <div class="pricing-wrap">
+          <article class="pricing-plan reveal">
+            <div class="pricing-head">
+              <h3 class="pricing-name">Starter</h3>
+              <div class="pricing-price">Free</div>
+              <p class="pricing-copy">Perfect for exploring the market before you commit.</p>
+            </div>
+            <div class="pricing-row">
+              <div class="pricing-feature">5 property analyses each month</div>
+              <div class="pricing-feature">Suburb snapshot reports</div>
+              <div class="pricing-feature">Grant eligibility checker</div>
+              <div class="pricing-feature">Budget planner essentials</div>
+            </div>
+            <div class="pricing-foot">
+              <a class="btn-ghost" href="#cta">Get started free</a>
+            </div>
+          </article>
+          <article class="pricing-plan reveal reveal-delay-1">
+            <div class="pricing-head">
+              <h3 class="pricing-name">Buyer <span class="pricing-badge">Most popular</span></h3>
+              <div class="pricing-price">$29 <span>/ month</span></div>
+              <p class="pricing-copy">Everything you need from first search to settlement.</p>
+            </div>
+            <div class="pricing-row">
+              <div class="pricing-feature">Unlimited property analyses</div>
+              <div class="pricing-feature">Full suburb deep-dives</div>
+              <div class="pricing-feature">Contract review for up to 5 uploads</div>
+              <div class="pricing-feature">Negotiation coach and offer range</div>
+            </div>
+            <div class="pricing-foot">
+              <a class="btn" href="#cta">Start Buyer plan</a>
+            </div>
+          </article>
+          <article class="pricing-plan reveal reveal-delay-2">
+            <div class="pricing-head">
+              <h3 class="pricing-name">Pro</h3>
+              <div class="pricing-price">$79 <span>/ month</span></div>
+              <p class="pricing-copy">For buyers who want deeper modelling and ongoing expert support.</p>
+            </div>
+            <div class="pricing-row">
+              <div class="pricing-feature">Everything in Buyer</div>
+              <div class="pricing-feature">Unlimited contract reviews</div>
+              <div class="pricing-feature">Investment and yield modelling</div>
+              <div class="pricing-feature">Priority support and timeline management</div>
+            </div>
+            <div class="pricing-foot">
+              <a class="btn-ghost" href="#cta">Start Pro plan</a>
+            </div>
+          </article>
+        </div>
+        <p class="table-note reveal">All plans include Australian first-home buyer guidance, suburb context, and ongoing product improvements.</p>
+      </div>
+    </section>
+
+    <section class="section section-dark" id="cta">
+      <div class="container cta-panel">
+        <div class="cta-grid reveal">
+          <div>
+            <p class="eyebrow eyebrow-accent">Ready to begin?</p>
+            <h2 class="cta-title">Find your right home.</h2>
+            <p class="cta-copy">Join first-home buyers across Australia using Brick AI to make calmer, clearer property decisions.</p>
+          </div>
+          <div class="btn-row cta-actions">
+            <a class="btn" href="#hero">Start for free</a>
+            <a class="btn-ghost" href="https://brickai.com">brickai.com</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <p class="footer-brand">Brick <span>AI</span></p>
+          <p class="footer-copy">Find the right home. Brick AI helps first-home buyers navigate the Australian property market with more confidence and less guesswork.</p>
+        </div>
+        <div>
+          <p class="footer-title mono-label">Product</p>
+          <ul class="footer-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#how-it-works">How it works</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title mono-label">Company</p>
+          <ul class="footer-links">
+            <li><a href="#testimonials">Stories</a></li>
+            <li><a href="#cta">Get started</a></li>
+            <li><a class="footer-link-inline" href="https://brickai.com">brickai.com</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title mono-label">Legal</p>
+          <ul class="footer-links">
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Terms</a></li>
+            <li><a href="#">Cookies</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">© 2025 Brick AI. All rights reserved.</p>
+        <div class="footer-legal">
+          <a class="footer-link-inline" href="#hero">Back to top</a>
+          <a class="footer-link-inline" href="#pricing">Pricing</a>
+          <a class="footer-link-inline" href="#cta">Start free</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById('main-nav');
+    const navToggle = document.getElementById('nav-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileLinks = mobileMenu.querySelectorAll('a');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function setNavShadow() {
+      nav.classList.toggle('is-scrolled', window.scrollY > 10);
+    }
+
+    function closeMenu() {
+      navToggle.classList.remove('is-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+      navToggle.setAttribute('aria-label', 'Open navigation menu');
+      mobileMenu.classList.remove('is-open');
+      document.body.classList.remove('menu-open');
+    }
+
+    function openMenu() {
+      navToggle.classList.add('is-open');
+      navToggle.setAttribute('aria-expanded', 'true');
+      navToggle.setAttribute('aria-label', 'Close navigation menu');
+      mobileMenu.classList.add('is-open');
+      document.body.classList.add('menu-open');
+    }
+
+    navToggle.addEventListener('click', () => {
+      const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
+      if (isOpen) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    mobileLinks.forEach((link) => link.addEventListener('click', closeMenu));
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 760) closeMenu();
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeMenu();
+    });
+
+    window.addEventListener('scroll', setNavShadow, { passive: true });
+    setNavShadow();
+
+    const revealElements = document.querySelectorAll('.reveal');
+    if (!reduceMotion) {
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.16, rootMargin: '0px 0px -40px 0px' });
+
+      revealElements.forEach((element) => revealObserver.observe(element));
+    } else {
+      revealElements.forEach((element) => element.classList.add('is-visible'));
+    }
+
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const stepsList = document.getElementById('steps-list');
+    let activeStep = 0;
+    let stepTimer = null;
+    let stepCycling = false;
+
+    function setActiveStep(index) {
+      steps[activeStep].classList.remove('active');
+      activeStep = index;
+      steps[activeStep].classList.add('active');
+    }
+
+    function restartStepTimer() {
+      if (stepTimer) window.clearInterval(stepTimer);
+      if (!stepCycling || reduceMotion) return;
+      stepTimer = window.setInterval(() => {
+        setActiveStep((activeStep + 1) % steps.length);
+      }, 3200);
+    }
+
+    steps.forEach((step, index) => {
+      step.addEventListener('click', () => {
+        setActiveStep(index);
+        restartStepTimer();
+      });
+    });
+
+    if (!reduceMotion) {
+      const stepObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            stepCycling = true;
+            restartStepTimer();
+          } else {
+            stepCycling = false;
+            if (stepTimer) window.clearInterval(stepTimer);
+          }
+        });
+      }, { threshold: 0.45 });
+
+      stepObserver.observe(stepsList);
+    }
+
+    const typingDisplay = document.getElementById('typing-display');
+    const chatShell = document.getElementById('chat-shell');
+    const phrases = [
+      'Can you check the contract?',
+      'What grants am I eligible for?',
+      'Is $1.1M a fair price?',
+      'What should I offer at auction?'
+    ];
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let typingTimer = null;
+    let typingActive = false;
+
+    function scheduleTyping(delay) {
+      typingTimer = window.setTimeout(runTypewriter, delay);
+    }
+
+    function renderTyping(text) {
+      typingDisplay.innerHTML = text + '<span class="cursor"></span>';
+    }
+
+    function runTypewriter() {
+      if (!typingActive) return;
+
+      const phrase = phrases[phraseIndex];
+
+      if (!isDeleting) {
+        charIndex += 1;
+        renderTyping(phrase.slice(0, charIndex));
+
+        if (charIndex >= phrase.length) {
+          isDeleting = true;
+          scheduleTyping(1500);
+          return;
+        }
+
+        scheduleTyping(65);
+      } else {
+        charIndex -= 1;
+        renderTyping(phrase.slice(0, charIndex));
+
+        if (charIndex <= 0) {
+          isDeleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+          scheduleTyping(280);
+          return;
+        }
+
+        scheduleTyping(38);
+      }
+    }
+
+    function startTyping() {
+      if (typingActive || reduceMotion) return;
+      typingActive = true;
+      renderTyping(phrases[phraseIndex].slice(0, charIndex));
+      scheduleTyping(400);
+    }
+
+    function stopTyping() {
+      typingActive = false;
+      if (typingTimer) window.clearTimeout(typingTimer);
+    }
+
+    if (!reduceMotion) {
+      const typingObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            startTyping();
+          } else {
+            stopTyping();
+          }
+        });
+      }, { threshold: 0.4 });
+
+      typingObserver.observe(chatShell);
+    } else {
+      typingDisplay.textContent = phrases[0];
+    }
+  </script>
+</body>
+</html>

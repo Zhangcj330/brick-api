@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brick AI — v6</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #000;
+      --white: #fff;
+      --g50:   #F6F6F6;
+      --g100:  #EEEEEE;
+      --g200:  #E2E2E2;
+      --g400:  #AFAFAF;
+      --g500:  #757575;
+      --g700:  #2E2E2E;
+      --green: #118f4a;
+    }
+    html { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; background: var(--black); color: var(--white); }
+    button, input { font-family: inherit; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; height: 60px;
+      padding: 0 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo { font-size: 20px; font-weight: 900; letter-spacing: -0.04em; }
+    .nav-links { display: flex; gap: 28px; margin-left: 40px; }
+    .nav-links a { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55); cursor: pointer; transition: color 120ms; }
+    .nav-links a:hover { color: var(--white); }
+    .nav-right { margin-left: auto; display: flex; gap: 8px; }
+    .btn-outline-white {
+      background: transparent; color: var(--white);
+      border: 1px solid rgba(255,255,255,0.25); border-radius: 999px;
+      padding: 8px 18px; font-size: 13px; font-weight: 500; cursor: pointer;
+      transition: border-color 120ms;
+    }
+    .btn-outline-white:hover { border-color: rgba(255,255,255,0.6); }
+    .btn-white {
+      background: var(--white); color: var(--black); border: none;
+      border-radius: 999px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: opacity 120ms;
+    }
+    .btn-white:hover { opacity: 0.88; }
+
+    /* ── HERO — full black ── */
+    .hero {
+      min-height: 100vh;
+      padding: 140px 40px 80px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    /* subtle grid texture */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px; padding: 5px 14px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 32px;
+    }
+    .hero-badge span { width: 6px; height: 6px; background: var(--green); border-radius: 999px; }
+
+    .hero-h1 {
+      font-size: clamp(52px, 7vw, 96px);
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 0.95;
+      max-width: 900px;
+    }
+    .hero-h1 em { font-style: normal; color: rgba(255,255,255,0.35); }
+
+    .hero-sub {
+      margin-top: 24px;
+      font-size: clamp(16px, 1.6vw, 19px);
+      font-weight: 400; line-height: 1.55;
+      color: rgba(255,255,255,0.50);
+      max-width: 520px;
+    }
+
+    /* Chat widget */
+    .hero-widget {
+      margin-top: 40px;
+      width: 100%; max-width: 640px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .widget-messages { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .wmsg { display: flex; }
+    .wmsg.user { justify-content: flex-end; }
+    .wmsg-bubble {
+      max-width: 78%; padding: 9px 14px; border-radius: 14px;
+      font-size: 14px; line-height: 1.5;
+    }
+    .wmsg.ai .wmsg-bubble { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); border-radius: 14px 14px 14px 2px; }
+    .wmsg.user .wmsg-bubble { background: var(--white); color: var(--black); border-radius: 14px 14px 2px 14px; font-weight: 500; }
+
+    .widget-input {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 999px;
+      padding: 10px 10px 10px 20px;
+    }
+    .widget-input input {
+      flex: 1; background: transparent; border: none; outline: none;
+      font-size: 14px; color: var(--white);
+    }
+    .widget-input input::placeholder { color: rgba(255,255,255,0.30); }
+    .widget-send {
+      width: 36px; height: 36px; border-radius: 999px;
+      background: var(--white); color: var(--black); border: none;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      flex-shrink: 0;
+    }
+    .widget-send svg { width: 13px; height: 13px; stroke: #000; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .hero-ctas {
+      margin-top: 28px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+    .btn-hero-white {
+      background: var(--white); color: var(--black); border: none;
+      border-radius: 999px; padding: 14px 28px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: opacity 120ms;
+    }
+    .btn-hero-white:hover { opacity: 0.88; }
+    .btn-hero-ghost {
+      background: transparent; color: var(--white);
+      border: 1px solid rgba(255,255,255,0.25); border-radius: 999px;
+      padding: 14px 28px; font-size: 15px; font-weight: 500; cursor: pointer;
+      transition: border-color 120ms;
+    }
+    .btn-hero-ghost:hover { border-color: rgba(255,255,255,0.6); }
+
+    /* ── PROOF BAR — white ── */
+    .proof {
+      background: var(--white); color: var(--black);
+      padding: 28px 40px;
+      border-top: 1px solid var(--g100);
+    }
+    .proof-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center; gap: 48px; flex-wrap: wrap;
+    }
+    .proof-stat .num { font-size: 28px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
+    .proof-stat .lbl { font-size: 12px; color: var(--g500); margin-top: 3px; }
+    .proof-div { width: 1px; height: 36px; background: var(--g200); }
+
+    /* ── FEATURES — white ── */
+    .features {
+      background: var(--white); color: var(--black);
+      padding: 96px 40px;
+    }
+    .feat-inner { max-width: 1280px; margin: 0 auto; }
+    .kicker { font-size: 11px; font-weight: 800; letter-spacing: 0.10em; text-transform: uppercase; color: var(--g500); margin-bottom: 14px; }
+    .h2 {
+      font-size: clamp(32px, 3.5vw, 52px);
+      font-weight: 900; letter-spacing: -0.045em; line-height: 0.97;
+    }
+
+    .feat-grid {
+      margin-top: 56px;
+      display: grid; grid-template-columns: repeat(3,1fr);
+      border: 1px solid var(--g200); border-radius: 12px; overflow: hidden;
+    }
+    .feat-card {
+      padding: 40px 32px;
+      border-right: 1px solid var(--g200);
+    }
+    .feat-card:last-child { border-right: none; }
+    .feat-num {
+      font-size: 40px; font-weight: 900; letter-spacing: -0.06em; color: var(--g100); line-height: 1;
+      margin-bottom: 20px;
+    }
+    .feat-h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+    .feat-p { font-size: 14px; line-height: 1.65; color: var(--g500); }
+
+    /* ── SUBURB STATS — grey ── */
+    .suburb {
+      background: var(--g50); color: var(--black);
+      padding: 96px 40px;
+    }
+    .suburb-inner { max-width: 1280px; margin: 0 auto; }
+    .suburb-grid {
+      margin-top: 48px;
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
+    }
+    .suburb-card {
+      background: var(--white); border: 1px solid var(--g200); border-radius: 12px;
+      padding: 28px; position: relative; overflow: hidden;
+    }
+    .suburb-name { font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
+    .suburb-meta { font-size: 12px; color: var(--g500); margin-top: 4px; }
+    .suburb-metrics { display: flex; gap: 24px; margin-top: 20px; }
+    .s-metric .val { font-size: 22px; font-weight: 900; letter-spacing: -0.045em; line-height: 1; }
+    .s-metric .val.up { color: var(--green); }
+    .s-metric .key { font-size: 11px; color: var(--g500); margin-top: 3px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .suburb-verdict {
+      display: inline-flex; margin-top: 20px;
+      background: var(--g50); border-radius: 999px;
+      padding: 4px 12px; font-size: 11px; font-weight: 700; color: var(--g700);
+    }
+    .suburb-verdict.good { background: #ecfdf5; color: #047857; }
+
+    /* ── HOW — black ── */
+    .how {
+      background: var(--black); color: var(--white);
+      padding: 96px 40px;
+    }
+    .how-inner { max-width: 1280px; margin: 0 auto; }
+    .how .kicker { color: rgba(255,255,255,0.30); }
+    .how .h2 { color: var(--white); }
+    .steps {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 48px; margin-top: 56px;
+    }
+    .step-line { width: 32px; height: 2px; background: rgba(255,255,255,0.15); margin-bottom: 28px; }
+    .step-n { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; color: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 14px; }
+    .step-h { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 12px; }
+    .step-p { font-size: 14px; line-height: 1.65; color: rgba(255,255,255,0.45); }
+
+    /* ── CTA — white ── */
+    .cta {
+      background: var(--white); color: var(--black);
+      padding: 96px 40px;
+      text-align: center;
+    }
+    .cta-inner { max-width: 720px; margin: 0 auto; }
+    .cta .h2 { font-size: clamp(36px,4vw,60px); }
+    .cta-sub { font-size: 17px; color: var(--g500); margin-top: 16px; line-height: 1.55; }
+    .cta-row { display: flex; gap: 12px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
+    .btn-cta-black {
+      background: var(--black); color: var(--white); border: none;
+      border-radius: 999px; padding: 16px 32px;
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 120ms;
+    }
+    .btn-cta-black:hover { opacity: 0.82; }
+    .btn-cta-outline {
+      background: transparent; color: var(--black);
+      border: 1px solid var(--g200); border-radius: 999px;
+      padding: 16px 32px; font-size: 16px; font-weight: 500; cursor: pointer;
+      transition: border-color 120ms;
+    }
+    .btn-cta-outline:hover { border-color: var(--black); }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--black); border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 32px 40px;
+    }
+    .footer-inner {
+      max-width: 1280px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { font-size: 18px; font-weight: 900; letter-spacing: -0.04em; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { font-size: 13px; color: rgba(255,255,255,0.35); }
+    .footer-links a:hover { color: var(--white); }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.25); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">Brick AI</div>
+  <div class="nav-links">
+    <a>For buyers</a>
+    <a>For investors</a>
+    <a>How it works</a>
+    <a>Pricing</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-outline-white">Sign in</button>
+    <button class="btn-white">Try free</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span></span> Australian property intelligence</div>
+  <h1 class="hero-h1">Buy your next home<br><em>with</em> confidence.</h1>
+  <p class="hero-sub">Tell Brick AI what you're after. It surfaces Australian listings tuned to your budget, commute, and lifestyle — instantly.</p>
+
+  <div class="hero-widget">
+    <div class="widget-messages">
+      <div class="wmsg ai">
+        <div class="wmsg-bubble">What suburb are you exploring, and what matters most — schools, commute, or lifestyle?</div>
+      </div>
+      <div class="wmsg user">
+        <div class="wmsg-bubble">Brunswick around $1.2M. Need the 96 tram to CBD.</div>
+      </div>
+      <div class="wmsg ai">
+        <div class="wmsg-bubble">Brunswick East fits perfectly — frequent 96 tram, sub-$1.2M median townhouses, and tight vacancy at 0.9%. Want me to filter for 2-bed with outdoor space?</div>
+      </div>
+    </div>
+    <div class="widget-input">
+      <input placeholder="Ask about any Australian suburb or property…" />
+      <button class="widget-send">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="hero-ctas">
+    <button class="btn-hero-white">Start for free</button>
+    <button class="btn-hero-ghost">See how it works</button>
+  </div>
+</section>
+
+<!-- PROOF BAR -->
+<div class="proof">
+  <div class="proof-inner">
+    <div class="proof-stat"><div class="num">14,000+</div><div class="lbl">Listings analysed</div></div>
+    <div class="proof-div"></div>
+    <div class="proof-stat"><div class="num">580+</div><div class="lbl">Suburbs covered</div></div>
+    <div class="proof-div"></div>
+    <div class="proof-stat"><div class="num">3 sec</div><div class="lbl">Average suburb insight</div></div>
+    <div class="proof-div"></div>
+    <div class="proof-stat"><div class="num">4.9 ★</div><div class="lbl">Buyer satisfaction</div></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="feat-inner">
+    <div class="kicker">What Brick AI does</div>
+    <h2 class="h2">Everything you need<br>to buy with confidence.</h2>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-num">01</div>
+        <h3 class="feat-h3">Natural language search</h3>
+        <p class="feat-p">Describe what you want in plain English. Brick AI translates your preferences into a precise property shortlist across Australia — no filters, no forms.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-num">02</div>
+        <h3 class="feat-h3">Suburb intelligence</h3>
+        <p class="feat-p">Growth trends, school catchments, commute times, and infrastructure pipelines surfaced automatically for every suburb you explore.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-num">03</div>
+        <h3 class="feat-h3">Report analysis</h3>
+        <p class="feat-p">Upload a strata or pest report and get a plain-English verdict in seconds. No more decoding industry jargon before making a $1M+ decision.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUBURB STATS -->
+<section class="suburb">
+  <div class="suburb-inner">
+    <div class="kicker">Live suburb intelligence</div>
+    <h2 class="h2">Every suburb, analysed<br>in seconds.</h2>
+    <div class="suburb-grid">
+      <div class="suburb-card">
+        <div class="suburb-name">Brunswick East</div>
+        <div class="suburb-meta">Melbourne VIC · 3057</div>
+        <div class="suburb-metrics">
+          <div class="s-metric"><div class="val up">+12.4%</div><div class="key">Annual growth</div></div>
+          <div class="s-metric"><div class="val">$1.18M</div><div class="key">Median price</div></div>
+          <div class="s-metric"><div class="val">0.9%</div><div class="key">Vacancy</div></div>
+        </div>
+        <div class="suburb-verdict good">Worth pursuing</div>
+      </div>
+      <div class="suburb-card">
+        <div class="suburb-name">St Ives</div>
+        <div class="suburb-meta">Sydney NSW · 2075</div>
+        <div class="suburb-metrics">
+          <div class="s-metric"><div class="val up">+14.2%</div><div class="key">Annual growth</div></div>
+          <div class="s-metric"><div class="val">$1.87M</div><div class="key">Median price</div></div>
+          <div class="s-metric"><div class="val">23 days</div><div class="key">Days on market</div></div>
+        </div>
+        <div class="suburb-verdict good">Worth pursuing</div>
+      </div>
+      <div class="suburb-card">
+        <div class="suburb-name">Prospect</div>
+        <div class="suburb-meta">Adelaide SA · 5082</div>
+        <div class="suburb-metrics">
+          <div class="s-metric"><div class="val up">+9.1%</div><div class="key">Annual growth</div></div>
+          <div class="s-metric"><div class="val">$860K</div><div class="key">Median price</div></div>
+          <div class="s-metric"><div class="val">1.2%</div><div class="key">Vacancy</div></div>
+        </div>
+        <div class="suburb-verdict good">Worth pursuing</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="how-inner">
+    <div class="kicker">How it works</div>
+    <h2 class="h2">From brief to shortlist<br>in minutes.</h2>
+    <div class="steps">
+      <div>
+        <div class="step-line"></div>
+        <div class="step-n">Step 01</div>
+        <div class="step-h">Tell us what you want</div>
+        <p class="step-p">Describe your ideal home in plain language — budget, suburb vibe, commute, must-haves. No forms, no filters, no jargon.</p>
+      </div>
+      <div>
+        <div class="step-line"></div>
+        <div class="step-n">Step 02</div>
+        <div class="step-h">AI surfaces the right match</div>
+        <p class="step-p">Brick AI cross-references 14,000+ listings against your brief, then ranks by fit — not just price or recency.</p>
+      </div>
+      <div>
+        <div class="step-line"></div>
+        <div class="step-n">Step 03</div>
+        <div class="step-h">Buy with full clarity</div>
+        <p class="step-p">Get suburb reports, strata analysis, and a clear verdict on every property — so you walk into any inspection fully prepared.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="cta-inner">
+    <h2 class="h2">Start your property<br>search today.</h2>
+    <p class="cta-sub">No credit card required. Talk to Brick AI and get your first suburb shortlist in under a minute.</p>
+    <div class="cta-row">
+      <button class="btn-cta-black">Try Brick AI free</button>
+      <button class="btn-cta-outline">See how it works</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">Brick AI</div>
+    <div class="footer-links">
+      <a>For buyers</a>
+      <a>For investors</a>
+      <a>Privacy</a>
+      <a>Terms</a>
+    </div>
+    <div class="footer-copy">© 2025 Brick AI Labs · Not financial advice</div>
+  </div>
+</footer>
+
+</body>
+</html>
