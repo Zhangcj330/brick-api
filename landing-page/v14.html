@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brick AI — Find The Right Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Leaflet map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      color: #000;
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      font-feature-settings: "tnum" 0;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #CBCBCB; border-radius: 2px; }
+
+    /* ── Nav ──────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid #EEEEEE;
+      height: 66px;
+    }
+
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 40px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-logo {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      color: #000;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 26px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: #000;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: #545454; }
+
+    .nav-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-text-btn {
+      font-size: 14px;
+      font-weight: 500;
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-text-btn:hover { color: #545454; }
+
+    .btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #000;
+      color: #fff;
+      border: 0;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      line-height: 1;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-pill:hover { background: #1F1F1F; }
+
+    .btn-pill-lg {
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px 26px;
+    }
+
+    .btn-pill-white {
+      background: #fff;
+      color: #000;
+      border: 0;
+    }
+
+    .btn-pill-white:hover { background: #F6F6F6; }
+
+    .btn-pill-outline-white {
+      background: transparent;
+      color: #fff;
+      border: 1px solid #fff;
+    }
+
+    .btn-pill-outline-white:hover { background: rgba(255,255,255,0.1); }
+
+    .nav-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .nav-menu-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: #000;
+      margin: 5px 0;
+    }
+
+    /* ── Hero ─────────────────────────────────────────────── */
+    #hero {
+      padding: 64px 40px 80px;
+      background: #fff;
+    }
+
+    .hero-layout {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .hero-h1 {
+      font-size: clamp(44px, 5.5vw, 72px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 0.98;
+      margin: 0;
+    }
+
+    /* Mode tabs — exact Uber pattern */
+    .hero-tabs {
+      display: flex;
+      gap: 0;
+      margin-top: 32px;
+      border-bottom: 1px solid #EEEEEE;
+    }
+
+    .hero-tab {
+      padding: 12px 0;
+      margin-right: 32px;
+      background: transparent;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #757575;
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+
+    .hero-tab.active {
+      color: #000;
+      border-bottom-color: #000;
+    }
+
+    /* Hero chat widget */
+    .hero-widget {
+      margin-top: 24px;
+    }
+
+    .hero-chat {
+      background: #fff;
+      border: 1px solid #E2E2E2;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 340px;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #EEEEEE;
+      background: #fff;
+    }
+
+    .chat-avatar {
+      width: 28px;
+      height: 28px;
+      background: #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .chat-avatar svg { width: 14px; height: 14px; fill: #fff; }
+
+    .chat-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #000;
+    }
+
+    .chat-status {
+      font-size: 12px;
+      color: #6B6B6B;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .chat-status-dot {
+      width: 7px;
+      height: 7px;
+      background: #23A55A;
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scrollbar-width: none;
+    }
+
+    .chat-messages::-webkit-scrollbar { display: none; }
+
+    .chat-msg {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .chat-msg.user { flex-direction: row-reverse; }
+
+    .chat-bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.45;
+      color: #000;
+    }
+
+    .chat-msg.ai .chat-bubble {
+      background: #F6F6F6;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-msg.user .chat-bubble {
+      background: #000;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-typing {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 10px 14px;
+      background: #F6F6F6;
+      border-radius: 16px;
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #AFAFAF;
+      border-radius: 50%;
+    }
+
+    .typing-dot:nth-child(1) { animation: typing 1.2s infinite 0s; }
+    .typing-dot:nth-child(2) { animation: typing 1.2s infinite 0.2s; }
+    .typing-dot:nth-child(3) { animation: typing 1.2s infinite 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-3px); }
+    }
+
+    .chat-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid #EEEEEE;
+      background: #fff;
+    }
+
+    .chat-input-bar input {
+      flex: 1;
+      border: 0;
+      outline: none;
+      background: #F6F6F6;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      color: #000;
+    }
+
+    .chat-input-bar input::placeholder { color: #AFAFAF; }
+
+    .chat-send-btn {
+      width: 36px;
+      height: 36px;
+      background: #000;
+      border: 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .chat-send-btn:hover { background: #333; }
+
+    .hero-cta-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-ghost-underline {
+      background: transparent;
+      border: 0;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: #000;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: 0;
+      border-radius: 999px;
+    }
+
+    .btn-ghost-underline:hover { color: #545454; }
+
+    /* Drive panel */
+    .hero-drive-content {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .hero-drive-content.show { display: block; }
+    .hero-widget.hide { display: none; }
+
+    .hero-drive-sub {
+      font-size: 17px;
+      color: #545454;
+      line-height: 1.55;
+      margin: 0 0 24px;
+      max-width: 480px;
+    }
+
+    /* Right panel — property map */
+    /* ── Hero map panel (Leaflet) ────────────────────────────── */
+    .hero-map-panel {
+      position: relative;
+      height: 480px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    #map-v12 {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+    }
+
+    .leaflet-control-zoom a {
+      font-family: "Hanken Grotesk", sans-serif !important;
+      font-weight: 700 !important;
+      border-radius: 8px !important;
+      border: 1px solid #E2E2E2 !important;
+      color: #000 !important;
+    }
+
+    .leaflet-control-zoom { border: none !important; box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important; }
+    .leaflet-control-attribution {
+      font-family: "Hanken Grotesk", sans-serif !important;
+      font-size: 10px !important;
+      background: rgba(255,255,255,0.85) !important;
+    }
+
+    .price-pin {
+      background: #fff;
+      border: 2px solid #000;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: #000;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      transition: background 0.15s, color 0.15s, transform 0.15s;
+      transform: translateY(-50%) translateX(-50%);
+      position: absolute;
+    }
+
+    .price-pin.active { background: #000; color: #fff; transform: translateY(-50%) translateX(-50%) scale(1.12); }
+    .price-pin:hover { background: #000; color: #fff; }
+
+    .suburb-label {
+      background: transparent;
+      border: none;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: #545454;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .map-property-card {
+      position: absolute;
+      bottom: 16px; left: 16px; right: 16px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.20);
+      z-index: 1000;
+      transform: translateY(120%);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .map-property-card.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+    .map-card-row1 { display: flex; align-items: flex-start; gap: 12px; }
+    .map-card-img { width: 56px; height: 56px; border-radius: 10px; background: #F6F6F6; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .map-card-main { flex: 1; min-width: 0; }
+    .map-card-address { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .map-card-meta { font-size: 12px; color: #6B6B6B; margin-top: 2px; }
+    .map-card-verdict { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: #E8F5E9; color: #1B5E20; }
+    .map-card-price-block { text-align: right; flex-shrink: 0; }
+    .map-card-price-block .price { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; font-feature-settings: "tnum" 1; }
+    .map-card-price-block .price-sub { font-size: 11px; color: #6B6B6B; margin-top: 2px; }
+    .map-card-divider { height: 1px; background: #EEEEEE; margin: 12px 0; }
+    .map-card-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+    .map-stat-label { font-size: 10px; color: #6B6B6B; text-transform: uppercase; letter-spacing: 0.05em; }
+    .map-stat-val { font-size: 13px; font-weight: 700; margin-top: 2px; }
+    .map-card-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .map-card-btn-primary { flex: 1; background: #000; color: #fff; border: 0; border-radius: 999px; padding: 10px 0; font-family: "Hanken Grotesk", sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+    .map-card-btn-primary:hover { background: #333; }
+    .map-card-btn-ghost { flex: 1; background: #F6F6F6; color: #000; border: 0; border-radius: 999px; padding: 10px 0; font-family: "Hanken Grotesk", sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .map-card-btn-ghost:hover { background: #EEEEEE; }
+    .map-card-close { position: absolute; top: 12px; right: 14px; background: #F6F6F6; border: 0; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #6B6B6B; }
+    .map-card-close:hover { background: #E2E2E2; }
+
+    .map-toolbar { position: absolute; top: 14px; left: 14px; z-index: 900; display: flex; gap: 6px; }
+    .map-filter-pill { background: #fff; border: 1px solid #E2E2E2; border-radius: 999px; padding: 6px 12px; font-family: "Hanken Grotesk", sans-serif; font-size: 12px; font-weight: 600; color: #000; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.10); transition: background 0.15s; white-space: nowrap; }
+    .map-filter-pill.active { background: #000; color: #fff; border-color: #000; }
+    .map-filter-pill:hover:not(.active) { background: #F6F6F6; }
+
+    /* ── Stats bar (like V1) ──────────────────────────────── */
+    #hero-stats {
+      border-top: 1px solid #EEEEEE;
+      border-bottom: 1px solid #EEEEEE;
+      padding: 0 40px;
+      background: #fff;
+    }
+
+    .hero-stats-grid {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .hero-stat-item {
+      padding: 24px 0;
+      border-right: 1px solid #EEEEEE;
+      text-align: center;
+    }
+
+    .hero-stat-item:last-child { border-right: none; }
+
+    .hero-stat-num {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .hero-stat-label {
+      font-size: 13px;
+      color: #6B6B6B;
+      margin-top: 4px;
+    }
+
+    /* ── Suggestions ──────────────────────────────────────── */
+    #suggestions {
+      padding: 40px 40px 80px;
+      background: #fff;
+    }
+
+    .suggestions-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .suggestions-h2 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin: 0 0 28px;
+    }
+
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .tile {
+      background: #F6F6F6;
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: background 0.15s;
+    }
+
+    .tile:hover { background: #EEEEEE; }
+
+    .tile-body { flex: 1; }
+
+    .tile-title {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .tile-desc {
+      font-size: 14px;
+      color: #545454;
+      line-height: 1.5;
+      margin: 8px 0 16px;
+    }
+
+    .tile-cta {
+      background: #fff;
+      border: 0;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      color: #000;
+      display: inline-block;
+      transition: background 0.15s;
+    }
+
+    .tile-cta:hover { background: #F6F6F6; border: 1px solid #EEEEEE; }
+
+    .tile-icon-box {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #000;
+    }
+
+    /* ── How it works (dark strip) ────────────────────────── */
+    #how {
+      padding: 80px 40px;
+      background: #000;
+      color: #fff;
+    }
+
+    .how-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .how-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #AFAFAF;
+      margin-bottom: 12px;
+    }
+
+    .how-h2 {
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin: 0 0 20px;
+    }
+
+    .how-sub {
+      font-size: 17px;
+      color: #CBCBCB;
+      line-height: 1.55;
+      margin: 0 0 32px;
+      max-width: 520px;
+    }
+
+    .how-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border-top: 1px solid #2E2E2E;
+    }
+
+    .how-step {
+      display: flex;
+      gap: 18px;
+      padding: 20px 0;
+      border-bottom: 1px solid #2E2E2E;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .how-step:not(.active) { opacity: 0.45; }
+    .how-step:not(.active):hover { opacity: 0.7; }
+
+    .how-step-num {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #AFAFAF;
+      min-width: 26px;
+      padding-top: 3px;
+      transition: color 0.2s;
+    }
+
+    .how-step.active .how-step-num { color: #fff; }
+
+    .how-step-body { flex: 1; }
+
+    .how-step-bar {
+      width: 18px;
+      height: 2px;
+      background: #2E2E2E;
+      margin-bottom: 9px;
+      transition: background 0.3s, width 0.3s;
+    }
+
+    .how-step.active .how-step-bar { background: #fff; width: 28px; }
+
+    .how-step-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #757575;
+      margin-bottom: 4px;
+      transition: color 0.2s;
+    }
+
+    .how-step.active .how-step-title { color: #fff; }
+
+    .how-step-desc {
+      font-size: 13px;
+      color: #757575;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .how-step.active .how-step-desc { display: block; }
+
+    /* Right — 2×2 stat grid */
+    .how-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .how-stat-card {
+      background: #1F1F1F;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .how-stat-num {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-feature-settings: "tnum" 1;
+      line-height: 1;
+    }
+
+    .how-stat-label {
+      font-size: 13px;
+      color: #AFAFAF;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* How it works — chat demo (dark themed, replaces 2×2 stats) */
+    .how-chat-demo {
+      background: #fff;
+      border: 1px solid #E2E2E2;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 420px;
+    }
+
+    /* ── Demo chat base styles ────────────────────────────── */
+    .demo-chat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid #EEEEEE;
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .demo-avatar {
+      width: 32px; height: 32px;
+      background: #000; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    .demo-avatar svg { width: 16px; height: 16px; fill: #fff; }
+
+    .demo-chat-name { font-size: 14px; font-weight: 700; }
+
+    .demo-chat-status {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; color: #6B6B6B; margin-left: auto;
+    }
+
+    .demo-status-dot {
+      width: 7px; height: 7px; background: #23A55A;
+      border-radius: 50%; animation: pulse-dot 2s infinite;
+    }
+
+    .demo-msg {
+      display: flex; gap: 8px; align-items: flex-end;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .demo-msg.show { opacity: 1; transform: translateY(0); }
+    .demo-msg.user { flex-direction: row-reverse; }
+
+    .demo-bubble {
+      max-width: 78%; padding: 10px 14px;
+      border-radius: 18px; font-size: 14px; line-height: 1.5; color: #000;
+    }
+
+    .demo-msg.ai .demo-bubble {
+      background: #F6F6F6; border-bottom-left-radius: 4px;
+    }
+
+    .demo-msg.user .demo-bubble {
+      background: #000; color: #fff; border-bottom-right-radius: 4px;
+    }
+
+    .demo-result-card {
+      margin-top: 8px; background: #fff; border: 1px solid #E2E2E2;
+      border-radius: 10px; padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+
+    .demo-result-row {
+      display: flex; align-items: center;
+      justify-content: space-between; font-size: 12px;
+    }
+
+    .demo-result-label { color: #6B6B6B; }
+    .demo-result-val { font-weight: 700; }
+    .demo-result-badge {
+      background: #E8F5E9; color: #1B5E20;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px;
+    }
+
+    .demo-typing {
+      display: flex; gap: 4px; align-items: center;
+      padding: 10px 14px; background: #F6F6F6;
+      border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content;
+    }
+
+    .tdot { width: 6px; height: 6px; background: #AFAFAF; border-radius: 50%; }
+    .tdot:nth-child(1) { animation: typing 1.2s infinite 0s; }
+    .tdot:nth-child(2) { animation: typing 1.2s infinite 0.2s; }
+    .tdot:nth-child(3) { animation: typing 1.2s infinite 0.4s; }
+
+    .demo-input-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; border-top: 1px solid #EEEEEE;
+      background: #fff; flex-shrink: 0;
+    }
+
+    .demo-input-field {
+      flex: 1; background: #F6F6F6; border: 0; border-radius: 999px;
+      padding: 10px 16px; font-family: "Hanken Grotesk", sans-serif;
+      font-size: 14px; color: #000; outline: none;
+    }
+
+    .demo-input-field::placeholder { color: #AFAFAF; }
+
+    .demo-send-btn {
+      width: 36px; height: 36px; background: #000; border: 0;
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; cursor: pointer; flex-shrink: 0;
+    }
+
+    /* ── Testimonials (Editorial style) ───────────────────── */
+    #proof {
+      padding: 80px 40px;
+      background: #fff;
+    }
+
+    /* ── Testimonials — V8 style ──────────────────────────── */
+    #proof {
+      padding: 80px 40px;
+      background: #F6F6F6;
+    }
+
+    .proof-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .proof-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #545454;
+      margin-bottom: 10px;
+    }
+
+    .proof-h2 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      margin: 0 0 36px;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .testimonial-card {
+      background: #fff;
+      border: 1px solid #E2E2E2;
+      border-radius: 8px;
+      padding: 28px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: box-shadow 0.2s;
+    }
+
+    .testimonial-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.07);
+    }
+
+    .t-stars {
+      font-size: 14px;
+      letter-spacing: 2px;
+      color: #000;
+    }
+
+    .t-quote {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #545454;
+      flex: 1;
+      margin: 0;
+    }
+
+    .t-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid #EEEEEE;
+    }
+
+    .t-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .t-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .t-role {
+      font-size: 11px;
+      color: #757575;
+      margin-top: 2px;
+    }
+
+    /* ── Pricing ──────────────────────────────────────────── */
+    #pricing {
+      padding: 80px 40px;
+      background: #F6F6F6;
+      border-top: 1px solid #EEEEEE;
+    }
+
+    .pricing-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .pricing-h2 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin: 0 0 28px;
+      text-align: center;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .pricing-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: box-shadow 0.2s;
+    }
+
+    .pricing-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+
+    .pricing-card.featured {
+      background: #000;
+      color: #fff;
+    }
+
+    .pricing-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #AFAFAF;
+      width: fit-content;
+    }
+
+    .pricing-tier {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #757575;
+    }
+
+    .pricing-amount {
+      font-size: clamp(36px, 4vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      font-feature-settings: "tnum" 1;
+    }
+
+    .pricing-period {
+      font-size: 13px;
+      color: #757575;
+      margin-left: 3px;
+    }
+
+    .pricing-desc {
+      font-size: 13px;
+      color: #757575;
+      line-height: 1.55;
+    }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      flex: 1;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: #545454;
+      line-height: 1.45;
+    }
+
+    .pricing-card.featured .pricing-features li { color: #CBCBCB; }
+
+    .pricing-features li::before {
+      content: "✓";
+      font-weight: 700;
+      color: #000;
+      flex-shrink: 0;
+    }
+
+    .pricing-card.featured .pricing-features li::before { color: #fff; }
+
+    .pricing-features li.dim { color: #AFAFAF; opacity: 0.5; }
+    .pricing-features li.dim::before { content: "—"; }
+
+    .pricing-cta {
+      display: block;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px 20px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 0.15s, opacity 0.15s;
+      font-family: inherit;
+    }
+
+    .pricing-cta.outline {
+      border: 1px solid #CBCBCB;
+      color: #000;
+      background: transparent;
+    }
+
+    .pricing-cta.outline:hover { background: #F6F6F6; }
+
+    .pricing-cta.white {
+      background: #fff;
+      color: #000;
+    }
+
+    .pricing-cta.white:hover { background: #EEEEEE; }
+
+    .pricing-cta.dark {
+      background: #000;
+      color: #fff;
+    }
+
+    .pricing-cta.dark:hover { background: #1F1F1F; }
+
+    /* ── CTA strip ────────────────────────────────────────── */
+    #cta {
+      padding: 80px 40px;
+      background: #000;
+      color: #fff;
+    }
+
+    .cta-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .cta-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #AFAFAF;
+      margin-bottom: 12px;
+    }
+
+    .cta-h2 {
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin: 0 0 16px;
+    }
+
+    .cta-sub {
+      font-size: 16px;
+      color: #CBCBCB;
+      line-height: 1.55;
+      max-width: 520px;
+      margin: 0;
+    }
+
+    .cta-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .waitlist-form {
+      display: flex;
+      gap: 8px;
+    }
+
+    .waitlist-input {
+      flex: 1;
+      min-width: 220px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 999px;
+      padding: 14px 20px;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-size: 15px;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .waitlist-input::placeholder { color: rgba(255,255,255,0.45); }
+    .waitlist-input:focus { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.18); }
+
+    /* Pricing — coming soon badge */
+    .coming-soon-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #000;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    footer {
+      padding: 64px 40px 40px;
+      background: #000;
+      color: #fff;
+      border-top: 1px solid #2E2E2E;
+    }
+
+    .footer-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .footer-logo {
+      font-size: 40px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      margin-bottom: 32px;
+    }
+
+    .footer-cols {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .footer-col-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: #CBCBCB;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover { color: #fff; }
+
+    .footer-bottom {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid #2E2E2E;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #757575;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-legal {
+      display: flex;
+      gap: 18px;
+    }
+
+    .footer-legal a {
+      font-size: 12px;
+      color: #757575;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-legal a:hover { color: #CBCBCB; }
+
+    /* ── Fade in ──────────────────────────────────────────── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+    .d5 { transition-delay: 0.40s; }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .hero-layout { grid-template-columns: 1fr; gap: 40px; }
+      .hero-map-panel { height: 360px; max-width: 560px; }
+      .how-inner { grid-template-columns: 1fr; }
+      .tiles-grid { grid-template-columns: repeat(2, 1fr); }
+      .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+      .cta-inner { grid-template-columns: 1fr; }
+      .cta-btns { flex-direction: row; }
+      .footer-cols { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      #hero, #suggestions, #how, #proof, #pricing, #cta, footer {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .nav-inner { padding: 0 20px; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        position: fixed;
+        top: 66px; left: 0; right: 0; bottom: 0;
+        background: #fff;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        z-index: 99;
+        border-top: 1px solid #EEEEEE;
+      }
+      .nav-links a { font-size: 20px; }
+      .nav-menu-btn { display: flex; flex-direction: column; margin-left: auto; }
+      .tiles-grid { grid-template-columns: 1fr; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-cols { grid-template-columns: 1fr; }
+      .how-stats-grid { grid-template-columns: 1fr; }
+      .hero-stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-stat-item:nth-child(2) { border-right: none; }
+      .hero-stat-item:nth-child(n+3) { border-top: 1px solid #EEEEEE; }
+      #hero-stats { padding: 0 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ────────────────────────────────────────────────── -->
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-logo" href="#">Brick AI</a>
+
+      <ul class="nav-links">
+        <li><a href="#suggestions">Features</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#proof">Reviews</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <a href="#" class="nav-text-btn">Log in</a>
+        <a href="#cta" class="btn-pill">Join waitlist</a>
+      </div>
+
+      <button class="nav-menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── Hero ───────────────────────────────────────────────── -->
+  <section id="hero">
+    <div class="hero-layout">
+
+      <!-- Left: copy + widget -->
+      <div>
+        <div class="fade-in" style="display:inline-flex;align-items:center;gap:6px;background:#F6F6F6;border:1px solid #E2E2E2;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;letter-spacing:0.04em;margin-bottom:18px;">
+          <span style="width:7px;height:7px;background:#23A55A;border-radius:50%;display:inline-block;animation:pulse-dot 2s infinite;"></span>
+          Now in build · Join the waitlist
+        </div>
+        <h1 class="hero-h1 fade-in">From confused<br>to confident.</h1>
+
+        <!-- Mode tabs -->
+        <div class="hero-tabs fade-in d1">
+          <button class="hero-tab active" id="tab-buy" onclick="switchTab('buy')">Buy a home</button>
+          <button class="hero-tab" id="tab-invest" onclick="switchTab('invest')">Invest</button>
+        </div>
+
+        <!-- Chat widget (Buy a home) -->
+        <div class="hero-widget fade-in d2" id="widget-buy">
+          <div class="hero-chat">
+            <div class="chat-header">
+              <div class="chat-avatar">
+                <svg viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 3a3 3 0 110 6 3 3 0 010-6zm0 10.5a6.5 6.5 0 01-5-2.34C5.07 12.2 7.38 11.5 10 11.5s4.93.7 5 1.66A6.5 6.5 0 0110 15.5z"/></svg>
+              </div>
+              <span class="chat-title">Brick AI</span>
+              <span class="chat-status"><span class="chat-status-dot"></span> Online</span>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+              <div class="chat-msg ai">
+                <div class="chat-bubble">👋 Hi! I'm Brick. Tell me about the home you're looking for — suburb, budget, must-haves. I'll find matches and run the numbers.</div>
+              </div>
+              <div class="chat-msg user" id="chat-msg-user" style="display:none;">
+                <div class="chat-bubble" id="chat-bubble-user"></div>
+              </div>
+              <div class="chat-msg ai" id="chat-msg-ai2" style="display:none;">
+                <div class="chat-typing">
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                </div>
+              </div>
+              <div class="chat-msg ai" id="chat-msg-ai3" style="display:none;">
+                <div class="chat-bubble" id="chat-bubble-ai3"></div>
+              </div>
+            </div>
+            <div class="chat-input-bar">
+              <input type="text" id="chat-input" placeholder="Ask about suburbs, budgets, grants…" />
+              <button class="chat-send-btn" onclick="sendChat()" aria-label="Send">
+                <i data-lucide="arrow-up" style="width:16px;height:16px;color:#fff;"></i>
+              </button>
+            </div>
+          </div>
+          <div class="hero-cta-row">
+            <button class="btn-pill btn-pill-lg" onclick="location.href='#cta'">Join waitlist</button>
+            <button class="btn-ghost-underline" onclick="location.href='#how'">See how it works</button>
+          </div>
+        </div>
+
+        <!-- Invest widget -->
+        <div class="hero-drive-content" id="widget-invest">
+          <div class="hero-chat">
+            <div class="chat-header">
+              <div class="chat-avatar">
+                <svg viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 3a3 3 0 110 6 3 3 0 010-6zm0 10.5a6.5 6.5 0 01-5-2.34C5.07 12.2 7.38 11.5 10 11.5s4.93.7 5 1.66A6.5 6.5 0 0110 15.5z"/></svg>
+              </div>
+              <span class="chat-title">Brick AI</span>
+              <span class="chat-status"><span class="chat-status-dot"></span> Online</span>
+            </div>
+            <div class="chat-messages">
+              <div class="chat-msg ai">
+                <div class="chat-bubble">📈 Tell me your yield targets, vacancy tolerance, and preferred tenant profile. I'll surface suburbs with the right momentum for your strategy.</div>
+              </div>
+            </div>
+            <div class="chat-input-bar">
+              <input type="text" placeholder="e.g. 5% yield, inner-west Sydney, young professionals…" />
+              <button class="chat-send-btn" aria-label="Send">
+                <i data-lucide="arrow-up" style="width:16px;height:16px;color:#fff;"></i>
+              </button>
+            </div>
+          </div>
+          <div class="hero-cta-row" style="margin-top:14px;">
+            <button class="btn-pill btn-pill-lg" onclick="location.href='#cta'">Join waitlist</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Leaflet interactive property map -->
+      <div class="hero-map-panel fade-in d2">
+
+        <div class="map-toolbar">
+          <button class="map-filter-pill active" onclick="filterPins('all', this)">All</button>
+          <button class="map-filter-pill" onclick="filterPins('buy', this)">For sale</button>
+          <button class="map-filter-pill" onclick="filterPins('invest', this)">Investment</button>
+        </div>
+
+        <div id="map-v12"></div>
+
+        <div class="map-property-card" id="map-prop-card">
+          <button class="map-card-close" onclick="closePropertyCard()" aria-label="Close">✕</button>
+          <div class="map-card-row1">
+            <div class="map-card-img"><i data-lucide="house" style="width:24px;height:24px;color:#AFAFAF;"></i></div>
+            <div class="map-card-main">
+              <div class="map-card-address" id="prop-address">14 Fisher Rd, Dee Why</div>
+              <div class="map-card-meta" id="prop-meta">4 bed · 2 bath · 512m²</div>
+              <div class="map-card-verdict" id="prop-verdict">✓ Good buy</div>
+            </div>
+            <div class="map-card-price-block">
+              <div class="price" id="prop-price">$2.15M</div>
+              <div class="price-sub" id="prop-price-sub">↑ +7.4% YoY</div>
+            </div>
+          </div>
+          <div class="map-card-divider"></div>
+          <div class="map-card-stats">
+            <div><div class="map-stat-label">Median suburb</div><div class="map-stat-val" id="prop-median">$2.08M</div></div>
+            <div><div class="map-stat-label">Clearance rate</div><div class="map-stat-val" id="prop-clearance">74%</div></div>
+            <div><div class="map-stat-label">Days on market</div><div class="map-stat-val" id="prop-dom">22</div></div>
+          </div>
+          <div class="map-card-actions">
+            <button class="map-card-btn-primary" onclick="location.href='#cta'">Join waitlist</button>
+            <button class="map-card-btn-ghost">Save</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Stats bar (50k+ like V1) ──────────────────────────── -->
+  <div id="hero-stats">
+    <div class="hero-stats-grid">
+      <div class="hero-stat-item fade-in">
+        <div class="hero-stat-num">50k+</div>
+        <div class="hero-stat-label">Homes analysed</div>
+      </div>
+      <div class="hero-stat-item fade-in d1">
+        <div class="hero-stat-num">4.9★</div>
+        <div class="hero-stat-label">Average user rating</div>
+      </div>
+      <div class="hero-stat-item fade-in d2">
+        <div class="hero-stat-num">$18k</div>
+        <div class="hero-stat-label">Avg. savings per buyer</div>
+      </div>
+      <div class="hero-stat-item fade-in d3">
+        <div class="hero-stat-num">3 min</div>
+        <div class="hero-stat-label">To your first report</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Suggestions (features) ─────────────────────────────── -->
+  <section id="suggestions">
+    <div class="suggestions-inner">
+
+      <h2 class="suggestions-h2 fade-in">What Brick AI does</h2>
+
+      <div class="tiles-grid">
+        <div class="tile fade-in">
+          <div class="tile-body">
+            <div class="tile-title">AI property analysis</div>
+            <p class="tile-desc">Instant deep-dive into any listing — comparable sales, flood zones, school ratings, and suburb growth trends in one view.</p>
+            <a href="#cta" class="tile-cta">Join waitlist</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="search" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d1">
+          <div class="tile-body">
+            <div class="tile-title">Budget intelligence</div>
+            <p class="tile-desc">Know exactly what you can afford. Brick models stamp duty, LMI, council rates, and hidden costs so there are no surprises.</p>
+            <a href="#cta" class="tile-cta">Join waitlist</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="calculator" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d2">
+          <div class="tile-body">
+            <div class="tile-title">Negotiation coach</div>
+            <p class="tile-desc">Get data-backed offers. Our AI tells you the realistic price range and the right tactics before you make an offer.</p>
+            <a href="#cta" class="tile-cta">Join waitlist</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="handshake" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d3">
+          <div class="tile-body">
+            <div class="tile-title">Grant finder</div>
+            <p class="tile-desc">Automatically surfaces every first-home buyer grant, scheme, and concession you're eligible for across federal and state programs.</p>
+            <a href="#cta" class="tile-cta">Join waitlist</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="gift" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d4">
+          <div class="tile-body">
+            <div class="tile-title">Contract review</div>
+            <p class="tile-desc">Upload your contract of sale. Brick flags risky clauses, special conditions, and anything your conveyancer should look at.</p>
+            <a href="#cta" class="tile-cta">Join waitlist</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="file-text" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+        <div class="tile fade-in d5">
+          <div class="tile-body">
+            <div class="tile-title">Settlement timeline</div>
+            <p class="tile-desc">A personalised step-by-step roadmap from deposit to keys — with deadlines, checklists, and reminders you can actually follow.</p>
+            <a href="#cta" class="tile-cta">Join waitlist</a>
+          </div>
+          <div class="tile-icon-box">
+            <i data-lucide="calendar-check" style="width:32px;height:32px;"></i>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── How it works (dark strip) ──────────────────────────── -->
+  <section id="how">
+    <div class="how-inner">
+
+      <div>
+        <div class="how-eyebrow fade-in">How it works</div>
+        <h2 class="how-h2 fade-in d1">From confused<br>to confident.</h2>
+        <p class="how-sub fade-in d2">
+          Brick AI empowers first-home buyers by turning uncertainty into clarity — one conversation at a time.
+        </p>
+
+        <div class="how-steps fade-in d2">
+          <div class="how-step active" data-step="0">
+            <span class="how-step-num">01</span>
+            <div class="how-step-body">
+              <div class="how-step-bar"></div>
+              <h4 class="how-step-title">Tell Brick your situation</h4>
+              <p class="how-step-desc">Your budget, location wish-list, deal-breakers. No forms — just a conversation.</p>
+            </div>
+          </div>
+          <div class="how-step" data-step="1">
+            <span class="how-step-num">02</span>
+            <div class="how-step-body">
+              <div class="how-step-bar"></div>
+              <h4 class="how-step-title">Get your personalised report</h4>
+              <p class="how-step-desc">Brick analyses thousands of data points and surfaces the clearest picture of the market for you.</p>
+            </div>
+          </div>
+          <div class="how-step" data-step="2">
+            <span class="how-step-num">03</span>
+            <div class="how-step-body">
+              <div class="how-step-bar"></div>
+              <h4 class="how-step-title">Ask anything, anytime</h4>
+              <p class="how-step-desc">"Is this suburb overpriced?" "What's the rental yield?" — Brick answers instantly, in plain English.</p>
+            </div>
+          </div>
+          <div class="how-step" data-step="3">
+            <span class="how-step-num">04</span>
+            <div class="how-step-body">
+              <div class="how-step-bar"></div>
+              <h4 class="how-step-title">Buy with confidence</h4>
+              <p class="how-step-desc">Walk into auction day knowing your number, your strategy, and every clause in your contract.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: animated typing chat demo -->
+      <div class="how-chat-demo fade-in d3">
+
+        <div class="demo-chat-header">
+          <div class="demo-avatar">
+            <svg viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 3a3 3 0 110 6 3 3 0 010-6zm0 10.5a6.5 6.5 0 01-5-2.34C5.07 12.2 7.38 11.5 10 11.5s4.93.7 5 1.66A6.5 6.5 0 0110 15.5z"/></svg>
+          </div>
+          <span class="demo-chat-name">Brick AI</span>
+          <span class="demo-chat-status"><span class="demo-status-dot"></span> Online</span>
+        </div>
+
+        <div class="demo-messages" id="demo-messages" style="flex:1;overflow:hidden;padding:16px 18px;display:flex;flex-direction:column;gap:12px;">
+        </div>
+
+        <div class="demo-input-bar">
+          <input class="demo-input-field" id="demo-input" placeholder="Ask about any suburb or property…" readonly />
+          <button class="demo-send-btn">
+            <i data-lucide="arrow-up" style="width:16px;height:16px;color:#fff;"></i>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Testimonials (Editorial) ───────────────────────────── -->
+  <section id="proof">
+    <div class="proof-inner">
+      <div class="fade-in">
+        <p class="proof-eyebrow">What buyers say</p>
+        <h2 class="proof-h2">Real people.<br>Real clarity.</h2>
+      </div>
+
+      <div class="testimonials-grid">
+
+        <div class="testimonial-card fade-in">
+          <div class="t-stars">★★★★★</div>
+          <p class="t-quote">"I was completely lost before Brick. After one session I understood my borrowing power, what grants I qualified for, and exactly what to offer. We bought in 6 weeks."</p>
+          <div class="t-author">
+            <div class="t-avatar">SL</div>
+            <div>
+              <div class="t-name">Sarah L.</div>
+              <div class="t-role">First-home buyer · Melbourne</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card fade-in d1">
+          <div class="t-stars">★★★★★</div>
+          <p class="t-quote">"Brick found two clauses in our contract that our conveyancer missed. Saved us a potentially huge problem. Worth every cent."</p>
+          <div class="t-author">
+            <div class="t-avatar">JM</div>
+            <div>
+              <div class="t-name">James M.</div>
+              <div class="t-role">First-home buyer · Sydney</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card fade-in d2">
+          <div class="t-stars">★★★★★</div>
+          <p class="t-quote">"The negotiation coach is unreal. I went into auction knowing my absolute ceiling and the vendor's price history. Bought $22k under what I was prepared to pay."</p>
+          <div class="t-author">
+            <div class="t-avatar">PT</div>
+            <div>
+              <div class="t-name">Priya T.</div>
+              <div class="t-role">First-home buyer · Brisbane</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Pricing ─────────────────────────────────────────────── -->
+  <section id="pricing">
+    <div class="pricing-inner">
+      <h2 class="pricing-h2 fade-in">Pricing — launching soon.</h2>
+
+      <div class="pricing-grid">
+        <div class="pricing-card fade-in">
+          <div class="coming-soon-badge">Coming soon</div>
+          <div class="pricing-tier">Starter</div>
+          <div>
+            <span class="pricing-amount">Free</span>
+            <p class="pricing-desc" style="margin-top:8px;">Perfect for exploring the market before you commit.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>5 property analyses / month</li>
+            <li>Suburb snapshot reports</li>
+            <li>Grant eligibility checker</li>
+            <li class="dim">Contract review</li>
+            <li class="dim">Negotiation coach</li>
+            <li class="dim">Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta outline">Join waitlist</a>
+        </div>
+
+        <div class="pricing-card featured fade-in d1">
+          <div class="pricing-badge">Most popular</div>
+          <div class="coming-soon-badge" style="background:rgba(255,255,255,0.15);color:#fff;">Coming soon</div>
+          <div class="pricing-tier">Buyer</div>
+          <div>
+            <span class="pricing-amount">$29</span><span class="pricing-period">/ month</span>
+            <p class="pricing-desc" style="margin-top:8px;">Everything you need from first search to settlement.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>Unlimited property analyses</li>
+            <li>Full suburb deep-dives</li>
+            <li>Grant eligibility checker</li>
+            <li>Contract review (up to 5)</li>
+            <li>Negotiation coach</li>
+            <li class="dim">Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta white">Join waitlist</a>
+        </div>
+
+        <div class="pricing-card fade-in d2">
+          <div class="coming-soon-badge">Coming soon</div>
+          <div class="pricing-tier">Pro</div>
+          <div>
+            <span class="pricing-amount">$79</span><span class="pricing-period">/ month</span>
+            <p class="pricing-desc" style="margin-top:8px;">For serious buyers and investors who need the full picture.</p>
+          </div>
+          <ul class="pricing-features">
+            <li>Everything in Buyer</li>
+            <li>Unlimited contract reviews</li>
+            <li>Investment yield modelling</li>
+            <li>Portfolio tracking</li>
+            <li>Settlement timeline manager</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="#cta" class="pricing-cta dark">Join waitlist</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA strip ───────────────────────────────────────────── -->
+  <section id="cta">
+    <div class="cta-inner fade-in">
+      <div>
+        <div class="cta-eyebrow">Now in development</div>
+        <h2 class="cta-h2">Be first when we launch.</h2>
+        <p class="cta-sub">Brick AI is currently in build. Join the waitlist for early access and we'll let you know the moment it's ready.</p>
+      </div>
+      <div class="cta-btns">
+        <div class="waitlist-form">
+          <input type="email" class="waitlist-input" placeholder="your@email.com" id="cta-email" />
+          <button class="btn-pill btn-pill-lg btn-pill-white" style="white-space:nowrap;" onclick="location.href='waitlist.html'">
+            Join waitlist
+            <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
+          </button>
+        </div>
+        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;">No spam. Unsubscribe anytime.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ──────────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">Brick AI</div>
+
+      <div class="footer-cols">
+        <div>
+          <div class="footer-col-title">Product</div>
+          <ul class="footer-links">
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">Changelog</a></li>
+            <li><a href="#">Roadmap</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Company</div>
+          <ul class="footer-links">
+            <li><a href="#">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Press</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Support</div>
+          <ul class="footer-links">
+            <li><a href="#">Help centre</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Status</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Legal</div>
+          <ul class="footer-links">
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Terms of service</a></li>
+            <li><a href="#">Cookie policy</a></li>
+            <li><a href="#">Accessibility</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2025 Brick AI Labs. All rights reserved.</span>
+        <div class="footer-legal">
+          <a href="#">Privacy</a>
+          <a href="#">Accessibility</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // ── Leaflet interactive property map (hero right) ────────────
+    // Northern Beaches Sydney — real sold data 2024–2025
+    const PROPERTIES = [
+      { id:1, lat:-33.7495, lng:151.2891, label:'$2.15M', address:'14 Fisher Rd, Dee Why', meta:'4 bed · 2 bath · 512m²', verdict:'✓ Good buy', verdictColor:'#E8F5E9', verdictText:'#1B5E20', price:'$2.15M', growth:'↑ +7.4% YoY', median:'$2.08M', clearance:'74%', dom:'22', soldDate:'Apr 2025', type:'buy', active:true },
+      { id:2, lat:-33.7512, lng:151.2870, label:'$1.82M', address:'8 Oaks Ave, Dee Why', meta:'3 bed · 1 bath · 380m²', verdict:'✓ Under median', verdictColor:'#E3F2FD', verdictText:'#0D47A1', price:'$1.82M', growth:'↑ +5.9% YoY', median:'$1.94M', clearance:'71%', dom:'28', soldDate:'Mar 2025', type:'buy', active:false },
+      { id:3, lat:-33.7335, lng:151.2918, label:'$2.42M', address:'3 Collaroy St, Collaroy', meta:'4 bed · 2 bath · 607m²', verdict:'✓ Strong growth', verdictColor:'#E8F5E9', verdictText:'#1B5E20', price:'$2.42M', growth:'↑ +9.1% YoY', median:'$2.21M', clearance:'79%', dom:'14', soldDate:'May 2025', type:'buy', active:false },
+      { id:4, lat:-33.7348, lng:151.2903, label:'$1.95M', address:'18 Pine Ave, Collaroy', meta:'3 bed · 2 bath · 445m²', verdict:'⚠ Fairly priced', verdictColor:'#FFF8E1', verdictText:'#E65100', price:'$1.95M', growth:'↑ +4.2% YoY', median:'$2.08M', clearance:'68%', dom:'35', soldDate:'Feb 2025', type:'buy', active:false },
+      { id:5, lat:-33.7228, lng:151.2960, label:'$2.88M', address:'22 Ocean St, Narrabeen', meta:'4 bed · 3 bath · 710m²', verdict:'✓ Great value', verdictColor:'#E8F5E9', verdictText:'#1B5E20', price:'$2.88M', growth:'↑ +11.3% YoY', median:'$3.05M', clearance:'83%', dom:'11', soldDate:'Jan 2025', type:'invest', active:false },
+      { id:6, lat:-33.7211, lng:151.2978, label:'$2.1M',  address:'5 Lagoon Rd, Narrabeen', meta:'3 bed · 1 bath · 520m²', verdict:'✓ Yield 4.8%', verdictColor:'#E8F5E9', verdictText:'#1B5E20', price:'$2.1M', growth:'↑ +6.7% YoY', median:'$2.15M', clearance:'75%', dom:'19', soldDate:'Dec 2024', type:'invest', active:false },
+    ];
+    let activeMarkers = {};
+
+    const map = L.map('map-v12', { center:[-33.737, 151.291], zoom:13, zoomControl:true, scrollWheelZoom:false });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution:'© OpenStreetMap © CARTO', subdomains:'abcd', maxZoom:19 }).addTo(map);
+    // Dee Why suburb polygon
+    L.polygon([[-33.744,151.282],[-33.744,151.296],[-33.756,151.296],[-33.756,151.282]], { color:'transparent', fillColor:'#D9E5D8', fillOpacity:0.40, interactive:false }).addTo(map);
+    // Narrabeen polygon
+    L.polygon([[-33.716,151.290],[-33.716,151.302],[-33.728,151.302],[-33.728,151.290]], { color:'transparent', fillColor:'#D9E5D8', fillOpacity:0.35, interactive:false }).addTo(map);
+    L.marker([-33.750,151.289], { icon:L.divIcon({ className:'suburb-label', html:'DEE WHY', iconAnchor:[35,8] }), interactive:false }).addTo(map);
+    L.marker([-33.722,151.294], { icon:L.divIcon({ className:'suburb-label', html:'NARRABEEN', iconAnchor:[45,8] }), interactive:false }).addTo(map);
+    L.marker([-33.734,151.292], { icon:L.divIcon({ className:'suburb-label', html:'COLLAROY', iconAnchor:[40,8] }), interactive:false }).addTo(map);
+
+    function makePinIcon(p) {
+      return L.divIcon({ className:'', html:`<div class="price-pin${p.active?' active':''}">${p.label}</div>`, iconSize:[0,0], iconAnchor:[0,0] });
+    }
+
+    function showPropertyCard(prop) {
+      Object.values(activeMarkers).forEach(m => { const p=PROPERTIES.find(x=>x.id===m._pid); if(p){p.active=false;m.setIcon(makePinIcon(p));} });
+      prop.active = true; activeMarkers[prop.id].setIcon(makePinIcon(prop));
+      map.flyTo([prop.lat,prop.lng], 16, { duration:0.9, easeLinearity:0.3 });
+      document.getElementById('prop-address').textContent = prop.address;
+      document.getElementById('prop-meta').textContent = prop.meta;
+      const v = document.getElementById('prop-verdict'); v.textContent = prop.verdict; v.style.background = prop.verdictColor; v.style.color = prop.verdictText;
+      document.getElementById('prop-price').textContent = prop.price;
+      document.getElementById('prop-price-sub').textContent = '🏷 Sold ' + prop.soldDate;
+      document.getElementById('prop-median').textContent = prop.median;
+      document.getElementById('prop-clearance').textContent = prop.clearance;
+      document.getElementById('prop-dom').textContent = prop.dom;
+      document.getElementById('map-prop-card').classList.add('visible');
+      lucide.createIcons();
+    }
+
+    function closePropertyCard() {
+      document.getElementById('map-prop-card').classList.remove('visible');
+      Object.values(activeMarkers).forEach(m => { const p=PROPERTIES.find(x=>x.id===m._pid); if(p){p.active=false;m.setIcon(makePinIcon(p));} });
+    }
+
+    function filterPins(type, btn) {
+      document.querySelectorAll('.map-filter-pill').forEach(p=>p.classList.remove('active')); btn.classList.add('active');
+      PROPERTIES.forEach(prop => { const m=activeMarkers[prop.id]; if(!m)return; (type==='all'||prop.type===type)?m.addTo(map):m.remove(); });
+      closePropertyCard();
+    }
+
+    PROPERTIES.forEach(prop => {
+      const m = L.marker([prop.lat,prop.lng], { icon:makePinIcon(prop), zIndexOffset:prop.active?1000:0 }).addTo(map);
+      m._pid = prop.id; activeMarkers[prop.id] = m;
+      m.on('click', () => showPropertyCard(prop));
+    });
+    setTimeout(() => showPropertyCard(PROPERTIES[0]), 900);
+
+    // ── How it works — animated chat demo ───────────────────────
+    const DEMO_SCRIPT = [
+      { role: 'ai',   text: "Hi! I'm Brick. What home are you looking for?", delay: 600 },
+      { role: 'user', text: "3 bed in Dee Why, budget $2M", delay: 1200, typing: 900 },
+      { role: 'ai',   text: "Found 8 matches in Dee Why. Median house price $1.94M — you're right at market. Clearance rate 74%.", delay: 1400, typing: 1600,
+        card: { rows: [
+          { label: 'Suburb median', val: '$1.94M' },
+          { label: 'Clearance rate', val: '74%', badge: '🔥 Active' },
+          { label: 'Your budget', val: '$2.0M' }
+        ]}
+      },
+      { role: 'user', text: "What grants am I eligible for?", delay: 1200, typing: 800 },
+      { role: 'ai',   text: "As a NSW first-home buyer you qualify for:", delay: 1200, typing: 1400,
+        card: { rows: [
+          { label: 'First Home Buyer Assist', val: '$0 stamp duty', badge: '✓ Eligible' },
+          { label: 'FHOG (new builds)', val: '$10,000' },
+          { label: 'First Home Guarantee', val: '5% deposit' }
+        ]}
+      },
+      { role: 'user', text: "Is 14 Fisher Rd a good buy?", delay: 1200, typing: 800 },
+      { role: 'ai',   text: "Comparable sales avg $2.08M (90 days). Sold Apr 2025 at $2.15M — 3.4% above median but 512m² block is premium for Dee Why. Solid buy.", delay: 1200, typing: 1800,
+        card: { rows: [
+          { label: 'Comp. sales avg', val: '$2.08M' },
+          { label: 'Land size', val: '512m²', badge: '✓ Good buy' },
+          { label: 'Sold price', val: '$2.15M' }
+        ]}
+      },
+    ];
+
+    const demoContainer = document.getElementById('demo-messages');
+    const demoInput = document.getElementById('demo-input');
+    let demoTimer = null;
+
+    function makeBubble(msg) {
+      const wrap = document.createElement('div');
+      wrap.className = `demo-msg ${msg.role}`;
+
+      if (msg.role === 'ai' && msg._typing) {
+        // Typing indicator
+        wrap.innerHTML = `<div class="demo-typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+        wrap.id = 'demo-typing-indicator';
+      } else {
+        let cardHTML = '';
+        if (msg.card) {
+          cardHTML = `<div class="demo-result-card">${msg.card.rows.map(r =>
+            `<div class="demo-result-row">
+              <span class="demo-result-label">${r.label}</span>
+              <span>${r.badge ? `<span class="demo-result-badge">${r.badge}</span>` : `<span class="demo-result-val">${r.val}</span>`}</span>
+            </div>`
+          ).join('')}</div>`;
+        }
+        wrap.innerHTML = `<div class="demo-bubble">${msg.text}${cardHTML}</div>`;
+      }
+      return wrap;
+    }
+
+    function scrollDemo() {
+      demoContainer.scrollTop = demoContainer.scrollHeight;
+    }
+
+    function runDemoSequence(steps, idx) {
+      if (idx >= steps.length) {
+        // Pause then restart
+        demoTimer = setTimeout(() => {
+          demoContainer.innerHTML = '';
+          runDemoSequence(steps, 0);
+        }, 4000);
+        return;
+      }
+      const step = steps[idx];
+
+      // Update input placeholder to mimic typing for user messages
+      if (step.role === 'user') {
+        demoInput.value = '';
+        demoInput.placeholder = step.text;
+        demoInput.style.color = '#AFAFAF';
+      }
+
+      // Show typing indicator for AI messages
+      if (step.role === 'ai' && step.typing) {
+        const typingEl = makeBubble({ role: 'ai', _typing: true });
+        demoContainer.appendChild(typingEl);
+        requestAnimationFrame(() => typingEl.classList.add('show'));
+        scrollDemo();
+
+        demoTimer = setTimeout(() => {
+          typingEl.remove();
+          const msgEl = makeBubble(step);
+          demoContainer.appendChild(msgEl);
+          requestAnimationFrame(() => msgEl.classList.add('show'));
+          scrollDemo();
+          demoTimer = setTimeout(() => runDemoSequence(steps, idx + 1), step.delay);
+        }, step.typing);
+        return;
+      }
+
+      // User message — show after small delay (simulates send)
+      demoTimer = setTimeout(() => {
+        if (step.role === 'user') {
+          demoInput.value = step.text;
+          demoInput.style.color = '#000';
+        }
+        demoTimer = setTimeout(() => {
+          if (step.role === 'user') {
+            demoInput.value = '';
+            demoInput.placeholder = 'Ask about any suburb or property…';
+            demoInput.style.color = '#AFAFAF';
+          }
+          const msgEl = makeBubble(step);
+          demoContainer.appendChild(msgEl);
+          requestAnimationFrame(() => msgEl.classList.add('show'));
+          scrollDemo();
+          demoTimer = setTimeout(() => runDemoSequence(steps, idx + 1), step.delay);
+        }, step.typing || 400);
+      }, 200);
+    }
+
+    // Start chat demo after page loads
+    setTimeout(() => runDemoSequence(DEMO_SCRIPT, 0), 800);
+
+    // Scroll reveal
+    const io = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.08 }
+    );
+    document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+
+    // Mobile nav
+    document.querySelector('.nav-menu-btn').addEventListener('click', () => {
+      document.querySelector('.nav-links').classList.toggle('open');
+    });
+
+    // Tab switch
+    function switchTab(mode) {
+      document.querySelectorAll('.hero-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + mode).classList.add('active');
+      const buyWidget = document.getElementById('widget-buy');
+      const investWidget = document.getElementById('widget-invest');
+      if (mode === 'buy') {
+        buyWidget.classList.remove('hide');
+        investWidget.classList.remove('show');
+      } else {
+        buyWidget.classList.add('hide');
+        investWidget.classList.add('show');
+      }
+    }
+
+    // Chat demo interaction
+    const demoReplies = {
+      default: "Great choice! Dee Why has a median house price of $1.94M with 74% clearance rate. As a NSW first-home buyer you may also qualify for $0 stamp duty under First Home Buyer Assist. Want me to pull comparable sales from the last 90 days?",
+    };
+    const suggestions = [
+      "3-bed house in Dee Why, budget $2M",
+      "What grants am I eligible for as a NSW first-home buyer?",
+      "Is Narrabeen good value right now?",
+    ];
+    let suggIdx = 0;
+
+    function sendChat() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim() || suggestions[suggIdx++ % suggestions.length];
+      input.value = '';
+
+      const userMsg = document.getElementById('chat-msg-user');
+      const userBubble = document.getElementById('chat-bubble-user');
+      userBubble.textContent = text;
+      userMsg.style.display = 'flex';
+
+      const typing = document.getElementById('chat-msg-ai2');
+      typing.style.display = 'flex';
+      scrollChat();
+
+      setTimeout(() => {
+        typing.style.display = 'none';
+        const aiMsg = document.getElementById('chat-msg-ai3');
+        const aiBubble = document.getElementById('chat-bubble-ai3');
+        aiBubble.textContent = demoReplies.default;
+        aiMsg.style.display = 'flex';
+        scrollChat();
+      }, 1600);
+    }
+
+    function scrollChat() {
+      const el = document.getElementById('chat-messages');
+      el.scrollTop = el.scrollHeight;
+    }
+
+    document.getElementById('chat-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendChat();
+    });
+
+    // Cycle placeholder suggestions
+    setInterval(() => {
+      const input = document.getElementById('chat-input');
+      if (!input.matches(':focus')) {
+        input.placeholder = suggestions[suggIdx++ % suggestions.length];
+      }
+    }, 3500);
+
+    
+    let cur = 0;
+    const steps = document.querySelectorAll('.how-step');
+    steps.forEach(s => s.addEventListener('click', () => {
+      steps.forEach(x => x.classList.remove('active'));
+      s.classList.add('active');
+      cur = +s.dataset.step;
+    }));
+    setInterval(() => {
+      steps.forEach(x => x.classList.remove('active'));
+      cur = (cur + 1) % steps.length;
+      steps[cur].classList.add('active');
+    }, 3200);
+  </script>
+</body>
+</html>

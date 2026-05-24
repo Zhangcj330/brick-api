@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join the waitlist — Brick AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Hanken Grotesk", -apple-system, system-ui, sans-serif;
+      color: #000;
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Nav ──────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid #EEEEEE;
+      padding: 0 40px;
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: #000;
+      text-decoration: none;
+    }
+
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #545454;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav-back:hover { color: #000; }
+
+    /* ── Main layout ─────────────────────────────────────── */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 480px;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 60px 40px 80px;
+      gap: 80px;
+      align-items: start;
+    }
+
+    /* ── Left: brand + social proof ─────────────────────── */
+    .left-col {
+      padding-top: 8px;
+      position: sticky;
+      top: 100px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #F6F6F6;
+      border: 1px solid #E2E2E2;
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #000;
+      margin-bottom: 24px;
+    }
+
+    .pulse {
+      width: 7px;
+      height: 7px;
+      background: #23A55A;
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .hero-headline {
+      font-size: clamp(36px, 4vw, 56px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.0;
+      margin-bottom: 18px;
+    }
+
+    .hero-sub {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #545454;
+      max-width: 400px;
+      margin-bottom: 48px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid #EEEEEE;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+
+    .stat-row-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #EEEEEE;
+    }
+
+    .stat-row-item:last-child { border-bottom: none; }
+
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      background: #F6F6F6;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stat-row-num {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .stat-row-label {
+      font-size: 13px;
+      color: #6B6B6B;
+      margin-top: 1px;
+    }
+
+    /* Testimonial snippet */
+    .testimonial-snippet {
+      background: #F6F6F6;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .snip-stars { font-size: 13px; letter-spacing: 2px; margin-bottom: 8px; }
+
+    .snip-quote {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #000;
+      font-style: italic;
+      margin-bottom: 14px;
+    }
+
+    .snip-author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .snip-avatar {
+      width: 32px;
+      height: 32px;
+      background: #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .snip-name { font-size: 13px; font-weight: 700; }
+    .snip-role { font-size: 11px; color: #757575; margin-top: 1px; }
+
+    /* ── Right: form card ────────────────────────────────── */
+    .form-card {
+      background: #fff;
+      border: 1px solid #E2E2E2;
+      border-radius: 16px;
+      padding: 36px 32px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.07);
+    }
+
+    .form-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: #6B6B6B;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    /* Form rows */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #000;
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      background: #F6F6F6;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: #000;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .form-input::placeholder { color: #AFAFAF; }
+    .form-input:focus,
+    .form-select:focus {
+      border-color: #000;
+      background: #fff;
+    }
+
+    .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23545454' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    /* Buyer type toggle */
+    .toggle-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .toggle-option {
+      position: relative;
+    }
+
+    .toggle-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 11px 10px;
+      background: #F6F6F6;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #545454;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .toggle-option input:checked + .toggle-label {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    .toggle-label:hover { border-color: #CBCBCB; }
+
+    /* How did you hear — pills */
+    .source-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .source-pill {
+      position: relative;
+    }
+
+    .source-pill input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .source-pill-label {
+      display: inline-block;
+      padding: 7px 14px;
+      background: #F6F6F6;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #545454;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .source-pill input:checked + .source-pill-label {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    .source-pill-label:hover { border-color: #CBCBCB; }
+
+    /* Divider */
+    .form-divider {
+      height: 1px;
+      background: #EEEEEE;
+      margin: 22px 0;
+    }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%;
+      background: #000;
+      color: #fff;
+      border: 0;
+      border-radius: 999px;
+      padding: 15px;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s;
+      margin-top: 6px;
+    }
+
+    .submit-btn:hover { background: #1F1F1F; }
+
+    .submit-btn:disabled {
+      background: #CBCBCB;
+      cursor: not-allowed;
+    }
+
+    .form-legal {
+      font-size: 11px;
+      color: #AFAFAF;
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    /* ── Success state ───────────────────────────────────── */
+    .success-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .success-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .success-sub {
+      font-size: 14px;
+      color: #6B6B6B;
+      line-height: 1.6;
+      max-width: 300px;
+    }
+
+    .success-position {
+      margin-top: 24px;
+      background: #F6F6F6;
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .position-num {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .position-label {
+      font-size: 12px;
+      color: #6B6B6B;
+      font-weight: 500;
+    }
+
+    /* ── Progress bar ────────────────────────────────────── */
+    .form-progress {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+
+    .progress-step {
+      flex: 1;
+      height: 3px;
+      background: #EEEEEE;
+      border-radius: 999px;
+      transition: background 0.3s;
+    }
+
+    .progress-step.active { background: #000; }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 860px) {
+      main {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        padding: 40px 24px 60px;
+      }
+
+      .left-col { position: static; }
+      nav { padding: 0 24px; }
+
+      .stats-row { flex-direction: row; flex-wrap: wrap; }
+    }
+
+    @media (max-width: 480px) {
+      .form-card { padding: 24px 20px; }
+      .form-row { grid-template-columns: 1fr; }
+      .toggle-group { grid-template-columns: 1fr 1fr; }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-logo" href="v13.html">Brick AI</a>
+      <a class="nav-back" href="v13.html">
+        <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+        Back to home
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main>
+
+    <!-- Left: brand + proof -->
+    <div class="left-col">
+
+      <div class="eyebrow">
+        <span class="pulse"></span>
+        Now in build
+      </div>
+
+      <h1 class="hero-headline">You're early.<br>That's smart.</h1>
+      <p class="hero-sub">Brick AI turns the chaos of buying your first home into a clear, confident plan. Join the waitlist and get early access the moment we launch.</p>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-row-item">
+          <div class="stat-icon">
+            <i data-lucide="home" style="width:18px;height:18px;"></i>
+          </div>
+          <div>
+            <div class="stat-row-num">50k+</div>
+            <div class="stat-row-label">Properties already analysed</div>
+          </div>
+        </div>
+        <div class="stat-row-item">
+          <div class="stat-icon">
+            <i data-lucide="piggy-bank" style="width:18px;height:18px;"></i>
+          </div>
+          <div>
+            <div class="stat-row-num">$18k</div>
+            <div class="stat-row-label">Average savings per buyer</div>
+          </div>
+        </div>
+        <div class="stat-row-item">
+          <div class="stat-icon">
+            <i data-lucide="clock" style="width:18px;height:18px;"></i>
+          </div>
+          <div>
+            <div class="stat-row-num">3 min</div>
+            <div class="stat-row-label">To your first property report</div>
+          </div>
+        </div>
+        <div class="stat-row-item">
+          <div class="stat-icon">
+            <i data-lucide="star" style="width:18px;height:18px;"></i>
+          </div>
+          <div>
+            <div class="stat-row-num">4.9★</div>
+            <div class="stat-row-label">Average rating from beta users</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonial -->
+      <div class="testimonial-snippet">
+        <div class="snip-stars">★★★★★</div>
+        <p class="snip-quote">"I was completely lost before Brick. After one session I understood my borrowing power, what grants I qualified for, and exactly what to offer. We bought in 6 weeks."</p>
+        <div class="snip-author">
+          <div class="snip-avatar">SL</div>
+          <div>
+            <div class="snip-name">Sarah L.</div>
+            <div class="snip-role">First-home buyer · Melbourne</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: form -->
+    <div>
+      <div class="form-card" id="form-card">
+
+        <!-- Progress bar -->
+        <div class="form-progress">
+          <div class="progress-step active" id="step-1"></div>
+          <div class="progress-step" id="step-2"></div>
+          <div class="progress-step" id="step-3"></div>
+        </div>
+
+        <h2 class="form-title">Secure your spot</h2>
+        <p class="form-subtitle">Takes 60 seconds. We'll email you the moment Brick AI is ready for early access.</p>
+
+        <form id="waitlist-form" novalidate>
+
+          <!-- Step 1: Name + Email -->
+          <div id="step-block-1">
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="first-name">First name</label>
+                <input class="form-input" id="first-name" type="text" placeholder="Alex" autocomplete="given-name" required />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="last-name">Last name</label>
+                <input class="form-input" id="last-name" type="text" placeholder="Chen" autocomplete="family-name" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="email">Email address</label>
+              <input class="form-input" id="email" type="email" placeholder="you@email.com" autocomplete="email" required />
+            </div>
+          </div>
+
+          <!-- Step 2: Buyer type + suburb -->
+          <div id="step-block-2">
+            <div class="form-divider"></div>
+
+            <div class="form-group">
+              <label class="form-label">I'm looking to</label>
+              <div class="toggle-group">
+                <div class="toggle-option">
+                  <input type="radio" name="buyer-type" id="type-buy" value="buy" checked />
+                  <label class="toggle-label" for="type-buy">
+                    <i data-lucide="key" style="width:14px;height:14px;"></i>
+                    Buy a home
+                  </label>
+                </div>
+                <div class="toggle-option">
+                  <input type="radio" name="buyer-type" id="type-invest" value="invest" />
+                  <label class="toggle-label" for="type-invest">
+                    <i data-lucide="trending-up" style="width:14px;height:14px;"></i>
+                    Invest
+                  </label>
+                </div>
+                <div class="toggle-option">
+                  <input type="radio" name="buyer-type" id="type-upgrade" value="upgrade" />
+                  <label class="toggle-label" for="type-upgrade">
+                    <i data-lucide="arrow-up-circle" style="width:14px;height:14px;"></i>
+                    Upgrade
+                  </label>
+                </div>
+                <div class="toggle-option">
+                  <input type="radio" name="buyer-type" id="type-unsure" value="unsure" />
+                  <label class="toggle-label" for="type-unsure">
+                    <i data-lucide="help-circle" style="width:14px;height:14px;"></i>
+                    Not sure yet
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom:14px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="city">Target city</label>
+                <select class="form-select" id="city">
+                  <option value="">Select city…</option>
+                  <option>Melbourne</option>
+                  <option>Sydney</option>
+                  <option>Brisbane</option>
+                  <option>Perth</option>
+                  <option>Adelaide</option>
+                  <option>Canberra</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="budget">Budget range</label>
+                <select class="form-select" id="budget">
+                  <option value="">Select range…</option>
+                  <option>Under $500k</option>
+                  <option>$500k – $750k</option>
+                  <option>$750k – $1M</option>
+                  <option>$1M – $1.5M</option>
+                  <option>$1.5M – $2M</option>
+                  <option>$2M+</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: How did you hear -->
+          <div id="step-block-3">
+            <div class="form-divider"></div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">How did you hear about Brick?</label>
+              <div class="source-pills">
+                <div class="source-pill">
+                  <input type="checkbox" id="src-google" name="source" value="google" />
+                  <label class="source-pill-label" for="src-google">Google</label>
+                </div>
+                <div class="source-pill">
+                  <input type="checkbox" id="src-instagram" name="source" value="instagram" />
+                  <label class="source-pill-label" for="src-instagram">Instagram</label>
+                </div>
+                <div class="source-pill">
+                  <input type="checkbox" id="src-tiktok" name="source" value="tiktok" />
+                  <label class="source-pill-label" for="src-tiktok">TikTok</label>
+                </div>
+                <div class="source-pill">
+                  <input type="checkbox" id="src-friend" name="source" value="friend" />
+                  <label class="source-pill-label" for="src-friend">Friend / family</label>
+                </div>
+                <div class="source-pill">
+                  <input type="checkbox" id="src-reddit" name="source" value="reddit" />
+                  <label class="source-pill-label" for="src-reddit">Reddit</label>
+                </div>
+                <div class="source-pill">
+                  <input type="checkbox" id="src-other" name="source" value="other" />
+                  <label class="source-pill-label" for="src-other">Other</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <button type="submit" class="submit-btn" id="submit-btn">
+            Join the waitlist
+            <i data-lucide="arrow-right" style="width:16px;height:16px;"></i>
+          </button>
+
+          <p class="form-legal">
+            No spam — ever. We'll only email you about your waitlist status and the Brick AI launch.<br>
+            <a href="#" style="color:#AFAFAF;">Privacy policy</a>
+          </p>
+
+        </form>
+
+        <!-- Success state -->
+        <div class="success-state" id="success-state">
+          <div class="success-icon">
+            <i data-lucide="check" style="width:28px;height:28px;color:#fff;"></i>
+          </div>
+          <h3 class="success-title">You're on the list!</h3>
+          <p class="success-sub">We'll email you at <strong id="success-email"></strong> the moment Brick AI opens for early access.</p>
+          <div class="success-position">
+            <div class="position-num" id="position-num">#247</div>
+            <div class="position-label">Your position on the waitlist</div>
+          </div>
+          <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px;width:100%;">
+            <p style="font-size:13px;font-weight:600;text-align:center;color:#545454;">Move up the list — share with friends</p>
+            <div style="display:flex;gap:8px;">
+              <button onclick="shareWaitlist('twitter')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:#F6F6F6;border:0;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">
+                <i data-lucide="twitter" style="width:14px;height:14px;"></i> X / Twitter
+              </button>
+              <button onclick="shareWaitlist('copy')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:#F6F6F6;border:0;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;" id="copy-btn">
+                <i data-lucide="link" style="width:14px;height:14px;"></i> Copy link
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer style="border-top:1px solid #EEEEEE;padding:24px 40px;text-align:center;">
+    <p style="font-size:12px;color:#AFAFAF;">© 2025 Brick AI · Built for Australian first-home buyers · <a href="#" style="color:#AFAFAF;">Privacy</a></p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const form = document.getElementById('waitlist-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const successState = document.getElementById('success-state');
+    const steps = [
+      document.getElementById('step-1'),
+      document.getElementById('step-2'),
+      document.getElementById('step-3'),
+    ];
+
+    // Animate progress bar as user fills form
+    function updateProgress() {
+      const firstName = document.getElementById('first-name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const city = document.getElementById('city').value;
+      const budget = document.getElementById('budget').value;
+
+      let filled = 0;
+      if (firstName && email) filled = 1;
+      if (filled >= 1 && (city || budget)) filled = 2;
+      if (filled >= 2 && document.querySelectorAll('input[name="source"]:checked').length > 0) filled = 3;
+
+      steps.forEach((s, i) => {
+        s.classList.toggle('active', i <= filled - 1 || (filled === 0 && i === 0));
+      });
+      // Always keep step 1 highlighted
+      steps[0].classList.add('active');
+    }
+
+    document.querySelectorAll('.form-input, .form-select, input[name="source"]').forEach(el => {
+      el.addEventListener('input', updateProgress);
+      el.addEventListener('change', updateProgress);
+    });
+
+    // Form submit
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const firstName = document.getElementById('first-name').value.trim();
+
+      if (!firstName) {
+        document.getElementById('first-name').focus();
+        document.getElementById('first-name').style.borderColor = '#E53E3E';
+        setTimeout(() => document.getElementById('first-name').style.borderColor = '', 2000);
+        return;
+      }
+
+      if (!email || !email.includes('@')) {
+        document.getElementById('email').focus();
+        document.getElementById('email').style.borderColor = '#E53E3E';
+        setTimeout(() => document.getElementById('email').style.borderColor = '', 2000);
+        return;
+      }
+
+      // Simulate submission
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<svg style="animation:spin 0.8s linear infinite;width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Joining…`;
+
+      setTimeout(() => {
+        // Show success
+        form.style.display = 'none';
+        document.getElementById('success-email').textContent = email;
+        // Random-ish position based on email hash
+        const pos = 200 + Math.floor((email.charCodeAt(0) + email.length) % 150);
+        document.getElementById('position-num').textContent = '#' + pos;
+        successState.style.display = 'flex';
+        lucide.createIcons();
+
+        // Update all 3 steps
+        steps.forEach(s => s.classList.add('active'));
+      }, 1200);
+    });
+
+    // Share
+    function shareWaitlist(platform) {
+      const url = window.location.href;
+      const text = "I just joined the Brick AI waitlist — an AI assistant for first-home buyers in Australia. Check it out:";
+      if (platform === 'twitter') {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+      } else if (platform === 'copy') {
+        navigator.clipboard.writeText(url).then(() => {
+          const btn = document.getElementById('copy-btn');
+          btn.innerHTML = '<i data-lucide="check" style="width:14px;height:14px;"></i> Copied!';
+          lucide.createIcons();
+          setTimeout(() => {
+            btn.innerHTML = '<i data-lucide="link" style="width:14px;height:14px;"></i> Copy link';
+            lucide.createIcons();
+          }, 2000);
+        });
+      }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </script>
+</body>
+</html>
