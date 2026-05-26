@@ -30,6 +30,21 @@ MAX_ROUNDS = 5
 MAX_MESSAGES = 40
 _RISK_KW = {"flood", "bushfire", "overpriced", "heritage", "contamination"}
 
+_SUBURB_STATS_PROMPT = """Search the web and return ONLY a JSON object (no markdown, no explanation) with current real estate statistics for {suburb}, {state}, Australia.
+
+Fields to return:
+{{
+  "median_price": <integer, median house price AUD>,
+  "clearance_rate": <float, auction clearance rate %>,
+  "growth_12mo": <float, 12-month price growth %>,
+  "rental_yield": <float, gross rental yield %>,
+  "days_on_market": <integer, median days on market>,
+  "source_note": <string, e.g. "Domain.com.au, May 2025">
+}}
+
+Search queries to use: "{suburb} {state} median house price 2025", "{suburb} clearance rate auction results", "{suburb} rental yield days on market".
+Return only the JSON object. Use null for any field you cannot find."""
+
 
 def get_client() -> genai.Client:
     return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
@@ -61,6 +76,34 @@ def _build_config() -> types.GenerateContentConfig:
             include_server_side_tool_invocations=True,
         ),
     )
+
+
+async def fetch_suburb_stats(suburb: str, state: str = "NSW") -> dict:
+    """Use a dedicated Gemini + Google Search call to get real suburb stats."""
+    client = get_client()
+    prompt = _SUBURB_STATS_PROMPT.format(suburb=suburb, state=state)
+    try:
+        response = await client.aio.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+                temperature=0.1,
+            ),
+        )
+        text = response.text or ""
+        # Strip markdown code fences if present
+        text = text.strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        text = text.strip()
+        data = json.loads(text)
+        # Remove null values so model estimates are preserved for missing fields
+        return {k: v for k, v in data.items() if v is not None}
+    except Exception:
+        return {}
 
 
 def _to_contents(messages: list[Message]) -> list[types.Content]:
@@ -143,6 +186,14 @@ async def stream_chat(
 
                             args = dict(fc.args) if fc.args else {}
                             tools_called.append(fc.name)
+
+                            # For suburb stats: fetch real data via Google Search
+                            if fc.name == "show_suburb_stats":
+                                real = await fetch_suburb_stats(
+                                    args.get("suburb", ""),
+                                    args.get("state", "NSW"),
+                                )
+                                args = {**args, **real}  # real data wins over model estimates
 
                             # Emit tool call → frontend renders the component
                             yield _sse({
