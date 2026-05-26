@@ -1,6 +1,14 @@
 """
-Gemini service — buyer agent orchestrator.
-Streams SSE events: text_delta, tool_call, warning, done, error.
+Agentic tool loop — Copilot / Claude Code style.
+
+Each round:
+  1. Stream model response (text_delta + tool_call events)
+  2. If tool calls fired → "execute" them (emit to frontend), feed dummy
+     FunctionResponse back, start next round
+  3. If no tool calls → done
+
+Model: gemini-3.1-flash-lite
+Tools: google_search (grounding) + function_declarations (Gen UI)
 """
 
 import json
@@ -15,7 +23,10 @@ from models.schemas import Message
 from prompts.buyer_agent import SYSTEM_PROMPT
 from services.tools import UI_TOOLS
 
+MODEL = "gemini-3.5-flash"
+MAX_ROUNDS = 5
 MAX_MESSAGES = 40
+_RISK_KW = {"flood", "bushfire", "overpriced", "heritage", "contamination"}
 
 
 def get_client() -> genai.Client:
@@ -23,16 +34,13 @@ def get_client() -> genai.Client:
 
 
 def _build_config() -> types.GenerateContentConfig:
-    # google_search (server-side grounding) + function_declarations require
-    # include_server_side_tool_invocations = True
-    tools = [
-        types.Tool(google_search=types.GoogleSearch()),
-        types.Tool(function_declarations=UI_TOOLS),
-    ]
     return types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
-        tools=tools,
-        temperature=0.3,
+        tools=[
+            types.Tool(google_search=types.GoogleSearch()),
+            types.Tool(function_declarations=UI_TOOLS),
+        ],
+        temperature=0.4,
         automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         tool_config=types.ToolConfig(
             function_calling_config=types.FunctionCallingConfig(mode="AUTO"),
@@ -49,22 +57,17 @@ def _to_contents(messages: list[Message]) -> list[types.Content]:
     return contents
 
 
-def _sse_line(data: dict) -> str:
+def _sse(data: dict) -> str:
     return f"data: {json.dumps(data)}\n\n"
 
 
 async def stream_chat(
     messages: list[Message], session_id: str
 ) -> AsyncGenerator[str, None]:
-    """
-    Async generator yielding SSE-formatted lines.
-    Handles text deltas, tool calls, and done/error events.
-    """
     messages = messages[-MAX_MESSAGES:]
-
     if not messages:
-        yield _sse_line({"type": "error", "message": "No messages provided"})
-        yield _sse_line({"type": "done"})
+        yield _sse({"type": "error", "message": "No messages provided"})
+        yield _sse({"type": "done"})
         return
 
     client = get_client()
@@ -72,41 +75,82 @@ async def stream_chat(
     config = _build_config()
 
     try:
-        async for chunk in await client.aio.models.generate_content_stream(
-            model="gemini-3.5-flash",
-            contents=contents,
-            config=config,
-        ):
-            # Text delta
-            if chunk.text:
-                yield _sse_line({"type": "text_delta", "content": chunk.text})
+        for _round in range(MAX_ROUNDS):
+            accumulated_text = ""
+            fn_call_parts: list[types.Part] = []
+            seen_names: set[str] = set()
 
-            # Tool calls from candidates
-            if chunk.candidates:
-                for candidate in chunk.candidates:
-                    if not candidate.content or not candidate.content.parts:
-                        continue
-                    for part in candidate.content.parts:
-                        if part.function_call:
+            # ── Stream one round ──────────────────────────────────────────
+            async for chunk in await client.aio.models.generate_content_stream(
+                model=MODEL,
+                contents=contents,
+                config=config,
+            ):
+                # Stream text
+                if chunk.text:
+                    accumulated_text += chunk.text
+                    yield _sse({"type": "text_delta", "content": chunk.text})
+
+                # Collect function calls (deduplicated)
+                if chunk.candidates:
+                    for candidate in chunk.candidates:
+                        if not candidate.content or not candidate.content.parts:
+                            continue
+                        for part in candidate.content.parts:
+                            if not part.function_call:
+                                continue
                             fc = part.function_call
+                            if fc.name in seen_names:
+                                continue
+                            seen_names.add(fc.name)
+                            fn_call_parts.append(part)
+
                             args = dict(fc.args) if fc.args else {}
 
-                            yield _sse_line({
+                            # Emit tool call → frontend renders the component
+                            yield _sse({
                                 "type": "tool_call",
                                 "id": str(uuid.uuid4()),
                                 "name": fc.name,
                                 "args": args,
                             })
 
+                            # Surface embedded warnings
                             for w in args.get("warnings", []):
                                 level = "high" if any(
-                                    kw in w.lower()
-                                    for kw in ["flood", "bushfire", "overpriced", "heritage"]
+                                    kw in w.lower() for kw in _RISK_KW
                                 ) else "medium"
-                                yield _sse_line({"type": "warning", "level": level, "text": w})
+                                yield _sse({"type": "warning", "level": level, "text": w})
 
-        yield _sse_line({"type": "done"})
+            # ── No tool calls → conversation turn complete ────────────────
+            if not fn_call_parts:
+                break
+
+            # ── Tool calls fired → build next turn ────────────────────────
+            # IMPORTANT: use the raw Part objects from the stream — they carry
+            # thought_signature which Gemini 3.5 Flash requires in multi-turn.
+            model_parts: list[types.Part] = []
+            if accumulated_text:
+                model_parts.append(types.Part(text=accumulated_text))
+            model_parts.extend(fn_call_parts)  # raw Parts with thought_signature intact
+
+            # Function responses confirming each tool executed
+            fn_resp_parts = [
+                types.Part.from_function_response(
+                    name=p.function_call.name,
+                    response={"status": "ok", "result": "UI component displayed to user"},
+                )
+                for p in fn_call_parts
+            ]
+
+            # Extend history and loop
+            contents = contents + [
+                types.Content(role="model", parts=model_parts),
+                types.Content(role="user", parts=fn_resp_parts),
+            ]
+
+        yield _sse({"type": "done"})
 
     except Exception as exc:  # noqa: BLE001
-        yield _sse_line({"type": "error", "message": str(exc)})
-        yield _sse_line({"type": "done"})
+        yield _sse({"type": "error", "message": str(exc)})
+        yield _sse({"type": "done"})

@@ -45,7 +45,7 @@ UI_TOOLS = [
     },
     {
         "name": "show_map",
-        "description": "Display an interactive map centred on a suburb with optional property pins.",
+        "description": "Display an interactive property map for a suburb with price pins and property cards, similar to a real-estate portal. Include 4-6 real listings with full details.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -53,19 +53,28 @@ UI_TOOLS = [
                 "state": {"type": "string"},
                 "lat": {"type": "number"},
                 "lng": {"type": "number"},
-                "zoom": {"type": "integer", "default": 14},
+                "zoom": {"type": "integer", "default": 15},
                 "properties": {
                     "type": "array",
-                    "description": "Optional list of property pins to show on the map",
+                    "description": "List of 4-6 property listings to display as pins and cards",
                     "items": {
                         "type": "object",
                         "properties": {
                             "address": {"type": "string"},
                             "lat": {"type": "number"},
                             "lng": {"type": "number"},
-                            "price": {"type": "integer"},
-                            "label": {"type": "string"},
+                            "price": {"type": "integer", "description": "Listing price in AUD"},
+                            "label": {"type": "string", "description": "Short price label e.g. $1.82M"},
+                            "meta": {"type": "string", "description": "e.g. 4 bed · 2 bath · 512m²"},
+                            "type": {"type": "string", "enum": ["buy", "invest"], "description": "Buyer intent"},
+                            "verdict": {"type": "string", "description": "Short verdict e.g. ✓ Good buy"},
+                            "verdict_sentiment": {"type": "string", "enum": ["positive", "neutral", "caution"], "description": "Controls badge colour"},
+                            "growth": {"type": "string", "description": "e.g. ↑ +7.4% YoY"},
+                            "median_suburb": {"type": "string", "description": "Suburb median price e.g. $2.08M"},
+                            "clearance_rate": {"type": "string", "description": "e.g. 74%"},
+                            "days_on_market": {"type": "string", "description": "e.g. 22"},
                         },
+                        "required": ["address", "lat", "lng", "label"],
                     },
                 },
             },
