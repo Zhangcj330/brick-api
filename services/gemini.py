@@ -7,7 +7,7 @@ Each round:
      FunctionResponse back, start next round
   3. If no tool calls → done
 
-Model: gemini-3.1-flash-lite
+Model: gemini-3.5-flash
 Tools: google_search (grounding) + function_declarations (Gen UI)
 """
 
@@ -18,6 +18,8 @@ from typing import AsyncGenerator
 
 from google import genai
 from google.genai import types
+from langfuse import Langfuse
+from langfuse.types import TraceContext
 
 from models.schemas import Message
 from prompts.buyer_agent import SYSTEM_PROMPT
@@ -31,6 +33,18 @@ _RISK_KW = {"flood", "bushfire", "overpriced", "heritage", "contamination"}
 
 def get_client() -> genai.Client:
     return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+
+def _get_langfuse() -> Langfuse | None:
+    try:
+        lf = Langfuse(
+            public_key=os.environ["LANGFUSE_PUBLIC_KEY"],
+            secret_key=os.environ["LANGFUSE_SECRET_KEY"],
+            host=os.environ.get("LANGFUSE_HOST", "https://cloud.langfuse.com"),
+        )
+        return lf
+    except KeyError:
+        return None
 
 
 def _build_config() -> types.GenerateContentConfig:
@@ -73,12 +87,34 @@ async def stream_chat(
     client = get_client()
     contents = _to_contents(messages)
     config = _build_config()
+    lf = _get_langfuse()
+
+    all_text: list[str] = []
+    tools_called: list[str] = []
+    trace_obs = None
+
+    if lf:
+        trace_obs = lf.start_observation(
+            name="buyer-agent-chat",
+            as_type="agent",
+            trace_context=TraceContext(session_id=session_id, tags=["chat", "buyer-agent"]),
+            input=messages[-1].content,
+        )
 
     try:
         for _round in range(MAX_ROUNDS):
             accumulated_text = ""
             fn_call_parts: list[types.Part] = []
             seen_names: set[str] = set()
+
+            gen_obs = None
+            if lf and trace_obs:
+                gen_obs = lf.start_observation(
+                    name=f"round-{_round + 1}",
+                    as_type="generation",
+                    model=MODEL,
+                    input=[{"role": m.role, "content": m.content} for m in messages],
+                )
 
             # ── Stream one round ──────────────────────────────────────────
             async for chunk in await client.aio.models.generate_content_stream(
@@ -106,6 +142,7 @@ async def stream_chat(
                             fn_call_parts.append(part)
 
                             args = dict(fc.args) if fc.args else {}
+                            tools_called.append(fc.name)
 
                             # Emit tool call → frontend renders the component
                             yield _sse({
@@ -121,6 +158,16 @@ async def stream_chat(
                                     kw in w.lower() for kw in _RISK_KW
                                 ) else "medium"
                                 yield _sse({"type": "warning", "level": level, "text": w})
+
+            if gen_obs:
+                gen_obs.update(
+                    output=accumulated_text,
+                    metadata={"tools": list(seen_names), "round": _round + 1},
+                )
+                gen_obs.end()
+
+            if accumulated_text:
+                all_text.append(accumulated_text)
 
             # ── No tool calls → conversation turn complete ────────────────
             if not fn_call_parts:
@@ -149,8 +196,20 @@ async def stream_chat(
                 types.Content(role="user", parts=fn_resp_parts),
             ]
 
+        if trace_obs:
+            trace_obs.update(
+                output=" ".join(all_text),
+                metadata={"tools_called": tools_called},
+            )
+            trace_obs.end()
+            lf.flush()
+
         yield _sse({"type": "done"})
 
     except Exception as exc:  # noqa: BLE001
+        if trace_obs:
+            trace_obs.update(metadata={"error": str(exc)})
+            trace_obs.end()
+            lf.flush()
         yield _sse({"type": "error", "message": str(exc)})
         yield _sse({"type": "done"})
