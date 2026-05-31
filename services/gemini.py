@@ -134,7 +134,8 @@ async def stream_chat(
 
     all_text: list[str] = []
     tools_called: list[str] = []
-    all_grounding_sources: list[dict] = []  # accumulated across all rounds
+    all_grounding_sources: list[dict] = []
+    all_grounding_supports: list[dict] = []  # accumulated across all rounds
     trace_obs = None
 
     if lf:
@@ -262,8 +263,9 @@ async def stream_chat(
                 )
                 gen_obs.end()
 
-            # Accumulate sources across rounds
+            # Accumulate sources + supports across rounds
             all_grounding_sources.extend(round_sources)
+            all_grounding_supports.extend(round_supports)
 
             # Remove per-round sources emit (now done after all rounds)
 
@@ -305,7 +307,7 @@ async def stream_chat(
             trace_obs.end()
             lf.flush()
 
-        # Emit all accumulated sources (deduped) after final text delta
+        # Emit all accumulated sources (deduped) + supports after final text delta
         if all_grounding_sources:
             seen_urls: set[str] = set()
             unique_sources = []
@@ -314,6 +316,9 @@ async def stream_chat(
                     seen_urls.add(s["url"])
                     unique_sources.append(s)
             yield _sse({"type": "sources", "items": unique_sources[:10]})
+
+            if all_grounding_supports:
+                yield _sse({"type": "supports", "items": all_grounding_supports})
 
         yield _sse({"type": "done"})
 
