@@ -152,6 +152,7 @@ async def stream_chat(
             accumulated_text = ""
             fn_call_parts: list[types.Part] = []
             seen_names: set[str] = set()
+            seen_tool_calls: list[dict] = []
             round_start = time.time()
             ttft: float | None = None
 
@@ -217,6 +218,7 @@ async def stream_chat(
                             if fc.name in seen_names:
                                 continue
                             seen_names.add(fc.name)
+                            seen_tool_calls.append({"name": fc.name, "args": dict(fc.args) if fc.args else {}})
                             fn_call_parts.append(part)
 
                             args = dict(fc.args) if fc.args else {}
@@ -260,12 +262,12 @@ async def stream_chat(
             round_duration = round(time.time() - round_start, 3)
 
             # Build meaningful output for Langfuse: text + any tool calls
-            if accumulated_text and seen_names:
-                gen_output = {"text": accumulated_text, "tool_calls": list(seen_names)}
+            if accumulated_text and seen_tool_calls:
+                gen_output = {"text": accumulated_text, "tool_calls": seen_tool_calls}
             elif accumulated_text:
                 gen_output = accumulated_text
-            elif seen_names:
-                gen_output = {"tool_calls": list(seen_names)}
+            elif seen_tool_calls:
+                gen_output = {"tool_calls": seen_tool_calls}
             else:
                 gen_output = None
 
