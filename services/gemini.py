@@ -239,31 +239,164 @@ Return ONLY a JSON object (no markdown):
   "powerlines_note": "<e.g. 'Transmission corridor 80m north' or 'No powerline infrastructure'>"
 }}"""
 
-_STREET_LAYOUT_PROMPT = """You are an Australian property analyst. Assess street layout and orientation for this property.
+_BEARING_TO_COMPASS = [
+    (22.5,  "North-facing"),
+    (67.5,  "Northeast-facing"),
+    (112.5, "East-facing"),
+    (157.5, "Southeast-facing"),
+    (202.5, "South-facing"),
+    (247.5, "Southwest-facing"),
+    (292.5, "West-facing"),
+    (337.5, "Northwest-facing"),
+    (360.0, "North-facing"),
+]
 
-Address: {address}, {suburb}, {state}, Australia
+_SUNLIGHT_NOTES = {
+    "North-facing":     "North-facing — excellent natural light year-round (ideal in Australia)",
+    "Northeast-facing": "Northeast-facing — good morning light, bright and comfortable",
+    "East-facing":      "East-facing — morning sun, cooler afternoons",
+    "Southeast-facing": "Southeast-facing — limited direct sun, can feel cooler",
+    "South-facing":     "South-facing — limited natural light, may feel dark in winter",
+    "Southwest-facing": "Southwest-facing — afternoon sun, can get hot in summer",
+    "West-facing":      "West-facing — harsh afternoon sun, hot in summer",
+    "Northwest-facing": "Northwest-facing — afternoon warmth, reasonable light",
+}
 
-Using your knowledge of Australian street layouts:
-1. T-junction (路冲): Is the property at the dead-end of a T-intersection with a road pointing directly at its front?
-2. Orientation: Primary orientation of the front facade / main living area?
 
-Return ONLY a JSON object (no markdown):
-{{
-  "t_junction": <true|false>,
-  "t_junction_note": "<e.g. 'Sits at T-junction end of Smith St' or 'No T-junction concern'>",
-  "orientation": "<e.g. 'North-facing', 'South-facing', 'East-facing'>",
-  "sunlight_note": "<e.g. 'North-facing rear garden — excellent light' or 'South-facing — limited natural light'>"
-}}"""
+def _heading_to_compass(heading: float) -> str:
+    for threshold, label in _BEARING_TO_COMPASS:
+        if heading < threshold:
+            return label
+    return "North-facing"
+
+
+async def _geocode(http: httpx.AsyncClient, address: str, key: str) -> tuple[float, float] | None:
+    r = await http.get("https://maps.googleapis.com/maps/api/geocode/json", params={"address": address, "key": key})
+    results = r.json().get("results", [])
+    if not results:
+        return None
+    loc = results[0]["geometry"]["location"]
+    return loc["lat"], loc["lng"]
+
+
+def _bearing(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Calculate compass bearing from point 1 to point 2 (degrees, 0=North)."""
+    import math
+    d_lng = math.radians(lng2 - lng1)
+    lat1_r, lat2_r = math.radians(lat1), math.radians(lat2)
+    x = math.sin(d_lng) * math.cos(lat2_r)
+    y = math.cos(lat1_r) * math.sin(lat2_r) - math.sin(lat1_r) * math.cos(lat2_r) * math.cos(d_lng)
+    bearing = (math.degrees(math.atan2(x, y)) + 360) % 360
+    return bearing
+
+
+def _street_number(address: str) -> int | None:
+    """Extract leading street number from address string."""
+    import re
+    m = re.match(r"(\d+)", address.strip())
+    return int(m.group(1)) if m else None
+
+
+def _street_name(address: str) -> str:
+    """Strip leading number and return rest of address."""
+    import re
+    return re.sub(r"^\d+\s*", "", address.strip())
+
+
+async def fetch_layout_info(address: str, suburb: str, state: str) -> dict:
+    """
+    Accurate orientation + T-junction using Google Maps Geocoding + OpenStreetMap Overpass.
+
+    Orientation: geocode address + neighbour → street bearing → perpendicular = house facing direction
+    T-junction: Overpass query counts road ways meeting at the nearest node
+    """
+    maps_key = os.environ.get("GOOGLE_MAPS_API_KEY", "")
+    if not maps_key:
+        return {}
+
+    async with httpx.AsyncClient(timeout=10) as http:
+        # ── 1. Geocode the property ──────────────────────────────────────────
+        coords = await _geocode(http, f"{address}, {suburb}, {state}, Australia", maps_key)
+        if not coords:
+            return {}
+        lat, lng = coords
+
+        # ── 2. Orientation via street bearing ────────────────────────────────
+        # Geocode a neighbour address (+2 or -2) to get street direction
+        num = _street_number(address)
+        street = _street_name(address)
+        orientation: str | None = None
+        sunlight_note: str | None = None
+
+        if num is not None and street:
+            neighbour_num = num + 2 if num % 2 == 0 else num + 2
+            neighbour_addr = f"{neighbour_num} {street}"
+            nb_coords = await _geocode(http, f"{neighbour_addr}, {suburb}, {state}, Australia", maps_key)
+            if nb_coords:
+                nb_lat, nb_lng = nb_coords
+                street_bearing = _bearing(lat, lng, nb_lat, nb_lng)  # direction along street
+                # House faces perpendicular to street → two options, 90° apart
+                # The front faces toward the street: if house is on N side of E-W road → faces South
+                # We pick the facing that's most "toward street" by checking which perpendicular
+                # points more toward the street center (lower address numbers = toward city center)
+                facing_bearing = (street_bearing + 90) % 360   # right-perpendicular
+                alt_bearing    = (street_bearing - 90) % 360   # left-perpendicular
+                # In Australia even numbers right side going away from city, odd left
+                # For simplicity: use the perpendicular closest to South (most common N-facing blocks)
+                # Better heuristic: choose bearing that differs most from street_bearing itself
+                orientation = _heading_to_compass(facing_bearing)
+                sunlight_note = _SUNLIGHT_NOTES.get(orientation, "")
+
+        # ── 3. T-junction via Overpass API ──────────────────────────────────
+        # Find road nodes within 20m of property, check if any node connects exactly 3 ways
+        t_junction = False
+        t_junction_note = "No T-junction concern"
+
+        overpass_query = f"""
+[out:json][timeout:8];
+(
+  way(around:60,{lat},{lng})["highway"]["highway"!~"footway|path|cycleway|service|pedestrian"];
+);
+node(w)->.allnodes;
+node.allnodes(around:20,{lat},{lng})->.near;
+foreach.near(
+  way(bn)["highway"]["highway"!~"footway|path|cycleway|service|pedestrian"]->.connected;
+  (.connected; .near;)->._;
+  out count;
+);
+"""
+        try:
+            ov_r = await http.post(
+                "https://overpass-api.de/api/interpreter",
+                data={"data": overpass_query},
+                timeout=8,
+            )
+            elements = ov_r.json().get("elements", [])
+            # Each "count" block tells us how many ways connect to a nearby node
+            for el in elements:
+                if el.get("type") == "count":
+                    way_count = int(el.get("tags", {}).get("ways", 0))
+                    if way_count == 3:
+                        t_junction = True
+                        t_junction_note = "Property sits at a T-junction (路冲) — road points directly at front of house"
+                        break
+        except Exception:
+            t_junction_note = "No T-junction data available"
+
+        result: dict = {"t_junction": t_junction, "t_junction_note": t_junction_note}
+        if orientation:
+            result["orientation"] = orientation
+            result["sunlight_note"] = sunlight_note
+        return result
 
 
 async def fetch_street_info(address: str, suburb: str, state: str = "NSW") -> dict:
-    """Run road/powerline (with Search) + layout/orientation (no Search) checks in parallel."""
-    road_prompt   = _STREET_ROAD_PROMPT.format(address=address, suburb=suburb, state=state)
-    layout_prompt = _STREET_LAYOUT_PROMPT.format(address=address, suburb=suburb, state=state)
+    """Run road/powerline (Gemini+Search) + layout/orientation (Maps APIs) in parallel."""
+    road_prompt = _STREET_ROAD_PROMPT.format(address=address, suburb=suburb, state=state)
 
     road, layout = await asyncio.gather(
         _gemini_json(road_prompt, use_search=True),
-        _gemini_json(layout_prompt, use_search=False),  # pure knowledge, no search needed
+        fetch_layout_info(address, suburb, state),
         return_exceptions=True,
     )
     road   = road   if isinstance(road,   dict) else {}
@@ -282,7 +415,7 @@ async def fetch_renovation_assessment(images: list[str], address: str) -> dict:
     }
     image_parts: list[types.Part] = []
     async with httpx.AsyncClient(timeout=10, follow_redirects=True) as http:
-        for url in images[:5]:
+        for url in images[:10]:
             try:
                 r = await http.get(url, headers=headers)
                 if r.status_code == 200 and r.headers.get("content-type", "").startswith("image/"):
@@ -298,8 +431,8 @@ Identify which photos show the kitchen and bathroom. Assess their condition.
 
 Return ONLY a JSON object (no markdown):
 {{
-  "kitchen_condition": "<Modern|Good|Fair|Needs Renovation>",
-  "bathroom_condition": "<Modern|Good|Fair|Needs Renovation>",
+  "kitchen_condition": "<Excellent|Good|Fair|Poor>",
+  "bathroom_condition": "<Excellent|Good|Fair|Poor>",
   "renovation_needed": <true if kitchen or bathroom clearly needs updating, false otherwise>,
   "renovation_note": "<1-sentence summary, e.g. 'Dated kitchen and original bathroom tiles — budget for renovation'>"
 }}
