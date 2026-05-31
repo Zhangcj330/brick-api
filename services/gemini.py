@@ -46,8 +46,19 @@ Fields to return:
 Search queries to use: "{suburb} {state} median house price 2025", "{suburb} clearance rate auction results", "{suburb} rental yield days on market".
 Return only the JSON object. Use null for any field you cannot find."""
 
+_PROPERTY_IMAGES_PROMPT = """Search domain.com.au and realestate.com.au for the property listing at: {address}, {suburb}, {state}.
 
-def get_client() -> genai.Client:
+Find the actual listing page and extract the CDN image URLs. Return ONLY a JSON object:
+{{
+  "images": [<5 to 8 image URLs from the actual listing, in order: hero shot first, then interior/exterior>]
+}}
+
+Search queries to use: "{address} {suburb} domain.com.au", "{address} {suburb} realestate.com.au".
+Extract the actual image src URLs from the listing page (e.g. bucket-api.domain.com.au or bucket.realestate.com.au URLs).
+Return only the JSON. Return empty array if no listing found."""
+
+
+
     return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 
@@ -107,7 +118,32 @@ async def fetch_suburb_stats(suburb: str, state: str = "NSW") -> dict:
         return {}
 
 
-def _to_contents(messages: list[Message]) -> list[types.Content]:
+async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -> list[str]:
+    """Use Gemini + Google Search to find real listing image URLs for a property."""
+    client = get_client()
+    prompt = _PROPERTY_IMAGES_PROMPT.format(address=address, suburb=suburb, state=state)
+    try:
+        response = await client.aio.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+                temperature=0.1,
+            ),
+        )
+        text = (response.text or "").strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        text = text.strip()
+        data = json.loads(text)
+        return data.get("images", [])
+    except Exception:
+        return []
+
+
+
     contents = []
     for msg in messages:
         role = "model" if msg.role == "assistant" else "user"
@@ -231,6 +267,16 @@ async def stream_chat(
                                     args.get("state", "NSW"),
                                 )
                                 args = {**args, **real}  # real data wins over model estimates
+
+                            # For property card: fetch real listing images via Google Search
+                            if fc.name == "show_property_card":
+                                real_images = await fetch_property_images(
+                                    args.get("address", ""),
+                                    args.get("suburb", ""),
+                                    args.get("state", "NSW"),
+                                )
+                                if real_images:
+                                    args["images"] = real_images
 
                             # Track tool call as a span in Langfuse
                             if lf and trace_obs:
