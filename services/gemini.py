@@ -49,7 +49,7 @@ Search queries to use: "{suburb} {state} median house price 2025", "{suburb} cle
 Return only the JSON object. Use null for any field you cannot find."""
 
 async def fetch_sqm_data(postcode: str) -> dict:
-    """Scrape SQM Research for vacancy rate and stock on market for a postcode."""
+    """Scrape SQM Research for vacancy rate, stock on market, and historical price growth."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml",
@@ -82,13 +82,90 @@ async def fetch_sqm_data(postcode: str) -> dict:
                 if m:
                     rows = json.loads(m.group(1))
                     latest = rows[-1]
-                    # sum all days-on-market buckets for total stock
                     total = sum(latest.get(k, 0) for k in ("r30", "r60", "r90", "r180", "r180p"))
                     result["stock_on_market"] = total
         except Exception:
             pass
 
+        # Historical asking price growth (weekly data → compute 1yr/5yr/10yr)
+        try:
+            r = await client.get(
+                f"https://sqmresearch.com.au/property/asking-property-prices?postcode={postcode}&t=1",
+                headers=headers,
+            )
+            if r.status_code == 200:
+                m = re.search(r"var data = (\[.*?\]);", r.text, re.DOTALL)
+                if m:
+                    rows = json.loads(m.group(1))
+                    # Filter rows with valid house price
+                    rows = [row for row in rows if row.get("houses_all")]
+                    if len(rows) >= 52:
+                        latest_price = rows[-1]["houses_all"]
+                        price_1yr_ago = rows[-52]["houses_all"] if len(rows) >= 52 else None
+                        price_5yr_ago = rows[-260]["houses_all"] if len(rows) >= 260 else None
+                        price_10yr_ago = rows[-520]["houses_all"] if len(rows) >= 520 else None
+                        if price_1yr_ago:
+                            result["growth_1yr"] = round((latest_price / price_1yr_ago - 1) * 100, 1)
+                        if price_5yr_ago:
+                            result["growth_5yr"] = round((latest_price / price_5yr_ago - 1) * 100, 1)
+                        if price_10yr_ago:
+                            result["growth_10yr"] = round((latest_price / price_10yr_ago - 1) * 100, 1)
+        except Exception:
+            pass
+
     return result
+
+
+_GROWTH_OUTLOOK_PROMPT = """You are a senior Australian property analyst. Based on the data below for {suburb}, {state}, assess the growth outlook.
+
+Data:
+- Vacancy rate: {vacancy_rate}% (low <2% = strong demand, high >3% = oversupply)
+- Stock on market: {stock_on_market} listings
+- Days on market: {days_on_market} days (low <30 = tight market)
+- Clearance rate: {clearance_rate}% (high >70% = strong demand)
+- Rental yield: {rental_yield}% (high >4% = investment attractive)
+- 1-year price growth: {growth_1yr}%
+- 5-year price growth: {growth_5yr}%
+- 10-year price growth: {growth_10yr}%
+
+Return ONLY a JSON object (no markdown):
+{{
+  "short_term_outlook": "<Strong|Moderate|Neutral|Weak|Caution>",
+  "short_term_reason": "<1-sentence reason based on demand/supply metrics>",
+  "long_term_outlook": "<Strong|Moderate|Neutral|Weak|Caution>",
+  "long_term_reason": "<1-sentence reason based on long-term price trend and fundamentals>"
+}}"""
+
+
+async def assess_growth_outlook(suburb: str, state: str, metrics: dict) -> dict:
+    """Ask Gemini to assess short-term and long-term growth outlook based on enriched metrics."""
+    client = get_client()
+    prompt = _GROWTH_OUTLOOK_PROMPT.format(
+        suburb=suburb,
+        state=state,
+        vacancy_rate=metrics.get("vacancy_rate", "unknown"),
+        stock_on_market=metrics.get("stock_on_market", "unknown"),
+        days_on_market=metrics.get("days_on_market", "unknown"),
+        clearance_rate=metrics.get("clearance_rate", "unknown"),
+        rental_yield=metrics.get("rental_yield", "unknown"),
+        growth_1yr=metrics.get("growth_1yr", "unknown"),
+        growth_5yr=metrics.get("growth_5yr", "unknown"),
+        growth_10yr=metrics.get("growth_10yr", "unknown"),
+    )
+    try:
+        response = await client.aio.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(temperature=0.1),
+        )
+        text = (response.text or "").strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        return json.loads(text.strip())
+    except Exception:
+        return {}
 
 
 _ALLHOMES_URL_PROMPT = """Search allhomes.com.au for the property listing at: {address}, {suburb}, {state}, Australia.
@@ -349,11 +426,18 @@ async def stream_chat(
                                     args.get("state", "NSW"),
                                 )
                                 args = {**args, **real}  # real data wins over model estimates
-                                # Also fetch SQM vacancy rate + stock on market
+                                # Also fetch SQM vacancy rate, stock on market, price history
                                 postcode = args.get("postcode", "")
                                 if postcode:
                                     sqm = await fetch_sqm_data(postcode)
                                     args = {**args, **sqm}
+                                # Gemini assesses growth outlook from all combined metrics
+                                outlook = await assess_growth_outlook(
+                                    args.get("suburb", ""),
+                                    args.get("state", "NSW"),
+                                    args,
+                                )
+                                args = {**args, **outlook}
 
                             # For property card: fetch real listing images via Google Search
                             if fc.name == "show_property_card":
