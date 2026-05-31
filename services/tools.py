@@ -25,10 +25,10 @@ UI_TOOLS = [
                 "days_on_market": {"type": "integer"},
                 "suburb_median": {"type": "integer", "description": "Suburb median price in AUD for same property type"},
                 "price_delta_pct": {"type": "number", "description": "% difference from suburb median (positive = above)"},
-                "photos": {
+                "images": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "List of image URLs from the listing",
+                    "description": "5 to 8 photo URLs for this listing from domain.com.au or realestate.com.au. Include the main hero shot plus interior/exterior photos.",
                 },
                 "verdict": {
                     "type": "string",
