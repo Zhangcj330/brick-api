@@ -195,6 +195,19 @@ async def stream_chat(
                                 )
                                 args = {**args, **real}  # real data wins over model estimates
 
+                            # Track tool call as a span in Langfuse
+                            if lf and trace_obs:
+                                tool_span = lf.start_observation(
+                                    name=fc.name,
+                                    as_type="span",
+                                    parent_observation_id=trace_obs.id,
+                                    input=args,
+                                )
+                                tool_span.update(
+                                    output={"status": "ok", "rendered": "UI component displayed to user"},
+                                )
+                                tool_span.end()
+
                             # Emit tool call → frontend renders the component
                             yield _sse({
                                 "type": "tool_call",
