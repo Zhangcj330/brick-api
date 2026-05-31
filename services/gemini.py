@@ -134,6 +134,7 @@ async def stream_chat(
 
     all_text: list[str] = []
     tools_called: list[str] = []
+    all_grounding_sources: list[dict] = []  # accumulated across all rounds
     trace_obs = None
 
     if lf:
@@ -161,7 +162,7 @@ async def stream_chat(
 
             # ── Stream one round ──────────────────────────────────────────
             grounding_queries: list[str] = []
-            grounding_sources: list[dict] = []
+            round_sources: list[dict] = []
             async for chunk in await client.aio.models.generate_content_stream(
                 model=MODEL,
                 contents=contents,
@@ -183,7 +184,7 @@ async def stream_chat(
                             if gm.grounding_chunks:
                                 for gc in gm.grounding_chunks:
                                     if gc.web:
-                                        grounding_sources.append({
+                                        round_sources.append({
                                             "title": gc.web.title,
                                             "url": gc.web.uri,
                                         })
@@ -244,20 +245,15 @@ async def stream_chat(
                         "tools": list(seen_names),
                         "round": _round + 1,
                         "search_queries": grounding_queries,
-                        "search_sources": grounding_sources[:10],
+                        "search_sources": round_sources[:10],
                     },
                 )
                 gen_obs.end()
 
-            # Emit grounding sources to frontend (deduplicated by URL)
-            if grounding_sources:
-                seen_urls: set[str] = set()
-                unique_sources = []
-                for s in grounding_sources:
-                    if s["url"] not in seen_urls:
-                        seen_urls.add(s["url"])
-                        unique_sources.append(s)
-                yield _sse({"type": "sources", "items": unique_sources[:8]})
+            # Accumulate sources across rounds
+            all_grounding_sources.extend(round_sources)
+
+            # Remove per-round sources emit (now done after all rounds)
 
             if accumulated_text:
                 all_text.append(accumulated_text)
@@ -296,6 +292,16 @@ async def stream_chat(
             )
             trace_obs.end()
             lf.flush()
+
+        # Emit all accumulated sources (deduped) after final text delta
+        if all_grounding_sources:
+            seen_urls: set[str] = set()
+            unique_sources = []
+            for s in all_grounding_sources:
+                if s["url"] not in seen_urls:
+                    seen_urls.add(s["url"])
+                    unique_sources.append(s)
+            yield _sse({"type": "sources", "items": unique_sources[:10]})
 
         yield _sse({"type": "done"})
 
