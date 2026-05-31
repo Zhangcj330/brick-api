@@ -170,9 +170,24 @@ async def stream_chat(
                     accumulated_text += chunk.text
                     yield _sse({"type": "text_delta", "content": chunk.text})
 
-                # Collect function calls (deduplicated)
+                # Collect function calls (deduplicated) + grounding metadata
+                grounding_queries: list[str] = []
+                grounding_sources: list[dict] = []
                 if chunk.candidates:
                     for candidate in chunk.candidates:
+                        # Capture Google Search grounding data
+                        if candidate.grounding_metadata:
+                            gm = candidate.grounding_metadata
+                            if gm.web_search_queries:
+                                grounding_queries.extend(gm.web_search_queries)
+                            if gm.grounding_chunks:
+                                for gc in gm.grounding_chunks:
+                                    if gc.web:
+                                        grounding_sources.append({
+                                            "title": gc.web.title,
+                                            "url": gc.web.uri,
+                                        })
+
                         if not candidate.content or not candidate.content.parts:
                             continue
                         for part in candidate.content.parts:
@@ -225,7 +240,12 @@ async def stream_chat(
             if gen_obs:
                 gen_obs.update(
                     output=accumulated_text,
-                    metadata={"tools": list(seen_names), "round": _round + 1},
+                    metadata={
+                        "tools": list(seen_names),
+                        "round": _round + 1,
+                        "search_queries": grounding_queries,
+                        "search_sources": grounding_sources[:10],  # cap at 10
+                    },
                 )
                 gen_obs.end()
 
