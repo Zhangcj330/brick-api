@@ -1,0 +1,11 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+tests/
+gemini.ipynb
+.env*
+!.env.example
+.DS_Store
