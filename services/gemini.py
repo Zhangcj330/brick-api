@@ -222,50 +222,53 @@ async def assess_growth_outlook(suburb: str, state: str, metrics: dict) -> dict:
         return {}
 
 
-_STREET_INFO_PROMPT = """You are an Australian property analyst. Research the following property address and assess four street-level factors.
+_STREET_ROAD_PROMPT = """You are an Australian property analyst. Check two street-level factors for this property.
 
 Address: {address}, {suburb}, {state}, Australia
 
-Search for:
-1. Main road check: Is this address on or directly fronting a major arterial road, highway, or high-traffic road? Search "{address} {suburb} main road arterial traffic" and check road classification. Roads like Parramatta Rd, Pacific Hwy, Pennant Hills Rd, Canterbury Rd etc. are main roads.
-2. Power lines: Are there known high-voltage transmission lines, large electricity pylons, or substations near or fronting this property? Search "{suburb} {state} powerlines transmission easement" and "{address} powerline".
-3. T-junction (路冲): Use Google Maps knowledge — is this property sitting at the dead-end of a T-intersection with a road pointing directly at the front of the house? This is a negative feng shui/safety factor.
-4. Orientation & sunlight: Based on the address and typical block layout in {suburb}, what is the primary orientation of the main living area or front facade? Is it north-facing (ideal in Australia), south-facing (less natural light), east or west?
+Search for: "{address} {suburb} road powerlines"
+
+1. Main road: Is this on a major arterial/highway? (Parramatta Rd, Pacific Hwy, Canterbury Rd etc.)
+2. Power lines: High-voltage lines or pylons near/fronting the property?
 
 Return ONLY a JSON object (no markdown):
 {{
   "on_main_road": <true|false>,
-  "main_road_note": "<short note, e.g. 'Fronts Parramatta Rd — expect traffic noise' or 'Quiet residential street'>",
+  "main_road_note": "<e.g. 'Fronts Parramatta Rd — traffic noise' or 'Quiet residential street'>",
   "powerlines_nearby": <true|false>,
-  "powerlines_note": "<short note, e.g. 'High-voltage transmission corridor 80m north' or 'No powerline infrastructure identified'>",
-  "t_junction": <true|false — is the property at the dead-end of a T-junction with a road pointing directly at it?>,
-  "t_junction_note": "<short note, e.g. 'Property sits at end of T-junction on Smith St' or 'No T-junction concern'>",
-  "orientation": "<primary orientation of main living area / facade, e.g. 'North-facing', 'East-facing', 'Northeast-facing'>",
-  "sunlight_note": "<short note on sunlight, e.g. 'North-facing rear garden gets afternoon sun' or 'South-facing — limited natural light'>"
+  "powerlines_note": "<e.g. 'Transmission corridor 80m north' or 'No powerline infrastructure'>"
+}}"""
+
+_STREET_LAYOUT_PROMPT = """You are an Australian property analyst. Assess street layout and orientation for this property.
+
+Address: {address}, {suburb}, {state}, Australia
+
+Using your knowledge of Australian street layouts:
+1. T-junction (路冲): Is the property at the dead-end of a T-intersection with a road pointing directly at its front?
+2. Orientation: Primary orientation of the front facade / main living area?
+
+Return ONLY a JSON object (no markdown):
+{{
+  "t_junction": <true|false>,
+  "t_junction_note": "<e.g. 'Sits at T-junction end of Smith St' or 'No T-junction concern'>",
+  "orientation": "<e.g. 'North-facing', 'South-facing', 'East-facing'>",
+  "sunlight_note": "<e.g. 'North-facing rear garden — excellent light' or 'South-facing — limited natural light'>"
 }}"""
 
 
 async def fetch_street_info(address: str, suburb: str, state: str = "NSW") -> dict:
-    """Ask Gemini + Google Search to check for main road, powerline, T-junction, and orientation risks."""
-    client = get_client()
-    prompt = _STREET_INFO_PROMPT.format(address=address, suburb=suburb, state=state)
-    try:
-        response = await client.aio.models.generate_content(
-            model=MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())],
-                temperature=0.1,
-            ),
-        )
-        text = (response.text or "").strip()
-        if text.startswith("```"):
-            text = text.split("```")[1]
-            if text.startswith("json"):
-                text = text[4:]
-        return json.loads(text.strip())
-    except Exception:
-        return {}
+    """Run road/powerline (with Search) + layout/orientation (no Search) checks in parallel."""
+    road_prompt   = _STREET_ROAD_PROMPT.format(address=address, suburb=suburb, state=state)
+    layout_prompt = _STREET_LAYOUT_PROMPT.format(address=address, suburb=suburb, state=state)
+
+    road, layout = await asyncio.gather(
+        _gemini_json(road_prompt, use_search=True),
+        _gemini_json(layout_prompt, use_search=False),  # pure knowledge, no search needed
+        return_exceptions=True,
+    )
+    road   = road   if isinstance(road,   dict) else {}
+    layout = layout if isinstance(layout, dict) else {}
+    return {**road, **layout}
 
 
 async def fetch_renovation_assessment(images: list[str], address: str) -> dict:
@@ -318,66 +321,48 @@ If you cannot identify a kitchen or bathroom photo, set condition to null.""")
         return {}
 
 
-_RISK_INFO_PROMPT = """You are an Australian property risk analyst. Research the following property and assess five risk factors.
+_RISK_NOISE_PROMPT = """You are an Australian property analyst. Search for noise risks affecting this suburb/address.
 
 Address: {address}, {suburb}, {state} {postcode}, Australia
 
-Search for and assess:
+Search for: "{suburb} {state} flight path ANEF airport noise train line railway"
 
-1. LAND SLOPE: Is the block flat, gently sloped, or steeply sloped? Search "{address} {suburb} slope terrain elevation" and cross-reference topography knowledge. Steeply sloped blocks have higher build/renovation costs and drainage issues.
+Return ONLY a JSON object (no markdown):
+{{
+  "noise_level": "<Low|Moderate|High>",
+  "noise_sources": ["<e.g. 'Sydney Airport ANEF 20 contour', 'T3 Liverpool Line 300m east', 'Parramatta Rd traffic'>"],
+  "noise_note": "<1-sentence summary>"
+}}"""
 
-2. NOISE: Is this property affected by aircraft noise (flight paths), train/rail noise, or heavy traffic noise? 
-   - Search "{suburb} {state} flight path ANEF contour" and "{suburb} airport noise"
-   - Search "{address} {suburb} train line railway noise"
-   - Also consider main road traffic noise if on or near arterial road
-   - List all relevant noise sources found.
+_RISK_HISTORY_PROMPT = """You are an Australian property analyst. Assess land and property risk for this address.
 
-3. BUILDER / DEVELOPER (for new/near-new builds < 10 years old): Who built this property? Is the builder/developer known for quality work or have there been complaints, defects, or insolvency issues?
-   - Search "{suburb} {state} apartment builder developer defects complaints"
-   - Search the builder name on NSW Fair Trading / QBCC / VBA builder register if identifiable
-   - Note: for older properties or unknown builder, set builder_quality to "Unknown"
+Address: {address}, {suburb}, {state} {postcode}, Australia
 
-4. PROPERTY HISTORY & KNOWN ISSUES: Are there any red flags for this specific address?
-   - Search "{address} {suburb} flooding flood zone" — check NSW flood maps / council flood overlay
-   - Search "{address} {suburb} subsidence soil contamination"
-   - Search "{address} {suburb} strata defects complaints" (for units/apartments)
-   - Any heritage overlay, bushfire zone, or easement concerns?
-   - List any flags found.
-
-5. DUE DILIGENCE RECOMMENDATION: Based on all findings above, should this buyer get a building inspection report and/or pest inspection before making an offer?
-   - needs_inspection = true if: property > 10 years old, any structural concerns, slope issues, flood risk, or history flags
-   - needs_pest_control = true if: timber construction, older property, signs of moisture, or Queensland/NSW coastal location
+Using your knowledge (search if needed): flood zone, terrain/slope, pest/termite risk, strata issues.
 
 Return ONLY a JSON object (no markdown):
 {{
   "land_slope": "<Flat|Gentle Slope|Steep Slope>",
-  "land_slope_note": "<short note, e.g. 'Level block — no drainage concerns' or 'Moderate rear slope — check retaining walls'>",
-  "noise_level": "<Low|Moderate|High>",
-  "noise_sources": ["<list of noise sources found, e.g. 'Under Sydney Airport flight path', 'Adjacent to T-way bus corridor', 'Near Main North train line'>"],
-  "noise_note": "<1-sentence noise summary>",
-  "builder_name": "<builder or developer name, or null if unknown/older property>",
-  "builder_quality": "<Reputable|Unknown|Poor track record>",
-  "builder_note": "<short note, e.g. 'Meriton build — check strata for known defects' or 'No builder identified — older stock'>",
-  "property_history_flags": ["<list of flags, e.g. 'Low-medium flood risk (council flood map)', 'Strata complex — verify special levies'>"],
-  "property_history_note": "<1-sentence summary or null>",
+  "land_slope_note": "<short note>",
+  "property_history_flags": ["<e.g. 'Flood-prone — check council flood map', 'High termite risk area', 'Strata — check special levies'>"],
+  "property_history_note": "<1-sentence or null>",
   "needs_inspection": <true|false>,
   "needs_pest_control": <true|false>,
-  "due_diligence_note": "<1-sentence due diligence recommendation>"
+  "due_diligence_note": "<1-sentence recommendation>"
 }}"""
 
 
-async def fetch_risk_assessment(address: str, suburb: str, state: str = "NSW", postcode: str = "") -> dict:
-    """Use Gemini + Google Search to assess land slope, noise, builder quality, property history, and due diligence needs."""
+async def _gemini_json(prompt: str, use_search: bool = True) -> dict:
+    """Run a single Gemini call (optionally with Search) and return parsed JSON."""
     client = get_client()
-    prompt = _RISK_INFO_PROMPT.format(address=address, suburb=suburb, state=state, postcode=postcode)
     try:
+        config_args: dict = {"temperature": 0.1}
+        if use_search:
+            config_args["tools"] = [types.Tool(google_search=types.GoogleSearch())]
         response = await client.aio.models.generate_content(
             model=MODEL,
             contents=prompt,
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())],
-                temperature=0.1,
-            ),
+            config=types.GenerateContentConfig(**config_args),
         )
         text = (response.text or "").strip()
         if text.startswith("```"):
@@ -387,6 +372,27 @@ async def fetch_risk_assessment(address: str, suburb: str, state: str = "NSW", p
         return json.loads(text.strip())
     except Exception:
         return {}
+
+
+async def fetch_risk_assessment(address: str, suburb: str, state: str = "NSW", postcode: str = "") -> dict:
+    """Run noise + history risk checks in parallel, each as a separate Gemini+Search call."""
+    noise_prompt   = _RISK_NOISE_PROMPT.format(address=address, suburb=suburb, state=state, postcode=postcode)
+    history_prompt = _RISK_HISTORY_PROMPT.format(address=address, suburb=suburb, state=state, postcode=postcode)
+
+    noise, history = await asyncio.gather(
+        _gemini_json(noise_prompt),
+        _gemini_json(history_prompt),
+        return_exceptions=True,
+    )
+    noise   = noise   if isinstance(noise,   dict) else {}
+    history = history if isinstance(history, dict) else {}
+    return {
+        **noise,
+        **history,
+        "builder_name": None,
+        "builder_quality": "Unknown",
+        "builder_note": None,
+    }
 
 
 _ALLHOMES_URL_PROMPT = """Search allhomes.com.au for the property listing at: {address}, {suburb}, {state}, Australia.
@@ -651,13 +657,20 @@ async def stream_chat(
 
                                 # Run enrichment calls in parallel
                                 real, sqm, long_term = await asyncio.gather(
-                                    fetch_suburb_stats(suburb_name, state_name),
-                                    fetch_sqm_data(postcode) if postcode else _empty(),
-                                    fetch_long_term_factors(suburb_name, state_name),
+                                    asyncio.wait_for(fetch_suburb_stats(suburb_name, state_name), timeout=25),
+                                    asyncio.wait_for(fetch_sqm_data(postcode), timeout=20) if postcode else _empty(),
+                                    asyncio.wait_for(fetch_long_term_factors(suburb_name, state_name), timeout=25),
+                                    return_exceptions=True,
                                 )
+                                real      = real      if isinstance(real,      dict) else {}
+                                sqm       = sqm       if isinstance(sqm,       dict) else {}
+                                long_term = long_term if isinstance(long_term, dict) else {}
                                 args = {**args, **real, **sqm}
                                 # Short/long-term growth outlook from combined metrics
-                                outlook = await assess_growth_outlook(suburb_name, state_name, args)
+                                try:
+                                    outlook = await asyncio.wait_for(assess_growth_outlook(suburb_name, state_name, args), timeout=20)
+                                except Exception:
+                                    outlook = {}
                                 # Flatten long_term factor dicts into top-level keys
                                 for key, val in long_term.items():
                                     if isinstance(val, dict):
@@ -671,19 +684,26 @@ async def stream_chat(
                                 sub = args.get("suburb", "")
                                 st = args.get("state", "NSW")
                                 pc = args.get("postcode", "")
-                                # Fetch images, street info, and risk assessment in parallel
+                                # Fetch images, street info, and risk assessment in parallel (20s timeout each)
                                 real_images, street, risk = await asyncio.gather(
-                                    fetch_property_images(addr, sub, st),
-                                    fetch_street_info(addr, sub, st),
-                                    fetch_risk_assessment(addr, sub, st, pc),
+                                    asyncio.wait_for(fetch_property_images(addr, sub, st), timeout=20),
+                                    asyncio.wait_for(fetch_street_info(addr, sub, st), timeout=20),
+                                    asyncio.wait_for(fetch_risk_assessment(addr, sub, st, pc), timeout=25),
+                                    return_exceptions=True,
                                 )
+                                real_images = real_images if isinstance(real_images, list) else []
+                                street      = street      if isinstance(street,      dict) else {}
+                                risk        = risk        if isinstance(risk,        dict) else {}
                                 if real_images:
                                     args["images"] = real_images
                                 args = {**args, **street, **risk}
                                 # Analyse kitchen/bathroom photos for renovation needs
                                 final_images = args.get("images", [])
                                 if final_images:
-                                    reno = await fetch_renovation_assessment(final_images, addr)
+                                    try:
+                                        reno = await asyncio.wait_for(fetch_renovation_assessment(final_images, addr), timeout=20)
+                                    except Exception:
+                                        reno = {}
                                     args = {**args, **reno}
 
                             # Store enriched args so we can feed them back to Gemini
