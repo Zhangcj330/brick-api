@@ -318,6 +318,77 @@ If you cannot identify a kitchen or bathroom photo, set condition to null.""")
         return {}
 
 
+_RISK_INFO_PROMPT = """You are an Australian property risk analyst. Research the following property and assess five risk factors.
+
+Address: {address}, {suburb}, {state} {postcode}, Australia
+
+Search for and assess:
+
+1. LAND SLOPE: Is the block flat, gently sloped, or steeply sloped? Search "{address} {suburb} slope terrain elevation" and cross-reference topography knowledge. Steeply sloped blocks have higher build/renovation costs and drainage issues.
+
+2. NOISE: Is this property affected by aircraft noise (flight paths), train/rail noise, or heavy traffic noise? 
+   - Search "{suburb} {state} flight path ANEF contour" and "{suburb} airport noise"
+   - Search "{address} {suburb} train line railway noise"
+   - Also consider main road traffic noise if on or near arterial road
+   - List all relevant noise sources found.
+
+3. BUILDER / DEVELOPER (for new/near-new builds < 10 years old): Who built this property? Is the builder/developer known for quality work or have there been complaints, defects, or insolvency issues?
+   - Search "{suburb} {state} apartment builder developer defects complaints"
+   - Search the builder name on NSW Fair Trading / QBCC / VBA builder register if identifiable
+   - Note: for older properties or unknown builder, set builder_quality to "Unknown"
+
+4. PROPERTY HISTORY & KNOWN ISSUES: Are there any red flags for this specific address?
+   - Search "{address} {suburb} flooding flood zone" — check NSW flood maps / council flood overlay
+   - Search "{address} {suburb} subsidence soil contamination"
+   - Search "{address} {suburb} strata defects complaints" (for units/apartments)
+   - Any heritage overlay, bushfire zone, or easement concerns?
+   - List any flags found.
+
+5. DUE DILIGENCE RECOMMENDATION: Based on all findings above, should this buyer get a building inspection report and/or pest inspection before making an offer?
+   - needs_inspection = true if: property > 10 years old, any structural concerns, slope issues, flood risk, or history flags
+   - needs_pest_control = true if: timber construction, older property, signs of moisture, or Queensland/NSW coastal location
+
+Return ONLY a JSON object (no markdown):
+{{
+  "land_slope": "<Flat|Gentle Slope|Steep Slope>",
+  "land_slope_note": "<short note, e.g. 'Level block — no drainage concerns' or 'Moderate rear slope — check retaining walls'>",
+  "noise_level": "<Low|Moderate|High>",
+  "noise_sources": ["<list of noise sources found, e.g. 'Under Sydney Airport flight path', 'Adjacent to T-way bus corridor', 'Near Main North train line'>"],
+  "noise_note": "<1-sentence noise summary>",
+  "builder_name": "<builder or developer name, or null if unknown/older property>",
+  "builder_quality": "<Reputable|Unknown|Poor track record>",
+  "builder_note": "<short note, e.g. 'Meriton build — check strata for known defects' or 'No builder identified — older stock'>",
+  "property_history_flags": ["<list of flags, e.g. 'Low-medium flood risk (council flood map)', 'Strata complex — verify special levies'>"],
+  "property_history_note": "<1-sentence summary or null>",
+  "needs_inspection": <true|false>,
+  "needs_pest_control": <true|false>,
+  "due_diligence_note": "<1-sentence due diligence recommendation>"
+}}"""
+
+
+async def fetch_risk_assessment(address: str, suburb: str, state: str = "NSW", postcode: str = "") -> dict:
+    """Use Gemini + Google Search to assess land slope, noise, builder quality, property history, and due diligence needs."""
+    client = get_client()
+    prompt = _RISK_INFO_PROMPT.format(address=address, suburb=suburb, state=state, postcode=postcode)
+    try:
+        response = await client.aio.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+                temperature=0.1,
+            ),
+        )
+        text = (response.text or "").strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        return json.loads(text.strip())
+    except Exception:
+        return {}
+
+
 _ALLHOMES_URL_PROMPT = """Search allhomes.com.au for the property listing at: {address}, {suburb}, {state}, Australia.
 
 Return ONLY the single allhomes.com.au listing URL for this property. No explanation, just the URL.
@@ -599,14 +670,16 @@ async def stream_chat(
                                 addr = args.get("address", "")
                                 sub = args.get("suburb", "")
                                 st = args.get("state", "NSW")
-                                # Fetch images and street info in parallel
-                                real_images, street = await asyncio.gather(
+                                pc = args.get("postcode", "")
+                                # Fetch images, street info, and risk assessment in parallel
+                                real_images, street, risk = await asyncio.gather(
                                     fetch_property_images(addr, sub, st),
                                     fetch_street_info(addr, sub, st),
+                                    fetch_risk_assessment(addr, sub, st, pc),
                                 )
                                 if real_images:
                                     args["images"] = real_images
-                                args = {**args, **street}
+                                args = {**args, **street, **risk}
                                 # Analyse kitchen/bathroom photos for renovation needs
                                 final_images = args.get("images", [])
                                 if final_images:
