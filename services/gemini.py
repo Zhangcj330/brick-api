@@ -161,7 +161,7 @@ async def stream_chat(
                     name=f"round-{_round + 1}",
                     as_type="generation",
                     model=MODEL,
-                    input=[{"role": m.role, "content": m.content} for m in messages],
+                    input=messages[-1].content,  # last user message for clarity
                 )
 
             # ── Stream one round ──────────────────────────────────────────
@@ -258,9 +258,20 @@ async def stream_chat(
                                 yield _sse({"type": "warning", "level": level, "text": w})
 
             round_duration = round(time.time() - round_start, 3)
+
+            # Build meaningful output for Langfuse: text + any tool calls
+            if accumulated_text and seen_names:
+                gen_output = {"text": accumulated_text, "tool_calls": list(seen_names)}
+            elif accumulated_text:
+                gen_output = accumulated_text
+            elif seen_names:
+                gen_output = {"tool_calls": list(seen_names)}
+            else:
+                gen_output = None
+
             if gen_obs:
                 gen_obs.update(
-                    output=accumulated_text or None,
+                    output=gen_output,
                     metadata={
                         "tools": list(seen_names),
                         "round": _round + 1,
