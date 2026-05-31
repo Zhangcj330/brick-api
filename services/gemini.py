@@ -197,10 +197,9 @@ async def stream_chat(
 
                             # Track tool call as a span in Langfuse
                             if lf and trace_obs:
-                                tool_span = lf.start_observation(
+                                tool_span = trace_obs.start_observation(
                                     name=fc.name,
                                     as_type="span",
-                                    parent_observation_id=trace_obs.id,
                                     input=args,
                                 )
                                 tool_span.update(
