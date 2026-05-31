@@ -137,12 +137,13 @@ Return ONLY a JSON object (no markdown):
   "long_term_reason": "<1-sentence reason based on long-term price trend and fundamentals>"
 }}"""
 
-_LONG_TERM_FACTORS_PROMPT = """You are a senior Australian property analyst. Research {suburb}, {state}, Australia and assess these three long-term investment factors.
+_LONG_TERM_FACTORS_PROMPT = """You are a senior Australian property analyst. Research {suburb}, {state}, Australia and assess these four long-term investment factors.
 
 Search for:
 - Economic: major employers and job hubs nearby, planned infrastructure (metro, roads, hospitals, commercial precincts), employment growth trends
 - Affordability: median household income for {suburb}, price-to-income ratio, rent-to-income ratio, whether prices are stretched vs fundamentals
 - Lifestyle & Education: top primary and secondary schools in the catchment with ICSEA/NAPLAN standing, walkability, safety, parks, cafes, transport access, community demographics
+- Supply: search for "{suburb} developable land rezoning", "{suburb} building approvals DA", "{suburb} new apartment development pipeline". Assess whether significant new supply (large rezoned land parcels, high building approval volumes, major apartment pipelines) could pressure prices, or whether the suburb is land-constrained with low supply risk.
 
 Return ONLY a JSON object (no markdown, no explanation):
 {{
@@ -157,6 +158,10 @@ Return ONLY a JSON object (no markdown, no explanation):
   "lifestyle_education": {{
     "verdict": "<Strong|Moderate|Neutral|Weak>",
     "reason": "<1-2 sentences on school quality, amenities, and liveability>"
+  }},
+  "supply": {{
+    "verdict": "<Low Risk|Moderate|High Risk>",
+    "reason": "<1-2 sentences on developable land availability, building approvals volume, and new development pipeline>"
   }}
 }}"""
 

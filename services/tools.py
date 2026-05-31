@@ -110,6 +110,8 @@ UI_TOOLS = [
                 "affordability_reason": {"type": "string", "description": "Reason for affordability verdict"},
                 "lifestyle_education_verdict": {"type": "string", "description": "Lifestyle & Education verdict: Strong, Moderate, Neutral, Weak"},
                 "lifestyle_education_reason": {"type": "string", "description": "Reason for lifestyle & education verdict"},
+                "supply_verdict": {"type": "string", "description": "Supply risk verdict: Low Risk, Moderate, High Risk"},
+                "supply_reason": {"type": "string", "description": "Reason covering developable land and building approvals"},
                 "source_note": {"type": "string", "description": "Data source and date note"},
             },
             "required": ["suburb", "median_price"],
