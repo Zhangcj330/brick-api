@@ -43,10 +43,12 @@ Fields to return:
   "growth_12mo": <float, 12-month price growth %>,
   "rental_yield": <float, gross rental yield %>,
   "days_on_market": <integer, median days on market>,
+  "crime_rate": <integer, total crime incidents per 1000 residents per year — search "{suburb} {state} crime statistics BOCSAR" or "crime rate {suburb} {state} Australia">,
+  "crime_label": <string, one of "Very Low" | "Low" | "Moderate" | "High" | "Very High" based on crime_rate relative to state average>,
   "source_note": <string, e.g. "Domain.com.au, May 2025">
 }}
 
-Search queries to use: "{suburb} {state} median house price 2025", "{suburb} clearance rate auction results", "{suburb} rental yield days on market".
+Search queries to use: "{suburb} {state} median house price 2025", "{suburb} clearance rate auction results", "{suburb} rental yield days on market", "{suburb} {state} crime rate statistics".
 Return only the JSON object. Use null for any field you cannot find."""
 
 async def fetch_sqm_data(postcode: str) -> dict:
@@ -209,6 +211,46 @@ async def assess_growth_outlook(suburb: str, state: str, metrics: dict) -> dict:
             model=MODEL,
             contents=prompt,
             config=types.GenerateContentConfig(temperature=0.1),
+        )
+        text = (response.text or "").strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        return json.loads(text.strip())
+    except Exception:
+        return {}
+
+
+_STREET_INFO_PROMPT = """You are an Australian property analyst. Research the following property address and assess two street-level risk factors.
+
+Address: {address}, {suburb}, {state}, Australia
+
+Search for:
+1. Main road check: Is this address on or directly fronting a major arterial road, highway, or high-traffic road? Search "{address} {suburb} main road arterial traffic" and check road classification. Roads like Parramatta Rd, Pacific Hwy, Pennant Hills Rd, Canterbury Rd etc. are main roads.
+2. Power lines: Are there known high-voltage transmission lines, large electricity pylons, or substations near or fronting this property? Search "{suburb} {state} powerlines transmission easement" and "{address} powerline".
+
+Return ONLY a JSON object (no markdown):
+{{
+  "on_main_road": <true|false>,
+  "main_road_note": "<short note, e.g. 'Fronts Parramatta Rd — expect traffic noise' or 'Quiet residential street'>",
+  "powerlines_nearby": <true|false>,
+  "powerlines_note": "<short note, e.g. 'High-voltage transmission corridor 80m north' or 'No powerline infrastructure identified'>"
+}}"""
+
+
+async def fetch_street_info(address: str, suburb: str, state: str = "NSW") -> dict:
+    """Ask Gemini + Google Search to check for main road and powerline risks."""
+    client = get_client()
+    prompt = _STREET_INFO_PROMPT.format(address=address, suburb=suburb, state=state)
+    try:
+        response = await client.aio.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+                temperature=0.1,
+            ),
         )
         text = (response.text or "").strip()
         if text.startswith("```"):
@@ -498,13 +540,17 @@ async def stream_chat(
 
                             # For property card: fetch real listing images via Google Search
                             if fc.name == "show_property_card":
-                                real_images = await fetch_property_images(
-                                    args.get("address", ""),
-                                    args.get("suburb", ""),
-                                    args.get("state", "NSW"),
+                                addr = args.get("address", "")
+                                sub = args.get("suburb", "")
+                                st = args.get("state", "NSW")
+                                # Fetch images and street info in parallel
+                                real_images, street = await asyncio.gather(
+                                    fetch_property_images(addr, sub, st),
+                                    fetch_street_info(addr, sub, st),
                                 )
                                 if real_images:
                                     args["images"] = real_images
+                                args = {**args, **street}
 
                             # Store enriched args so we can feed them back to Gemini
                             tool_results[fc.name] = args
