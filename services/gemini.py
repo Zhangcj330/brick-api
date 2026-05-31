@@ -13,6 +13,7 @@ Tools: google_search (grounding) + function_declarations (Gen UI)
 
 import json
 import os
+import time
 import uuid
 from typing import AsyncGenerator
 
@@ -151,6 +152,8 @@ async def stream_chat(
             accumulated_text = ""
             fn_call_parts: list[types.Part] = []
             seen_names: set[str] = set()
+            round_start = time.time()
+            ttft: float | None = None
 
             gen_obs = None
             if lf and trace_obs:
@@ -172,12 +175,16 @@ async def stream_chat(
             ):
                 # Stream text
                 if chunk.text:
+                    if ttft is None:
+                        ttft = round(time.time() - round_start, 3)
                     accumulated_text += chunk.text
                     yield _sse({"type": "text_delta", "content": chunk.text})
 
                 # Collect function calls (deduplicated) + grounding metadata
                 if chunk.candidates:
                     for candidate in chunk.candidates:
+                        if ttft is None and candidate.content and candidate.content.parts:
+                            ttft = round(time.time() - round_start, 3)
                         # Capture Google Search grounding data
                         if candidate.grounding_metadata:
                             gm = candidate.grounding_metadata
@@ -250,12 +257,15 @@ async def stream_chat(
                                 ) else "medium"
                                 yield _sse({"type": "warning", "level": level, "text": w})
 
+            round_duration = round(time.time() - round_start, 3)
             if gen_obs:
                 gen_obs.update(
-                    output=accumulated_text,
+                    output=accumulated_text or None,
                     metadata={
                         "tools": list(seen_names),
                         "round": _round + 1,
+                        "ttft_seconds": ttft,
+                        "round_duration_seconds": round_duration,
                         "search_queries": grounding_queries,
                         "search_sources": round_sources[:10],
                         "grounding_supports": round_supports,
