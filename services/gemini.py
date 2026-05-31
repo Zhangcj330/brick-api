@@ -48,6 +48,49 @@ Fields to return:
 Search queries to use: "{suburb} {state} median house price 2025", "{suburb} clearance rate auction results", "{suburb} rental yield days on market".
 Return only the JSON object. Use null for any field you cannot find."""
 
+async def fetch_sqm_data(postcode: str) -> dict:
+    """Scrape SQM Research for vacancy rate and stock on market for a postcode."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+    }
+    result = {}
+    async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
+        # Vacancy Rate
+        try:
+            r = await client.get(
+                f"https://sqmresearch.com.au/property/vacancy-rates?postcode={postcode}&t=1",
+                headers=headers,
+            )
+            if r.status_code == 200:
+                m = re.search(r"var data = (\[.*?\]);", r.text, re.DOTALL)
+                if m:
+                    rows = json.loads(m.group(1))
+                    latest = rows[-1]
+                    result["vacancy_rate"] = round(float(latest["vr"]) * 100, 2)
+        except Exception:
+            pass
+
+        # Stock on Market
+        try:
+            r = await client.get(
+                f"https://sqmresearch.com.au/property/total-property-listings?postcode={postcode}&t=1",
+                headers=headers,
+            )
+            if r.status_code == 200:
+                m = re.search(r"var data = (\[.*?\]);", r.text, re.DOTALL)
+                if m:
+                    rows = json.loads(m.group(1))
+                    latest = rows[-1]
+                    # sum all days-on-market buckets for total stock
+                    total = sum(latest.get(k, 0) for k in ("r30", "r60", "r90", "r180", "r180p"))
+                    result["stock_on_market"] = total
+        except Exception:
+            pass
+
+    return result
+
+
 _ALLHOMES_URL_PROMPT = """Search allhomes.com.au for the property listing at: {address}, {suburb}, {state}, Australia.
 
 Return ONLY the single allhomes.com.au listing URL for this property. No explanation, just the URL.
@@ -243,6 +286,7 @@ async def stream_chat(
             grounding_queries: list[str] = []
             round_sources: list[dict] = []
             round_supports: list[dict] = []
+            tool_results: dict[str, dict] = {}  # name → enriched args to feed back to Gemini
             async for chunk in await client.aio.models.generate_content_stream(
                 model=MODEL,
                 contents=contents,
@@ -298,13 +342,18 @@ async def stream_chat(
                             args = dict(fc.args) if fc.args else {}
                             tools_called.append(fc.name)
 
-                            # For suburb stats: fetch real data via Google Search
+                            # For suburb stats: fetch real data via Google Search + SQM Research
                             if fc.name == "show_suburb_stats":
                                 real = await fetch_suburb_stats(
                                     args.get("suburb", ""),
                                     args.get("state", "NSW"),
                                 )
                                 args = {**args, **real}  # real data wins over model estimates
+                                # Also fetch SQM vacancy rate + stock on market
+                                postcode = args.get("postcode", "")
+                                if postcode:
+                                    sqm = await fetch_sqm_data(postcode)
+                                    args = {**args, **sqm}
 
                             # For property card: fetch real listing images via Google Search
                             if fc.name == "show_property_card":
@@ -315,6 +364,9 @@ async def stream_chat(
                                 )
                                 if real_images:
                                     args["images"] = real_images
+
+                            # Store enriched args so we can feed them back to Gemini
+                            tool_results[fc.name] = args
 
                             # Track tool call as a span in Langfuse
                             if lf and trace_obs:
@@ -391,11 +443,11 @@ async def stream_chat(
                 model_parts.append(types.Part(text=accumulated_text))
             model_parts.extend(fn_call_parts)  # raw Parts with thought_signature intact
 
-            # Function responses confirming each tool executed
+            # Function responses — include enriched data so Gemini can analyse it
             fn_resp_parts = [
                 types.Part.from_function_response(
                     name=p.function_call.name,
-                    response={"status": "ok", "result": "UI component displayed to user"},
+                    response=tool_results.get(p.function_call.name, {"status": "ok"}),
                 )
                 for p in fn_call_parts
             ]
