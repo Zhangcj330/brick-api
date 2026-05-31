@@ -153,8 +153,6 @@ async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -
             resp = await client_http.get(listing_url, headers=headers)
             resp.raise_for_status()
 
-        soup = BeautifulSoup(resp.text, "html.parser")
-
         # Images are embedded in JSON within <script> tags — use regex on raw HTML
         seen: set[str] = set()
         images: list[str] = []
@@ -173,6 +171,14 @@ async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -
         return images
     except Exception:
         return []
+
+
+def _to_contents(messages: list[Message]) -> list[types.Content]:
+    contents = []
+    for msg in messages:
+        role = "model" if msg.role == "assistant" else "user"
+        contents.append(types.Content(role=role, parts=[types.Part(text=msg.content)]))
+    return contents
 
 
 
