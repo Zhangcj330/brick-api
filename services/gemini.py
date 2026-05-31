@@ -11,6 +11,7 @@ Model: gemini-3.5-flash
 Tools: google_search (grounding) + function_declarations (Gen UI)
 """
 
+import asyncio
 import json
 import os
 import re
@@ -135,6 +136,52 @@ Return ONLY a JSON object (no markdown):
   "long_term_outlook": "<Strong|Moderate|Neutral|Weak|Caution>",
   "long_term_reason": "<1-sentence reason based on long-term price trend and fundamentals>"
 }}"""
+
+_LONG_TERM_FACTORS_PROMPT = """You are a senior Australian property analyst. Research {suburb}, {state}, Australia and assess these three long-term investment factors.
+
+Search for:
+- Economic: major employers and job hubs nearby, planned infrastructure (metro, roads, hospitals, commercial precincts), employment growth trends
+- Affordability: median household income for {suburb}, price-to-income ratio, rent-to-income ratio, whether prices are stretched vs fundamentals
+- Lifestyle & Education: top primary and secondary schools in the catchment with ICSEA/NAPLAN standing, walkability, safety, parks, cafes, transport access, community demographics
+
+Return ONLY a JSON object (no markdown, no explanation):
+{{
+  "economic": {{
+    "verdict": "<Strong|Moderate|Neutral|Weak>",
+    "reason": "<1-2 sentences on employment hubs and infrastructure pipeline>"
+  }},
+  "affordability": {{
+    "verdict": "<Strong|Moderate|Neutral|Challenging>",
+    "reason": "<1-2 sentences on income levels, price-to-income ratio, and value vs peers>"
+  }},
+  "lifestyle_education": {{
+    "verdict": "<Strong|Moderate|Neutral|Weak>",
+    "reason": "<1-2 sentences on school quality, amenities, and liveability>"
+  }}
+}}"""
+
+
+async def fetch_long_term_factors(suburb: str, state: str) -> dict:
+    """Use Gemini + Google Search to research Economic, Affordability, and Lifestyle & Education."""
+    client = get_client()
+    prompt = _LONG_TERM_FACTORS_PROMPT.format(suburb=suburb, state=state)
+    try:
+        response = await client.aio.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+                temperature=0.1,
+            ),
+        )
+        text = (response.text or "").strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        return json.loads(text.strip())
+    except Exception:
+        return {}
 
 
 async def assess_growth_outlook(suburb: str, state: str, metrics: dict) -> dict:
@@ -421,22 +468,27 @@ async def stream_chat(
 
                             # For suburb stats: fetch real data via Google Search + SQM Research
                             if fc.name == "show_suburb_stats":
-                                real = await fetch_suburb_stats(
-                                    args.get("suburb", ""),
-                                    args.get("state", "NSW"),
-                                )
-                                args = {**args, **real}  # real data wins over model estimates
-                                # Also fetch SQM vacancy rate, stock on market, price history
+                                suburb_name = args.get("suburb", "")
+                                state_name = args.get("state", "NSW")
                                 postcode = args.get("postcode", "")
-                                if postcode:
-                                    sqm = await fetch_sqm_data(postcode)
-                                    args = {**args, **sqm}
-                                # Gemini assesses growth outlook from all combined metrics
-                                outlook = await assess_growth_outlook(
-                                    args.get("suburb", ""),
-                                    args.get("state", "NSW"),
-                                    args,
+
+                                async def _empty() -> dict:
+                                    return {}
+
+                                # Run enrichment calls in parallel
+                                real, sqm, long_term = await asyncio.gather(
+                                    fetch_suburb_stats(suburb_name, state_name),
+                                    fetch_sqm_data(postcode) if postcode else _empty(),
+                                    fetch_long_term_factors(suburb_name, state_name),
                                 )
+                                args = {**args, **real, **sqm}
+                                # Short/long-term growth outlook from combined metrics
+                                outlook = await assess_growth_outlook(suburb_name, state_name, args)
+                                # Flatten long_term factor dicts into top-level keys
+                                for key, val in long_term.items():
+                                    if isinstance(val, dict):
+                                        args[f"{key}_verdict"] = val.get("verdict", "")
+                                        args[f"{key}_reason"] = val.get("reason", "")
                                 args = {**args, **outlook}
 
                             # For property card: fetch real listing images via Google Search
