@@ -163,6 +163,7 @@ async def stream_chat(
             # ── Stream one round ──────────────────────────────────────────
             grounding_queries: list[str] = []
             round_sources: list[dict] = []
+            round_supports: list[dict] = []
             async for chunk in await client.aio.models.generate_content_stream(
                 model=MODEL,
                 contents=contents,
@@ -187,7 +188,17 @@ async def stream_chat(
                                         round_sources.append({
                                             "title": gc.web.title,
                                             "url": gc.web.uri,
+                                            "domain": gc.web.domain,
                                         })
+                            if gm.grounding_supports:
+                                for gs in gm.grounding_supports:
+                                    support = {
+                                        "text": gs.segment.text if gs.segment else None,
+                                        "source_indices": list(gs.grounding_chunk_indices or []),
+                                        "confidence": [round(s, 3) for s in (gs.confidence_scores or [])],
+                                    }
+                                    if support["text"]:
+                                        round_supports.append(support)
 
                         if not candidate.content or not candidate.content.parts:
                             continue
@@ -246,6 +257,7 @@ async def stream_chat(
                         "round": _round + 1,
                         "search_queries": grounding_queries,
                         "search_sources": round_sources[:10],
+                        "grounding_supports": round_supports,
                     },
                 )
                 gen_obs.end()
