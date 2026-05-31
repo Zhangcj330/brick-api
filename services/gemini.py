@@ -160,6 +160,8 @@ async def stream_chat(
                 )
 
             # ── Stream one round ──────────────────────────────────────────
+            grounding_queries: list[str] = []
+            grounding_sources: list[dict] = []
             async for chunk in await client.aio.models.generate_content_stream(
                 model=MODEL,
                 contents=contents,
@@ -171,8 +173,6 @@ async def stream_chat(
                     yield _sse({"type": "text_delta", "content": chunk.text})
 
                 # Collect function calls (deduplicated) + grounding metadata
-                grounding_queries: list[str] = []
-                grounding_sources: list[dict] = []
                 if chunk.candidates:
                     for candidate in chunk.candidates:
                         # Capture Google Search grounding data
@@ -244,10 +244,20 @@ async def stream_chat(
                         "tools": list(seen_names),
                         "round": _round + 1,
                         "search_queries": grounding_queries,
-                        "search_sources": grounding_sources[:10],  # cap at 10
+                        "search_sources": grounding_sources[:10],
                     },
                 )
                 gen_obs.end()
+
+            # Emit grounding sources to frontend (deduplicated by URL)
+            if grounding_sources:
+                seen_urls: set[str] = set()
+                unique_sources = []
+                for s in grounding_sources:
+                    if s["url"] not in seen_urls:
+                        seen_urls.add(s["url"])
+                        unique_sources.append(s)
+                yield _sse({"type": "sources", "items": unique_sources[:8]})
 
             if accumulated_text:
                 all_text.append(accumulated_text)
