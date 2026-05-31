@@ -222,25 +222,31 @@ async def assess_growth_outlook(suburb: str, state: str, metrics: dict) -> dict:
         return {}
 
 
-_STREET_INFO_PROMPT = """You are an Australian property analyst. Research the following property address and assess two street-level risk factors.
+_STREET_INFO_PROMPT = """You are an Australian property analyst. Research the following property address and assess four street-level factors.
 
 Address: {address}, {suburb}, {state}, Australia
 
 Search for:
 1. Main road check: Is this address on or directly fronting a major arterial road, highway, or high-traffic road? Search "{address} {suburb} main road arterial traffic" and check road classification. Roads like Parramatta Rd, Pacific Hwy, Pennant Hills Rd, Canterbury Rd etc. are main roads.
 2. Power lines: Are there known high-voltage transmission lines, large electricity pylons, or substations near or fronting this property? Search "{suburb} {state} powerlines transmission easement" and "{address} powerline".
+3. T-junction (路冲): Use Google Maps knowledge — is this property sitting at the dead-end of a T-intersection with a road pointing directly at the front of the house? This is a negative feng shui/safety factor.
+4. Orientation & sunlight: Based on the address and typical block layout in {suburb}, what is the primary orientation of the main living area or front facade? Is it north-facing (ideal in Australia), south-facing (less natural light), east or west?
 
 Return ONLY a JSON object (no markdown):
 {{
   "on_main_road": <true|false>,
   "main_road_note": "<short note, e.g. 'Fronts Parramatta Rd — expect traffic noise' or 'Quiet residential street'>",
   "powerlines_nearby": <true|false>,
-  "powerlines_note": "<short note, e.g. 'High-voltage transmission corridor 80m north' or 'No powerline infrastructure identified'>"
+  "powerlines_note": "<short note, e.g. 'High-voltage transmission corridor 80m north' or 'No powerline infrastructure identified'>",
+  "t_junction": <true|false — is the property at the dead-end of a T-junction with a road pointing directly at it?>,
+  "t_junction_note": "<short note, e.g. 'Property sits at end of T-junction on Smith St' or 'No T-junction concern'>",
+  "orientation": "<primary orientation of main living area / facade, e.g. 'North-facing', 'East-facing', 'Northeast-facing'>",
+  "sunlight_note": "<short note on sunlight, e.g. 'North-facing rear garden gets afternoon sun' or 'South-facing — limited natural light'>"
 }}"""
 
 
 async def fetch_street_info(address: str, suburb: str, state: str = "NSW") -> dict:
-    """Ask Gemini + Google Search to check for main road and powerline risks."""
+    """Ask Gemini + Google Search to check for main road, powerline, T-junction, and orientation risks."""
     client = get_client()
     prompt = _STREET_INFO_PROMPT.format(address=address, suburb=suburb, state=state)
     try:
@@ -251,6 +257,56 @@ async def fetch_street_info(address: str, suburb: str, state: str = "NSW") -> di
                 tools=[types.Tool(google_search=types.GoogleSearch())],
                 temperature=0.1,
             ),
+        )
+        text = (response.text or "").strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        return json.loads(text.strip())
+    except Exception:
+        return {}
+
+
+async def fetch_renovation_assessment(images: list[str], address: str) -> dict:
+    """Fetch up to 4 listing photos and use Gemini Vision to assess kitchen/bathroom renovation needs."""
+    if not images:
+        return {}
+    client = get_client()
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Referer": "https://www.allhomes.com.au/",
+    }
+    image_parts: list[types.Part] = []
+    async with httpx.AsyncClient(timeout=10, follow_redirects=True) as http:
+        for url in images[:5]:
+            try:
+                r = await http.get(url, headers=headers)
+                if r.status_code == 200 and r.headers.get("content-type", "").startswith("image/"):
+                    mime = r.headers.get("content-type", "image/jpeg").split(";")[0]
+                    image_parts.append(types.Part.from_bytes(data=r.content, mime_type=mime))
+            except Exception:
+                pass
+    if not image_parts:
+        return {}
+
+    text_part = types.Part(text=f"""These are listing photos for {address}.
+Identify which photos show the kitchen and bathroom. Assess their condition.
+
+Return ONLY a JSON object (no markdown):
+{{
+  "kitchen_condition": "<Modern|Good|Fair|Needs Renovation>",
+  "bathroom_condition": "<Modern|Good|Fair|Needs Renovation>",
+  "renovation_needed": <true if kitchen or bathroom clearly needs updating, false otherwise>,
+  "renovation_note": "<1-sentence summary, e.g. 'Dated kitchen and original bathroom tiles — budget for renovation'>"
+}}
+If you cannot identify a kitchen or bathroom photo, set condition to null.""")
+
+    try:
+        response = await client.aio.models.generate_content(
+            model=MODEL,
+            contents=types.Content(role="user", parts=image_parts + [text_part]),
+            config=types.GenerateContentConfig(temperature=0.1),
         )
         text = (response.text or "").strip()
         if text.startswith("```"):
@@ -551,6 +607,11 @@ async def stream_chat(
                                 if real_images:
                                     args["images"] = real_images
                                 args = {**args, **street}
+                                # Analyse kitchen/bathroom photos for renovation needs
+                                final_images = args.get("images", [])
+                                if final_images:
+                                    reno = await fetch_renovation_assessment(final_images, addr)
+                                    args = {**args, **reno}
 
                             # Store enriched args so we can feed them back to Gemini
                             tool_results[fc.name] = args
