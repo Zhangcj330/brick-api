@@ -133,9 +133,9 @@ Data:
 
 Return ONLY a JSON object (no markdown):
 {{
-  "short_term_outlook": "<Strong|Moderate|Neutral|Weak|Caution>",
+  "short_term_outlook": "<Strong|Moderate|Weak|Caution>",
   "short_term_reason": "<1-sentence reason based on demand/supply metrics>",
-  "long_term_outlook": "<Strong|Moderate|Neutral|Weak|Caution>",
+  "long_term_outlook": "<Strong|Moderate|Weak|Caution>",
   "long_term_reason": "<1-sentence reason based on long-term price trend and fundamentals>"
 }}"""
 
@@ -598,11 +598,9 @@ async def fetch_suburb_stats(suburb: str, state: str = "NSW") -> dict:
 
 
 async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -> list[str]:
-    """Step 1: Ask Gemini to find the allhomes.com.au listing URL.
-    Step 2: Scrape that URL for image URLs."""
+    """Find allhomes listing URL via Gemini Search, then scrape for images."""
     client = get_client()
 
-    # Step 1: Gemini finds the listing URL
     prompt = _ALLHOMES_URL_PROMPT.format(address=address, suburb=suburb, state=state)
     try:
         response = await client.aio.models.generate_content(
@@ -613,16 +611,14 @@ async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -
                 temperature=0.1,
             ),
         )
-        listing_url = (response.text or "").strip()
-        # Extract a valid allhomes URL if surrounded by text
-        match = re.search(r'https://www\.allhomes\.com\.au/[^\s"\'<>]+', listing_url)
+        text = (response.text or "").strip()
+        match = re.search(r'https://www\.allhomes\.com\.au/[^\s"\'<>]+', text)
         if not match:
             return []
-        listing_url = match.group(0).rstrip(".")
+        allhomes_url = match.group(0).rstrip(".")
     except Exception:
         return []
 
-    # Step 2: Scrape the listing page for images
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -630,13 +626,11 @@ async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -
             "Accept-Language": "en-AU,en;q=0.9",
         }
         async with httpx.AsyncClient(follow_redirects=True, timeout=10) as client_http:
-            resp = await client_http.get(listing_url, headers=headers)
+            resp = await client_http.get(allhomes_url, headers=headers)
             resp.raise_for_status()
 
-        # Images are embedded in JSON within <script> tags — use regex on raw HTML
         seen: set[str] = set()
         images: list[str] = []
-
         for match in re.finditer(
             r'https://images\.allhomes\.com\.au/property/photo/[a-f0-9_]+_hd\.jpg',
             resp.text,
@@ -645,23 +639,14 @@ async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -
             if url not in seen:
                 seen.add(url)
                 images.append(url)
-            if len(images) >= 8:
+            if len(images) >= 10:
                 break
-
         return images
     except Exception:
         return []
 
 
 def _to_contents(messages: list[Message]) -> list[types.Content]:
-    contents = []
-    for msg in messages:
-        role = "model" if msg.role == "assistant" else "user"
-        contents.append(types.Content(role=role, parts=[types.Part(text=msg.content)]))
-    return contents
-
-
-
     contents = []
     for msg in messages:
         role = "model" if msg.role == "assistant" else "user"
@@ -816,20 +801,18 @@ async def stream_chat(
                                 addr = args.get("address", "")
                                 sub = args.get("suburb", "")
                                 st = args.get("state", "NSW")
-                                pc = args.get("postcode", "")
-                                # Fetch images, street info, and risk assessment in parallel (20s timeout each)
-                                real_images, street, risk = await asyncio.gather(
+                                # Fetch images and street info in parallel (no risk here)
+                                images_result, street = await asyncio.gather(
                                     asyncio.wait_for(fetch_property_images(addr, sub, st), timeout=20),
                                     asyncio.wait_for(fetch_street_info(addr, sub, st), timeout=20),
-                                    asyncio.wait_for(fetch_risk_assessment(addr, sub, st, pc), timeout=25),
                                     return_exceptions=True,
                                 )
-                                real_images = real_images if isinstance(real_images, list) else []
-                                street      = street      if isinstance(street,      dict) else {}
-                                risk        = risk        if isinstance(risk,        dict) else {}
-                                if real_images:
-                                    args["images"] = real_images
-                                args = {**args, **street, **risk}
+                                real_images = images_result if isinstance(images_result, list) else []
+                                street = street if isinstance(street, dict) else {}
+                                # Always override images — prevents Gemini hallucinated URLs
+                                args["images"] = real_images
+                                # listing_url: let Gemini provide the REA URL it found during search
+                                args = {**args, **street}
                                 # Analyse kitchen/bathroom photos for renovation needs
                                 final_images = args.get("images", [])
                                 if final_images:
@@ -838,6 +821,34 @@ async def stream_chat(
                                     except Exception:
                                         reno = {}
                                     args = {**args, **reno}
+
+                            # Risk enrichment — fetch_risk_assessment runs here, not in property card
+                            if fc.name == "show_risk_summary":
+                                addr = args.get("address", "")
+                                sub  = args.get("suburb", "")
+                                st   = args.get("state", "NSW")
+                                pc   = args.get("postcode", "")
+                                if addr:
+                                    try:
+                                        r = await asyncio.wait_for(fetch_risk_assessment(addr, sub, st, pc), timeout=25)
+                                    except Exception:
+                                        r = {}
+                                    risk_items = list(args.get("risks", []))
+                                    if r.get("land_slope") and r["land_slope"] != "Flat":
+                                        sev = "high" if r["land_slope"] == "Steep Slope" else "medium"
+                                        risk_items.append({"name": "Land Slope", "description": r.get("land_slope_note", r["land_slope"]), "severity": sev, "status": r["land_slope"]})
+                                    if r.get("noise_level") and r["noise_level"] != "Low":
+                                        sev = "high" if r["noise_level"] == "High" else "medium"
+                                        sources = r.get("noise_sources") or []
+                                        desc = ", ".join(sources) if sources else r.get("noise_note", r["noise_level"])
+                                        risk_items.append({"name": "Noise", "description": desc, "severity": sev, "status": r["noise_level"]})
+                                    for flag in r.get("property_history_flags") or []:
+                                        risk_items.append({"name": "Property History", "description": flag, "severity": "medium", "status": "Flag"})
+                                    if r.get("needs_inspection"):
+                                        risk_items.append({"name": "Building Inspection", "description": r.get("due_diligence_note", "Pre-purchase inspection recommended"), "severity": "medium", "status": "Recommended"})
+                                    if r.get("needs_pest_control"):
+                                        risk_items.append({"name": "Pest Inspection", "description": "Pest inspection recommended before purchase", "severity": "low", "status": "Recommended"})
+                                    args["risks"] = risk_items
 
                             # Store enriched args so we can feed them back to Gemini
                             tool_results[fc.name] = args
