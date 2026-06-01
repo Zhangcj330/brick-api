@@ -1,6 +1,10 @@
 """
-UI tool definitions for Gemini function calling.
-Each tool drives a React component in the Gen UI panel.
+Tool definitions for Gemini function calling.
+
+UI_TOOLS  — show_* tools that drive React components in the Gen UI panel.
+DATA_TOOLS — backend data-fetch tools that Gemini calls to gather real data
+             before rendering UI.  These are executed server-side and never
+             emitted as SSE events to the frontend.
 """
 
 # Comment/uncomment tool names here to enable/disable them
@@ -262,3 +266,77 @@ _ALL_TOOLS = [
 ]
 
 UI_TOOLS = [t for t in _ALL_TOOLS if t["name"] not in _DISABLED_TOOLS]
+
+
+# ---------------------------------------------------------------------------
+# Data tools — server-side only, never rendered in the frontend
+# ---------------------------------------------------------------------------
+
+_ALL_DATA_TOOLS = [
+    {
+        "name": "fetch_suburb_data",
+        "description": (
+            "Fetch comprehensive, up-to-date suburb statistics from Google Search and SQM Research. "
+            "Returns: median_price, clearance_rate, growth_12mo, rental_yield, days_on_market, "
+            "crime_rate, crime_label, vacancy_rate, stock_on_market, growth_1yr/5yr/10yr, "
+            "short_term_outlook, short_term_reason, long_term_outlook, long_term_reason, and "
+            "investment-factor verdicts/reasons (economic, affordability, lifestyle_education, supply). "
+            "Always call this BEFORE show_suburb_stats so the card displays real, enriched data."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "suburb": {"type": "string"},
+                "state": {"type": "string", "description": "Australian state abbreviation e.g. NSW, VIC, QLD"},
+                "postcode": {
+                    "type": "string",
+                    "description": "4-digit Australian postcode — required for SQM vacancy rate and stock data",
+                },
+            },
+            "required": ["suburb", "state"],
+        },
+    },
+    {
+        "name": "fetch_property_data",
+        "description": (
+            "Fetch property-specific enrichment data for a listing: "
+            "listing photos (allhomes.com.au), street orientation (N/S/E/W-facing), T-junction risk, "
+            "main road and powerline proximity, kitchen/bathroom renovation assessment, "
+            "and realestate.com.au / domain.com.au listing URLs. "
+            "Always call this BEFORE show_property_card to populate real images and street-level insights."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "description": "Street address only e.g. '22 Addison Avenue'",
+                },
+                "suburb": {"type": "string"},
+                "state": {"type": "string", "description": "Australian state abbreviation e.g. NSW"},
+            },
+            "required": ["address", "suburb", "state"],
+        },
+    },
+    {
+        "name": "fetch_risk_data",
+        "description": (
+            "Fetch address-specific risk data: noise sources (flight paths, train lines, arterial traffic), "
+            "land slope, property history flags (flood, termite risk, heritage overlay), "
+            "building/pest inspection recommendations, and due diligence notes. "
+            "Always call this BEFORE show_risk_summary to include enriched, address-specific risk items."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "address": {"type": "string"},
+                "suburb": {"type": "string"},
+                "state": {"type": "string"},
+                "postcode": {"type": "string"},
+            },
+            "required": ["address", "suburb"],
+        },
+    },
+]
+
+DATA_TOOLS = _ALL_DATA_TOOLS  # all data tools are always enabled
