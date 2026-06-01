@@ -168,7 +168,7 @@ Return ONLY a JSON object (no markdown, no explanation):
 }}"""
 
 
-async def fetch_long_term_factors(suburb: str, state: str) -> dict:
+async def fetch_long_term_factors(suburb: str, state: str, extra_sources: list | None = None) -> dict:
     """Use Gemini + Google Search to research Economic, Affordability, and Lifestyle & Education."""
     client = get_client()
     prompt = _LONG_TERM_FACTORS_PROMPT.format(suburb=suburb, state=state)
@@ -181,6 +181,8 @@ async def fetch_long_term_factors(suburb: str, state: str) -> dict:
                 temperature=0.1,
             ),
         )
+        if extra_sources is not None:
+            extra_sources.extend(_sources_from_response(response))
         text = (response.text or "").strip()
         if text.startswith("```"):
             text = text.split("```")[1]
@@ -390,12 +392,12 @@ foreach.near(
         return result
 
 
-async def fetch_street_info(address: str, suburb: str, state: str = "NSW") -> dict:
+async def fetch_street_info(address: str, suburb: str, state: str = "NSW", extra_sources: list | None = None) -> dict:
     """Run road/powerline (Gemini+Search) + layout/orientation (Maps APIs) in parallel."""
     road_prompt = _STREET_ROAD_PROMPT.format(address=address, suburb=suburb, state=state)
 
     road, layout = await asyncio.gather(
-        _gemini_json(road_prompt, use_search=True),
+        _gemini_json(road_prompt, use_search=True, extra_sources=extra_sources),
         fetch_layout_info(address, suburb, state),
         return_exceptions=True,
     )
@@ -485,7 +487,7 @@ Return ONLY a JSON object (no markdown):
 }}"""
 
 
-async def _gemini_json(prompt: str, use_search: bool = True) -> dict:
+async def _gemini_json(prompt: str, use_search: bool = True, extra_sources: list | None = None) -> dict:
     """Run a single Gemini call (optionally with Search) and return parsed JSON."""
     client = get_client()
     try:
@@ -497,6 +499,8 @@ async def _gemini_json(prompt: str, use_search: bool = True) -> dict:
             contents=prompt,
             config=types.GenerateContentConfig(**config_args),
         )
+        if extra_sources is not None:
+            extra_sources.extend(_sources_from_response(response))
         text = (response.text or "").strip()
         if text.startswith("```"):
             text = text.split("```")[1]
@@ -507,14 +511,14 @@ async def _gemini_json(prompt: str, use_search: bool = True) -> dict:
         return {}
 
 
-async def fetch_risk_assessment(address: str, suburb: str, state: str = "NSW", postcode: str = "") -> dict:
+async def fetch_risk_assessment(address: str, suburb: str, state: str = "NSW", postcode: str = "", extra_sources: list | None = None) -> dict:
     """Run noise + history risk checks in parallel, each as a separate Gemini+Search call."""
     noise_prompt   = _RISK_NOISE_PROMPT.format(address=address, suburb=suburb, state=state, postcode=postcode)
     history_prompt = _RISK_HISTORY_PROMPT.format(address=address, suburb=suburb, state=state, postcode=postcode)
 
     noise, history = await asyncio.gather(
-        _gemini_json(noise_prompt),
-        _gemini_json(history_prompt),
+        _gemini_json(noise_prompt, extra_sources=extra_sources),
+        _gemini_json(history_prompt, extra_sources=extra_sources),
         return_exceptions=True,
     )
     noise   = noise   if isinstance(noise,   dict) else {}
@@ -530,15 +534,41 @@ async def fetch_risk_assessment(address: str, suburb: str, state: str = "NSW", p
 
 _ALLHOMES_URL_PROMPT = """Search allhomes.com.au for the property listing at: {address}, {suburb}, {state}, Australia.
 
-Return ONLY the single allhomes.com.au listing URL for this property. No explanation, just the URL.
-Example format: https://www.allhomes.com.au/22-addison-avenue-roseville-nsw-2069
-
 Search query: "{address} {suburb} {state} site:allhomes.com.au"
-If no exact match, return the closest listing URL from allhomes.com.au. Return empty string if nothing found."""
+
+Once you find a result, verify it matches by checking that the URL contains the street number and street name from the address.
+
+For example, if the address is "22 Addison Avenue, Roseville NSW", a valid URL would be:
+https://www.allhomes.com.au/22-addison-avenue-roseville-nsw-2069
+because it contains "22" and "addison-avenue".
+
+If the URL does NOT match the address (wrong street number, wrong street name, or no address in path), return null.
+
+Return ONLY the matching URL, or null if no confident match. No explanation."""
 
 
 def get_client() -> genai.Client:
     return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+
+def _sources_from_response(response) -> list[dict]:
+    """Extract grounding web sources from a Gemini GenerateContentResponse."""
+    sources = []
+    try:
+        for candidate in response.candidates or []:
+            gm = getattr(candidate, "grounding_metadata", None)
+            if not gm:
+                continue
+            for gc in gm.grounding_chunks or []:
+                if gc.web and gc.web.uri:
+                    sources.append({
+                        "title": gc.web.title,
+                        "url": gc.web.uri,
+                        "domain": gc.web.domain,
+                    })
+    except Exception:
+        pass
+    return sources
 
 
 def _get_langfuse() -> Langfuse | None:
@@ -569,7 +599,7 @@ def _build_config() -> types.GenerateContentConfig:
     )
 
 
-async def fetch_suburb_stats(suburb: str, state: str = "NSW") -> dict:
+async def fetch_suburb_stats(suburb: str, state: str = "NSW", extra_sources: list | None = None) -> dict:
     """Use a dedicated Gemini + Google Search call to get real suburb stats."""
     client = get_client()
     prompt = _SUBURB_STATS_PROMPT.format(suburb=suburb, state=state)
@@ -582,6 +612,8 @@ async def fetch_suburb_stats(suburb: str, state: str = "NSW") -> dict:
                 temperature=0.1,
             ),
         )
+        if extra_sources is not None:
+            extra_sources.extend(_sources_from_response(response))
         text = response.text or ""
         # Strip markdown code fences if present
         text = text.strip()
@@ -597,8 +629,31 @@ async def fetch_suburb_stats(suburb: str, state: str = "NSW") -> dict:
         return {}
 
 
-async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -> list[str]:
-    """Find allhomes listing URL via Gemini Search, then scrape for images."""
+async def _fetch_listing_sources(address: str, suburb: str, state: str, out_sources: list) -> None:
+    """Force a Google Search for the property listing to collect grounding sources."""
+    client = get_client()
+    prompt = (
+        f'Search for the current real estate listing for {address}, {suburb} {state} Australia. '
+        f'Find it on realestate.com.au and domain.com.au. '
+        f'What is the current asking price and key details?'
+    )
+    try:
+        response = await client.aio.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                tools=[types.Tool(google_search=types.GoogleSearch())],
+                temperature=0.1,
+            ),
+        )
+        out_sources.extend(_sources_from_response(response))
+    except Exception:
+        pass
+
+
+async def fetch_property_images(address: str, suburb: str, state: str = "NSW", extra_sources: list | None = None) -> list[str]:
+    """Find allhomes listing URL via Gemini Search, then scrape for images.
+    Returns [] if URL not found, invalid, or no images scraped."""
     client = get_client()
 
     prompt = _ALLHOMES_URL_PROMPT.format(address=address, suburb=suburb, state=state)
@@ -611,11 +666,18 @@ async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -
                 temperature=0.1,
             ),
         )
+        if extra_sources is not None:
+            extra_sources.extend(_sources_from_response(response))
         text = (response.text or "").strip()
         match = re.search(r'https://www\.allhomes\.com\.au/[^\s"\'<>]+', text)
         if not match:
             return []
         allhomes_url = match.group(0).rstrip(".")
+        # Validate: must look like a property listing path (e.g. /22-addison-avenue-suburb-nsw-2069)
+        # Reject homepage, search pages, or paths with no address components
+        path = allhomes_url.replace("https://www.allhomes.com.au", "").strip("/")
+        if not path or path.startswith("sale") or path.startswith("search") or "-" not in path:
+            return []
     except Exception:
         return []
 
@@ -629,19 +691,36 @@ async def fetch_property_images(address: str, suburb: str, state: str = "NSW") -
             resp = await client_http.get(allhomes_url, headers=headers)
             resp.raise_for_status()
 
+        # Verify the page is actually for this property by checking address components
+        # Extract street number and first word of street name from address
+        addr_parts = address.lower().split()
+        street_number = addr_parts[0] if addr_parts else ""
+        street_name_word = addr_parts[1] if len(addr_parts) > 1 else ""
+        page_lower = resp.text.lower()
+        if street_number and street_name_word:
+            if street_number not in page_lower or street_name_word not in page_lower:
+                return []  # Wrong property page
+
         seen: set[str] = set()
         images: list[str] = []
-        for match in re.finditer(
-            r'https://images\.allhomes\.com\.au/property/photo/[a-f0-9_]+_hd\.jpg',
+        # Extract ONLY from the main listing's media.items block (not ads or nearby listings)
+        media_match = re.search(
+            r'"media":\{"items":\[(.+?)\],"__typename"',
             resp.text,
-        ):
-            url = match.group(0)
-            if url not in seen:
-                seen.add(url)
-                images.append(url)
-            if len(images) >= 10:
-                break
-        return images
+            re.DOTALL,
+        )
+        if media_match:
+            for url_match in re.finditer(
+                r'"imageSrc":"(https://images\.allhomes\.com\.au/property/photo/[a-f0-9_]+_hd\.jpg)"',
+                media_match.group(1),
+            ):
+                url = url_match.group(1)
+                if url not in seen:
+                    seen.add(url)
+                    images.append(url)
+                if len(images) >= 10:
+                    break
+        return images  # [] if nothing found — frontend hides carousel
     except Exception:
         return []
 
@@ -775,9 +854,9 @@ async def stream_chat(
 
                                 # Run enrichment calls in parallel
                                 real, sqm, long_term = await asyncio.gather(
-                                    asyncio.wait_for(fetch_suburb_stats(suburb_name, state_name), timeout=25),
+                                    asyncio.wait_for(fetch_suburb_stats(suburb_name, state_name, extra_sources=round_sources), timeout=25),
                                     asyncio.wait_for(fetch_sqm_data(postcode), timeout=20) if postcode else _empty(),
-                                    asyncio.wait_for(fetch_long_term_factors(suburb_name, state_name), timeout=25),
+                                    asyncio.wait_for(fetch_long_term_factors(suburb_name, state_name, extra_sources=round_sources), timeout=25),
                                     return_exceptions=True,
                                 )
                                 real      = real      if isinstance(real,      dict) else {}
@@ -801,10 +880,11 @@ async def stream_chat(
                                 addr = args.get("address", "")
                                 sub = args.get("suburb", "")
                                 st = args.get("state", "NSW")
-                                # Fetch images and street info in parallel (no risk here)
-                                images_result, street = await asyncio.gather(
-                                    asyncio.wait_for(fetch_property_images(addr, sub, st), timeout=20),
-                                    asyncio.wait_for(fetch_street_info(addr, sub, st), timeout=20),
+                                # Fetch images, street info, and listing sources in parallel
+                                images_result, street, _ = await asyncio.gather(
+                                    asyncio.wait_for(fetch_property_images(addr, sub, st, extra_sources=round_sources), timeout=20),
+                                    asyncio.wait_for(fetch_street_info(addr, sub, st, extra_sources=round_sources), timeout=20),
+                                    asyncio.wait_for(_fetch_listing_sources(addr, sub, st, round_sources), timeout=15),
                                     return_exceptions=True,
                                 )
                                 real_images = images_result if isinstance(images_result, list) else []
@@ -830,7 +910,7 @@ async def stream_chat(
                                 pc   = args.get("postcode", "")
                                 if addr:
                                     try:
-                                        r = await asyncio.wait_for(fetch_risk_assessment(addr, sub, st, pc), timeout=25)
+                                        r = await asyncio.wait_for(fetch_risk_assessment(addr, sub, st, pc, extra_sources=round_sources), timeout=25)
                                     except Exception:
                                         r = {}
                                     risk_items = list(args.get("risks", []))

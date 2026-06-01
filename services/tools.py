@@ -3,7 +3,19 @@ UI tool definitions for Gemini function calling.
 Each tool drives a React component in the Gen UI panel.
 """
 
-UI_TOOLS = [
+# Comment/uncomment tool names here to enable/disable them
+_DISABLED_TOOLS: set[str] = {
+    "show_property_card",
+    "show_map",
+    "show_suburb_stats",
+    "show_affordability",
+    "show_risk_summary",
+    "show_street_view",
+    "show_grants",
+    "show_comparison",
+}
+
+_ALL_TOOLS = [
     {
         "name": "show_property_card",
         "description": (
@@ -248,3 +260,5 @@ UI_TOOLS = [
         },
     },
 ]
+
+UI_TOOLS = [t for t in _ALL_TOOLS if t["name"] not in _DISABLED_TOOLS]
