@@ -928,6 +928,17 @@ async def stream_chat(
                 model_parts.append(types.Part(text=accumulated_text))
             model_parts.extend(fn_call_parts)  # raw Parts with thought_signature intact
 
+            # Inject real listing URL from grounding sources into property card
+            if "show_property_card" in tool_results:
+                card = tool_results["show_property_card"]
+                if not card.get("listing_url") and not card.get("domain_url"):
+                    for src in round_sources:
+                        url = src.get("url", "")
+                        if "realestate.com.au/property" in url and not card.get("listing_url"):
+                            card["listing_url"] = url
+                        elif "domain.com.au/" in url and not card.get("domain_url"):
+                            card["domain_url"] = url
+
             # Function responses — include enriched data so Gemini can analyse it
             fn_resp_parts = [
                 types.Part.from_function_response(
