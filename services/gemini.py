@@ -221,7 +221,6 @@ async def stream_chat(
                                 search_span = trace_obs.start_observation(
                                     name="google_search",
                                     as_type="span",
-                                    input={"queries": new_queries},
                                 )
 
                     elif dt == "text_annotation_delta":
@@ -235,7 +234,8 @@ async def stream_chat(
                     final_status = event.interaction.status
                     if search_span:
                         search_span.update(
-                            output={"sources": round_grounding["sources"], "queries": round_grounding["queries"]},
+                            input={"queries": round_grounding["queries"]},
+                            output={"sources": round_grounding["sources"]},
                             metadata={"duration_seconds": round(time.time() - search_start, 3) if search_start else None},
                         )
                         search_span.end()
