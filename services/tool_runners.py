@@ -99,6 +99,8 @@ async def run_fetch_property_data(
             errors.append(f"reno: {exc}")
 
     result = {"images": images, **street, **reno}
+    if not images:
+        result["images_note"] = "No listing photos found. Proceed with show_property_card using available data."
     if errors:
         result["_errors"] = errors
     for src in sources_buf:
@@ -122,7 +124,7 @@ async def run_fetch_risk_data(
     try:
         return await asyncio.wait_for(
             fetch_risk_assessment(address, suburb, state, postcode, extra_sources=extra_sources),
-            timeout=25,
+            timeout=45,
         )
     except Exception as exc:
-        return {"_error": str(exc)}
+        return {"_error": f"{type(exc).__name__}: {exc}" if str(exc) else type(exc).__name__}

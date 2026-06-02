@@ -35,6 +35,7 @@ MAX_ROUNDS = 5
 MAX_MESSAGES = 40
 _RISK_KW = {"flood", "bushfire", "overpriced", "heritage", "contamination"}
 _DATA_TOOL_NAMES: frozenset[str] = frozenset(t["name"] for t in DATA_TOOLS)
+_UI_TOOL_NAMES: frozenset[str] = frozenset(t["name"] for t in UI_TOOLS)
 
 # Suppress the experimental-feature warning emitted on first access of .interactions
 warnings.filterwarnings(
@@ -60,18 +61,26 @@ def _get_langfuse() -> Langfuse | None:
         return None
 
 
-def _build_tools() -> list:
-    """Plain tool dicts for the Interactions API."""
-    tools: list = [{"type": "google_search"}]
-    tools += [
-        {
-            "type": "function",
-            "name": t["name"],
-            "description": t["description"],
-            "parameters": t["parameters"],
-        }
-        for t in DATA_TOOLS
-    ]
+def _build_tools(round: int = 0) -> list:
+    """Plain tool dicts for the Interactions API, filtered by round.
+    Round 0: google_search + data tools only
+    Round 1: UI tools only (no search, data already fetched)
+    Round 2+: empty (force text-only response)
+    """
+    if round >= 2:
+        return []
+    tools: list = []
+    if round == 0:
+        tools.append({"type": "google_search"})
+        tools += [
+            {"type": "function", "name": t["name"], "description": t["description"], "parameters": t["parameters"]}
+            for t in DATA_TOOLS
+        ]
+    else:  # round == 1
+        tools += [
+            {"type": "function", "name": t["name"], "description": t["description"], "parameters": t["parameters"]}
+            for t in UI_TOOLS
+        ]
     return tools
 
 
@@ -89,6 +98,16 @@ def _sse(data: dict) -> str:
     return f"data: {json.dumps(data)}\n\n"
 
 
+def _sanitize_fn_result(obj):
+    """Recursively replace empty lists with None.
+    Interactions API rejects empty arrays in function_result payloads."""
+    if isinstance(obj, dict):
+        return {k: _sanitize_fn_result(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return None if len(obj) == 0 else [_sanitize_fn_result(i) for i in obj]
+    return obj
+
+
 # ---------------------------------------------------------------------------
 # Stream chat
 # ---------------------------------------------------------------------------
@@ -104,7 +123,6 @@ async def stream_chat(
         return
 
     client = get_client()
-    tools = _build_tools()
     lf = _get_langfuse()
 
     all_text: list[str] = []
@@ -126,6 +144,7 @@ async def stream_chat(
     try:
         # First round: full conversation history as steps
         current_input = _to_steps(messages)
+        lf_accumulated_input = list(current_input)  # grows across rounds for observability
         current_previous_id: str | None = None
 
         for _round in range(MAX_ROUNDS):
@@ -142,17 +161,19 @@ async def stream_chat(
                     name=f"round-{_round + 1}",
                     as_type="generation",
                     model=MODEL,
-                    input=messages[-1].content,
+                    input=lf_accumulated_input,
                 )
 
             round_grounding: dict = {"sources": [], "queries": []}
             tool_results: dict[str, dict] = {}
+            search_span = None
+            search_start: float | None = None
 
             create_kwargs: dict = dict(
                 model=MODEL,
                 input=current_input,
                 system_instruction=SYSTEM_PROMPT,
-                tools=tools,
+                tools=_build_tools(_round),
                 generation_config={"temperature": 0.4},
                 stream=True,
             )
@@ -190,7 +211,15 @@ async def stream_chat(
 
                     elif dt == "google_search_call":
                         if delta.arguments and delta.arguments.queries:
-                            round_grounding["queries"].extend(delta.arguments.queries)
+                            new_queries = list(delta.arguments.queries)
+                            round_grounding["queries"].extend(new_queries)
+                            if search_span is None and lf and trace_obs:
+                                search_start = time.time()
+                                search_span = trace_obs.start_observation(
+                                    name="google_search",
+                                    as_type="span",
+                                    input={"queries": new_queries},
+                                )
 
                     elif dt == "text_annotation_delta":
                         for ann in delta.annotations or []:
@@ -201,6 +230,12 @@ async def stream_chat(
 
                 elif et == "interaction.completed":
                     final_status = event.interaction.status
+                    if search_span:
+                        search_span.update(
+                            output={"sources": round_grounding["sources"], "queries": round_grounding["queries"]},
+                            metadata={"duration_seconds": round(time.time() - search_start, 3) if search_start else None},
+                        )
+                        search_span.end()
 
             round_duration = round(time.time() - round_start, 3)
 
@@ -215,23 +250,23 @@ async def stream_chat(
 
                 # ── Data tools: execute server-side, no SSE ──────────────────
                 if name in _DATA_TOOL_NAMES:
+                    span = trace_obs.start_observation(name=name, as_type="span", input=args) if lf and trace_obs else None
                     result = await _execute_data_tool(name, args, round_grounding["sources"])
                     _enrichment_cache[name] = result
                     tool_results[name] = result
 
-                    if lf and trace_obs:
-                        span = trace_obs.start_observation(name=name, as_type="span", input=args)
+                    if span:
                         span.update(output=result)
                         span.end()
 
                 # ── UI tools: merge cache / fallback enrich, emit SSE ────────
                 else:
+                    span = trace_obs.start_observation(name=name, as_type="span", input=args) if lf and trace_obs else None
                     args = await _enrich_ui_args(name, args, _enrichment_cache, round_grounding["sources"])
                     tool_results[name] = args
 
-                    if lf and trace_obs:
-                        span = trace_obs.start_observation(name=name, as_type="span", input=args)
-                        span.update(output={"status": "ok", "rendered": "UI component displayed to user"})
+                    if span:
+                        span.update(output=args)
                         span.end()
 
                     yield _sse({"type": "tool_call", "id": str(uuid.uuid4()), "name": name, "args": args})
@@ -240,12 +275,16 @@ async def stream_chat(
                         level = "high" if any(kw in w.lower() for kw in _RISK_KW) else "medium"
                         yield _sse({"type": "warning", "level": level, "text": w})
 
-            if accumulated_text and tool_results:
-                gen_output: object = {"text": accumulated_text, "tool_calls": list(tool_results.keys())}
+            tool_calls_log = [
+                {"name": fc["name"], "args": json.loads(fc["args_str"]) if fc["args_str"] else {}}
+                for fc in fn_calls.values()
+            ]
+            if accumulated_text and tool_calls_log:
+                gen_output: object = {"text": accumulated_text, "tool_calls": tool_calls_log}
             elif accumulated_text:
                 gen_output = accumulated_text
-            elif tool_results:
-                gen_output = {"tool_calls": list(tool_results.keys())}
+            elif tool_calls_log:
+                gen_output = {"tool_calls": tool_calls_log}
             else:
                 gen_output = None
 
@@ -281,10 +320,14 @@ async def stream_chat(
                     "type": "function_result",
                     "call_id": fc["id"],
                     "name": fc["name"],
-                    "result": tool_results.get(fc["name"], {"status": "ok"}),
+                    # UI tools: just acknowledge display — sending full args back confuses the model
+                    # Data tools: send actual result so model can use the data
+                    "result": {"status": "displayed"} if fc["name"] not in _DATA_TOOL_NAMES
+                              else _sanitize_fn_result(tool_results.get(fc["name"], {"status": "ok"})),
                 }
                 for fc in fn_calls.values()
             ]
+            lf_accumulated_input = lf_accumulated_input + current_input
 
         if trace_obs:
             trace_obs.update(
