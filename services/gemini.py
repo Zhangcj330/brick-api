@@ -66,12 +66,9 @@ def _get_langfuse() -> Langfuse | None:
 
 def _build_tools(round: int = 0) -> list:
     """Plain tool dicts for the Interactions API, filtered by round.
-    Round 0: google_search + data tools only
-    Round 1: UI tools only (no search, data already fetched)
-    Round 2+: empty (force text-only response)
+    Round 0: google_search + data tools
+    Round 1+: UI tools (data already fetched)
     """
-    if round >= 2:
-        return []
     tools: list = []
     if round == 0:
         tools.append({"type": "google_search"})
@@ -79,7 +76,7 @@ def _build_tools(round: int = 0) -> list:
             {"type": "function", "name": t["name"], "description": t["description"], "parameters": t["parameters"]}
             for t in DATA_TOOLS
         ]
-    else:  # round == 1
+    else:
         tools += [
             {"type": "function", "name": t["name"], "description": t["description"], "parameters": t["parameters"]}
             for t in UI_TOOLS

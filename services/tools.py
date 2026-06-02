@@ -8,16 +8,7 @@ DATA_TOOLS — backend data-fetch tools that Gemini calls to gather real data
 """
 
 # Comment/uncomment tool names here to enable/disable them
-_DISABLED_TOOLS: set[str] = {
-    "show_property_card",
-    "show_map",
-    "show_suburb_stats",
-    "show_affordability",
-    "show_risk_summary",
-    "show_street_view",
-    "show_grants",
-    "show_comparison",
-}
+_DISABLED_TOOLS: set[str] = set()
 
 _ALL_TOOLS = [
     {
