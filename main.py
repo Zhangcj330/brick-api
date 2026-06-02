@@ -7,6 +7,12 @@ from routers import chat
 
 load_dotenv()
 
+try:
+    from openinference.instrumentation.google_genai import GoogleGenAIInstrumentor
+    GoogleGenAIInstrumentor().instrument()
+except Exception:
+    pass
+
 app = FastAPI(title="Brick API", version="0.1.0")
 
 allowed_origins = [
