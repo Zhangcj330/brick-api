@@ -47,7 +47,8 @@ def sources_from_response(response) -> list[dict]:
 
 
 async def _gemini_json(
-    prompt: str, use_search: bool = True, extra_sources: list | None = None
+    prompt: str, use_search: bool = True, extra_sources: list | None = None,
+    timeout: float = 35.0,
 ) -> dict:
     """Run a single Gemini call (optionally with Search) and return parsed JSON."""
     client = get_client()
@@ -55,11 +56,15 @@ async def _gemini_json(
         config_args: dict = {"temperature": 0.1}
         if use_search:
             config_args["tools"] = [types.Tool(google_search=types.GoogleSearch())]
-        response = await client.aio.models.generate_content(
-            model=MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(**config_args),
-        )
+
+        async def _call():
+            return await client.aio.models.generate_content(
+                model=MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(**config_args),
+            )
+
+        response = await asyncio.wait_for(_call(), timeout=timeout)
         if extra_sources is not None:
             extra_sources.extend(sources_from_response(response))
         text = (response.text or "").strip()
@@ -316,33 +321,49 @@ If the URL does NOT match the address (wrong street number, wrong street name, o
 Return ONLY the matching URL, or null if no confident match. No explanation."""
 
 
+def _allhomes_url(address: str, suburb: str, state: str, postcode: str) -> str:
+    """Construct allhomes.com.au listing URL from address components."""
+    slug = re.sub(r"[^a-z0-9]+", "-", f"{address} {suburb} {state} {postcode}".lower()).strip("-")
+    return f"https://www.allhomes.com.au/{slug}"
+
+
 async def fetch_property_images(
-    address: str, suburb: str, state: str = "NSW", extra_sources: list | None = None
+    address: str, suburb: str, state: str = "NSW", postcode: str = "",
+    extra_sources: list | None = None,
 ) -> list[str]:
-    """Find allhomes listing URL via Gemini Search, then scrape for images.
+    """Find allhomes listing URL via Gemini Search (fallback: construct URL), then scrape for images.
     Returns [] if URL not found, invalid, or no images scraped."""
     client = get_client()
     prompt = _ALLHOMES_URL_PROMPT.format(address=address, suburb=suburb, state=state)
+    allhomes_url: str | None = None
     try:
-        response = await client.aio.models.generate_content(
-            model=MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())],
-                temperature=0.1,
-            ),
-        )
+        async def _search():
+            return await client.aio.models.generate_content(
+                model=MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    tools=[types.Tool(google_search=types.GoogleSearch())],
+                    temperature=0.1,
+                ),
+            )
+        response = await asyncio.wait_for(_search(), timeout=20)
         if extra_sources is not None:
             extra_sources.extend(sources_from_response(response))
         text = (response.text or "").strip()
         match = re.search(r'https://www\.allhomes\.com\.au/[^\s"\'<>]+', text)
-        if not match:
-            return []
-        allhomes_url = match.group(0).rstrip(".")
-        path = allhomes_url.replace("https://www.allhomes.com.au", "").strip("/")
-        if not path or path.startswith("sale") or path.startswith("search") or "-" not in path:
-            return []
+        if match:
+            candidate = match.group(0).rstrip(".")
+            path = candidate.replace("https://www.allhomes.com.au", "").strip("/")
+            if path and not path.startswith("sale") and not path.startswith("search") and "-" in path:
+                allhomes_url = candidate
     except Exception:
+        pass
+
+    # Fallback: construct URL from address components if Gemini didn't find one
+    if not allhomes_url and postcode:
+        allhomes_url = _allhomes_url(address, suburb, state, postcode)
+
+    if not allhomes_url:
         return []
 
     try:
@@ -397,14 +418,16 @@ async def fetch_listing_sources(
         f"What is the current asking price and key details?"
     )
     try:
-        response = await client.aio.models.generate_content(
-            model=MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())],
-                temperature=0.1,
-            ),
-        )
+        async def _search():
+            return await client.aio.models.generate_content(
+                model=MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    tools=[types.Tool(google_search=types.GoogleSearch())],
+                    temperature=0.1,
+                ),
+            )
+        response = await asyncio.wait_for(_search(), timeout=20)
         out_sources.extend(sources_from_response(response))
     except Exception:
         pass
@@ -582,20 +605,26 @@ async def fetch_renovation_assessment(images: list[str], address: str) -> dict:
     if not images:
         return {}
     client = get_client()
-    headers = {
+    req_headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
         "Referer": "https://www.allhomes.com.au/",
     }
-    image_parts: list[types.Part] = []
-    async with httpx.AsyncClient(timeout=10, follow_redirects=True) as http:
-        for url in images[:10]:
-            try:
-                r = await http.get(url, headers=headers)
-                if r.status_code == 200 and r.headers.get("content-type", "").startswith("image/"):
-                    mime = r.headers.get("content-type", "image/jpeg").split(";")[0]
-                    image_parts.append(types.Part.from_bytes(data=r.content, mime_type=mime))
-            except Exception:
-                pass
+
+    # Download up to 5 images in parallel (was sequential — 10 images × 10s = 100s worst case)
+    async def _fetch_image(http: httpx.AsyncClient, url: str) -> types.Part | None:
+        try:
+            r = await http.get(url, headers=req_headers)
+            if r.status_code == 200 and r.headers.get("content-type", "").startswith("image/"):
+                mime = r.headers.get("content-type", "image/jpeg").split(";")[0]
+                return types.Part.from_bytes(data=r.content, mime_type=mime)
+        except Exception:
+            pass
+        return None
+
+    async with httpx.AsyncClient(timeout=8, follow_redirects=True) as http:
+        results = await asyncio.gather(*[_fetch_image(http, url) for url in images[:5]])
+    image_parts: list[types.Part] = [p for p in results if p is not None]
+
     if not image_parts:
         return {}
 
@@ -612,11 +641,13 @@ Return ONLY a JSON object (no markdown):
 If you cannot identify a kitchen or bathroom photo, set condition to null.""")
 
     try:
-        response = await client.aio.models.generate_content(
-            model=MODEL,
-            contents=types.Content(role="user", parts=image_parts + [text_part]),
-            config=types.GenerateContentConfig(temperature=0.1),
-        )
+        async def _vision():
+            return await client.aio.models.generate_content(
+                model=MODEL,
+                contents=types.Content(role="user", parts=image_parts + [text_part]),
+                config=types.GenerateContentConfig(temperature=0.1),
+            )
+        response = await asyncio.wait_for(_vision(), timeout=25)
         text = (response.text or "").strip()
         if text.startswith("```"):
             text = text.split("```")[1]

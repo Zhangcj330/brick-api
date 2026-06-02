@@ -59,57 +59,92 @@ async def run_fetch_suburb_data(
     return result
 
 
+async def _do_fetch_property_data(
+    address: str,
+    suburb: str,
+    state: str,
+    postcode: str = "",
+) -> dict:
+    images_result = await fetch_property_images(address, suburb, state, postcode=postcode)
+    images = images_result if isinstance(images_result, list) else []
+
+    errors: list[str] = []
+    if isinstance(images_result, BaseException):
+        errors.append(f"images: {images_result}")
+
+    reno: dict = {}
+    if images:
+        try:
+            reno = await fetch_renovation_assessment(images, address)
+        except Exception as exc:
+            errors.append(f"reno: {exc}")
+
+    result = {"images": images, **reno}
+    if not images:
+        result["images_note"] = "No listing photos found. Proceed with show_property_card using available data."
+    if errors:
+        result["_errors"] = errors
+    return result
+
+
 async def run_fetch_property_data(
+    address: str,
+    suburb: str,
+    state: str,
+    postcode: str = "",
+    extra_sources: list | None = None,
+) -> dict:
+    """Listing images + renovation assessment. Hard cap of 45s."""
+    try:
+        return await asyncio.wait_for(
+            _do_fetch_property_data(address, suburb, state, postcode),
+            timeout=45,
+        )
+    except asyncio.TimeoutError:
+        return {"_error": "fetch_property_data timed out after 45s", "images": [], "images_note": "Timed out."}
+
+
+async def run_fetch_street_info(
     address: str,
     suburb: str,
     state: str,
     extra_sources: list | None = None,
 ) -> dict:
-    """Compound: listing images + street info + listing sources + renovation assessment."""
-    sources_buf: list = extra_sources if extra_sources is not None else []
+    """Street orientation, main road, powerlines, T-junction. Hard cap of 40s."""
+    sources = extra_sources if extra_sources is not None else []
+    try:
+        return await asyncio.wait_for(
+            fetch_street_info(address, suburb, state, extra_sources=sources),
+            timeout=40,
+        )
+    except asyncio.TimeoutError:
+        return {"_error": "fetch_street_info timed out after 40s"}
 
-    images_result, street, _ = await asyncio.gather(
-        asyncio.wait_for(
-            fetch_property_images(address, suburb, state, extra_sources=sources_buf), timeout=20
-        ),
-        asyncio.wait_for(
-            fetch_street_info(address, suburb, state, extra_sources=sources_buf), timeout=20
-        ),
-        asyncio.wait_for(
-            fetch_listing_sources(address, suburb, state, sources_buf), timeout=15
-        ),
-        return_exceptions=True,
-    )
-    images = images_result if isinstance(images_result, list) else []
-    street = street if isinstance(street, dict) else {}
 
-    errors: list[str] = []
-    if isinstance(images_result, BaseException):
-        errors.append(f"images: {images_result}")
-    if isinstance(street, BaseException):
-        errors.append(f"street: {street}")
+async def run_fetch_listing_sources(
+    address: str,
+    suburb: str,
+    state: str,
+    extra_sources: list | None = None,
+) -> dict:
+    """Search REA + Domain for listing URL and price context. Hard cap of 30s."""
+    sources: list = extra_sources if extra_sources is not None else []
+    try:
+        await asyncio.wait_for(
+            fetch_listing_sources(address, suburb, state, sources),
+            timeout=30,
+        )
+    except asyncio.TimeoutError:
+        pass
 
-    reno: dict = {}
-    if images:
-        try:
-            reno = await asyncio.wait_for(
-                fetch_renovation_assessment(images, address), timeout=20
-            )
-        except Exception as exc:
-            errors.append(f"reno: {exc}")
-
-    result = {"images": images, **street, **reno}
-    if not images:
-        result["images_note"] = "No listing photos found. Proceed with show_property_card using available data."
-    if errors:
-        result["_errors"] = errors
-    for src in sources_buf:
+    result: dict = {}
+    for src in sources:
         url = src.get("url", "")
-        if "realestate.com.au/property" in url and "listing_url" not in result:
+        title = src.get("title", "").lower()
+        if ("realestate.com.au" in title or "realestate.com.au/property" in url) and "listing_url" not in result:
             result["listing_url"] = url
-        elif "domain.com.au/" in url and "domain_url" not in result:
+        elif ("domain.com.au" in title or "domain.com.au/" in url) and "domain_url" not in result:
             result["domain_url"] = url
-
     return result
 
 

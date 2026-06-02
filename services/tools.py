@@ -299,11 +299,9 @@ _ALL_DATA_TOOLS = [
     {
         "name": "fetch_property_data",
         "description": (
-            "Fetch property-specific enrichment data for a listing: "
-            "listing photos (allhomes.com.au), street orientation (N/S/E/W-facing), T-junction risk, "
-            "main road and powerline proximity, kitchen/bathroom renovation assessment, "
-            "and realestate.com.au / domain.com.au listing URLs. "
-            "Always call this BEFORE show_property_card to populate real images and street-level insights."
+            "Fetch listing photos from allhomes.com.au and kitchen/bathroom renovation assessment "
+            "from those photos. Call alongside fetch_street_info and fetch_listing_sources. "
+            "Always call this BEFORE show_property_card."
         ),
         "parameters": {
             "type": "object",
@@ -314,6 +312,42 @@ _ALL_DATA_TOOLS = [
                 },
                 "suburb": {"type": "string"},
                 "state": {"type": "string", "description": "Australian state abbreviation e.g. NSW"},
+                "postcode": {"type": "string", "description": "4-digit Australian postcode e.g. '2069'"},
+            },
+            "required": ["address", "suburb", "state"],
+        },
+    },
+    {
+        "name": "fetch_street_info",
+        "description": (
+            "Fetch street-level property insights: main road or quiet street, powerline proximity, "
+            "house orientation (N/S/E/W-facing, sunlight quality), and T-junction (路冲) risk. "
+            "Call in parallel with fetch_property_data and fetch_listing_sources. "
+            "Always call this BEFORE show_property_card."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "address": {"type": "string", "description": "Street address only e.g. '22 Addison Avenue'"},
+                "suburb": {"type": "string"},
+                "state": {"type": "string", "description": "Australian state abbreviation e.g. NSW"},
+            },
+            "required": ["address", "suburb", "state"],
+        },
+    },
+    {
+        "name": "fetch_listing_sources",
+        "description": (
+            "Search realestate.com.au and domain.com.au for the property listing to retrieve "
+            "the listing URL, domain URL, and current asking price context. "
+            "Call in parallel with fetch_property_data and fetch_street_info."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "address": {"type": "string"},
+                "suburb": {"type": "string"},
+                "state": {"type": "string"},
             },
             "required": ["address", "suburb", "state"],
         },

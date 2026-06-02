@@ -10,6 +10,7 @@ Model: gemini-3.5-flash
 Tools: google_search (grounding) + function declarations (DATA_TOOLS + UI_TOOLS)
 """
 
+import asyncio
 import json
 import os
 import time
@@ -24,14 +25,16 @@ from models.schemas import Message
 from prompts.buyer_agent import SYSTEM_PROMPT
 from services.enrichments import get_client
 from services.tool_runners import (
+    run_fetch_listing_sources,
     run_fetch_property_data,
     run_fetch_risk_data,
+    run_fetch_street_info,
     run_fetch_suburb_data,
 )
 from services.tools import DATA_TOOLS, UI_TOOLS
 
 MODEL = "gemini-3.5-flash"
-MAX_ROUNDS = 5
+MAX_ROUNDS = 10
 MAX_MESSAGES = 40
 _RISK_KW = {"flood", "bushfire", "overpriced", "heritage", "contamination"}
 _DATA_TOOL_NAMES: frozenset[str] = frozenset(t["name"] for t in DATA_TOOLS)
@@ -203,7 +206,10 @@ async def stream_chat(
                         if ttft is None:
                             ttft = round(time.time() - round_start, 3)
                         accumulated_text += delta.text
-                        yield _sse({"type": "text_delta", "content": delta.text})
+                        if _round == 0:
+                            yield _sse({"type": "text_delta", "content": delta.text, "thinking": True})
+                        else:
+                            yield _sse({"type": "text_delta", "content": delta.text})
 
                     elif dt == "arguments_delta":
                         if event.index in fn_calls and delta.arguments:
@@ -239,7 +245,8 @@ async def stream_chat(
 
             round_duration = round(time.time() - round_start, 3)
 
-            # Parse args and execute tools after stream completes
+            # Parse all fn_calls into (fc, name, args) tuples
+            parsed_fcs: list[tuple[dict, str, dict]] = []
             for fc in fn_calls.values():
                 name = fc["name"]
                 tools_called.append(name)
@@ -247,33 +254,47 @@ async def stream_chat(
                     args = json.loads(fc["args_str"]) if fc["args_str"] else {}
                 except json.JSONDecodeError:
                     args = {}
+                parsed_fcs.append((fc, name, args))
 
-                # ── Data tools: execute server-side, no SSE ──────────────────
-                if name in _DATA_TOOL_NAMES:
-                    span = trace_obs.start_observation(name=name, as_type="span", input=args) if lf and trace_obs else None
-                    result = await _execute_data_tool(name, args, round_grounding["sources"])
+            data_fcs = [(fc, name, args) for fc, name, args in parsed_fcs if name in _DATA_TOOL_NAMES]
+            ui_fcs   = [(fc, name, args) for fc, name, args in parsed_fcs if name not in _DATA_TOOL_NAMES]
+
+            # ── Data tools: all in parallel ───────────────────────────────
+            if data_fcs:
+                spans = [
+                    trace_obs.start_observation(name=name, as_type="span", input=args)
+                    if lf and trace_obs else None
+                    for _, name, args in data_fcs
+                ]
+                results = await asyncio.gather(
+                    *[_execute_data_tool(name, args, round_grounding["sources"])
+                      for _, name, args in data_fcs],
+                    return_exceptions=True,
+                )
+                for (fc, name, args), result, span in zip(data_fcs, results, spans):
+                    if isinstance(result, BaseException):
+                        result = {"_error": str(result)}
                     _enrichment_cache[name] = result
                     tool_results[name] = result
-
                     if span:
                         span.update(output=result)
                         span.end()
 
-                # ── UI tools: merge cache / fallback enrich, emit SSE ────────
-                else:
-                    span = trace_obs.start_observation(name=name, as_type="span", input=args) if lf and trace_obs else None
-                    args = await _enrich_ui_args(name, args, _enrichment_cache, round_grounding["sources"])
-                    tool_results[name] = args
+            # ── UI tools: enrich then emit SSE (ordered) ──────────────────
+            for fc, name, args in ui_fcs:
+                span = trace_obs.start_observation(name=name, as_type="span", input=args) if lf and trace_obs else None
+                args = await _enrich_ui_args(name, args, _enrichment_cache, round_grounding["sources"])
+                tool_results[name] = args
 
-                    if span:
-                        span.update(output=args)
-                        span.end()
+                if span:
+                    span.update(output=args)
+                    span.end()
 
-                    yield _sse({"type": "tool_call", "id": str(uuid.uuid4()), "name": name, "args": args})
+                yield _sse({"type": "tool_call", "id": str(uuid.uuid4()), "name": name, "args": args})
 
-                    for w in args.get("warnings", []):
-                        level = "high" if any(kw in w.lower() for kw in _RISK_KW) else "medium"
-                        yield _sse({"type": "warning", "level": level, "text": w})
+                for w in args.get("warnings", []):
+                    level = "high" if any(kw in w.lower() for kw in _RISK_KW) else "medium"
+                    yield _sse({"type": "warning", "level": level, "text": w})
 
             tool_calls_log = [
                 {"name": fc["name"], "args": json.loads(fc["args_str"]) if fc["args_str"] else {}}
@@ -313,6 +334,11 @@ async def stream_chat(
 
             if final_status != "requires_action" or not fn_calls:
                 break
+
+            # Round 0: signal thinking done after data tools finish
+            # Duration = Gemini stream + data tool fetch = total wait time
+            if _round == 0:
+                yield _sse({"type": "thinking_done", "duration": round(time.time() - round_start, 3)})
 
             # Build function results for next round
             current_input = [
@@ -379,6 +405,21 @@ async def _execute_data_tool(name: str, args: dict, round_sources: list) -> dict
             args.get("address", ""),
             args.get("suburb", ""),
             args.get("state", "NSW"),
+            postcode=args.get("postcode", ""),
+            extra_sources=round_sources,
+        )
+    if name == "fetch_street_info":
+        return await run_fetch_street_info(
+            args.get("address", ""),
+            args.get("suburb", ""),
+            args.get("state", "NSW"),
+            extra_sources=round_sources,
+        )
+    if name == "fetch_listing_sources":
+        return await run_fetch_listing_sources(
+            args.get("address", ""),
+            args.get("suburb", ""),
+            args.get("state", "NSW"),
             extra_sources=round_sources,
         )
     if name == "fetch_risk_data":
@@ -416,9 +457,17 @@ async def _enrich_ui_args(
     if name == "show_property_card":
         enriched = await _cached(
             cache, "fetch_property_data",
-            run_fetch_property_data(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), extra_sources=round_sources),
+            run_fetch_property_data(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), postcode=args.get("postcode", ""), extra_sources=round_sources),
         )
-        merged = {**args, **enriched}
+        street = await _cached(
+            cache, "fetch_street_info",
+            run_fetch_street_info(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), extra_sources=round_sources),
+        )
+        listing = await _cached(
+            cache, "fetch_listing_sources",
+            run_fetch_listing_sources(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), extra_sources=round_sources),
+        )
+        merged = {**args, **street, **listing, **enriched}
         if enriched.get("images") is not None:
             merged["images"] = enriched["images"]  # always override hallucinated URLs
         return merged
