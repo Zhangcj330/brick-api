@@ -20,6 +20,7 @@ import warnings
 from typing import AsyncGenerator
 
 from langfuse import get_client as _langfuse_client, propagate_attributes as _lf_attrs
+from langfuse import observe as _lf_observe
 
 from models.schemas import Message
 from prompts.buyer_agent import SYSTEM_PROMPT
@@ -51,6 +52,13 @@ warnings.filterwarnings(
 # ---------------------------------------------------------------------------
 # Gemini client helpers
 # ---------------------------------------------------------------------------
+
+
+@_lf_observe(as_type="span")
+async def _trace_ui_tool(tool_name: str, input_args: dict, output_args: dict) -> dict:
+    """No-op helper — purely for Langfuse tracing of UI tool calls."""
+    _langfuse_client().update_current_span(name=tool_name)
+    return output_args
 
 
 def _build_tools(round: int = 0) -> list:
@@ -229,7 +237,9 @@ async def stream_chat(
 
                 # ── UI tools: enrich then emit SSE (ordered) ──────────────────
                 for fc, name, args in ui_fcs:
+                    raw_args = dict(args)
                     args = await _enrich_ui_args(name, args, _enrichment_cache, round_grounding["sources"])
+                    await _trace_ui_tool(name, raw_args, args)
                     tool_results[name] = args
                     yield _sse({"type": "tool_call", "id": str(uuid.uuid4()), "name": name, "args": args})
 
