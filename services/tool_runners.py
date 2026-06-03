@@ -23,7 +23,7 @@ from services.enrichments import (
 )
 
 
-@observe()
+@observe(as_type="tool")
 async def run_fetch_suburb_data(
     suburb: str,
     state: str,
@@ -90,7 +90,7 @@ async def _do_fetch_property_data(
     return result
 
 
-@observe()
+@observe(as_type="tool")
 async def run_fetch_property_data(
     address: str,
     suburb: str,
@@ -108,7 +108,7 @@ async def run_fetch_property_data(
         return {"_error": "fetch_property_data timed out after 45s", "images": [], "images_note": "Timed out."}
 
 
-@observe()
+@observe(as_type="tool")
 async def run_fetch_street_info(
     address: str,
     suburb: str,
@@ -126,7 +126,7 @@ async def run_fetch_street_info(
         return {"_error": "fetch_street_info timed out after 40s"}
 
 
-@observe()
+@observe(as_type="tool")
 async def run_fetch_listing_sources(
     address: str,
     suburb: str,
@@ -154,7 +154,7 @@ async def run_fetch_listing_sources(
     return result
 
 
-@observe()
+@observe(as_type="tool")
 async def run_fetch_risk_data(
     address: str,
     suburb: str,

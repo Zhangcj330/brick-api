@@ -114,11 +114,9 @@ async def stream_chat(
     client = get_client()
 
     all_text: list[str] = []
-    tools_called: list[str] = []
     grounding: dict = {"sources": [], "queries": []}
-    _enrichment_cache: dict = {}  # cross-round: data tool name → result dict
+    _enrichment_cache: dict = {}
 
-    # Langfuse: set up parent trace via context manager (nullcontext if not configured)
     lf = None
     trace_cm: object = contextlib.nullcontext()
     attr_cm: object = contextlib.nullcontext()
@@ -140,7 +138,6 @@ async def stream_chat(
             current_previous_id: str | None = None
 
             for _round in range(MAX_ROUNDS):
-                # fn_calls: step index → {id, name, args_str}
                 fn_calls: dict[int, dict] = {}
                 accumulated_text = ""
                 round_start = time.time()
@@ -204,11 +201,10 @@ async def stream_chat(
                     elif et == "interaction.completed":
                         final_status = event.interaction.status
 
-                # Parse all fn_calls into (fc, name, args) tuples
+                # Parse fn_calls into (fc, name, args) tuples
                 parsed_fcs: list[tuple[dict, str, dict]] = []
                 for fc in fn_calls.values():
                     name = fc["name"]
-                    tools_called.append(name)
                     try:
                         args = json.loads(fc["args_str"]) if fc["args_str"] else {}
                     except json.JSONDecodeError:
@@ -250,11 +246,9 @@ async def stream_chat(
                 if final_status != "requires_action" or not fn_calls:
                     break
 
-                # Round 0: signal thinking done after data tools finish
                 if _round == 0:
                     yield _sse({"type": "thinking_done", "duration": round(time.time() - round_start, 3)})
 
-                # Build function results for next round
                 current_input = [
                     {
                         "type": "function_result",
@@ -267,10 +261,7 @@ async def stream_chat(
                 ]
 
             if trace_obs is not None:
-                trace_obs.update(
-                    output=" ".join(all_text),
-                    metadata={"tools_called": tools_called, "grounding": {"queries": grounding["queries"]}},
-                )
+                trace_obs.update(output=" ".join(all_text))
 
             if grounding["sources"]:
                 seen_urls: set[str] = set()
