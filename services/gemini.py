@@ -351,10 +351,12 @@ async def _execute_data_tool(name: str, args: dict, round_sources: list) -> dict
     return {}
 
 
-async def _cached(cache: dict, key: str, coro) -> dict:
-    """Return cached result if present, otherwise await the coroutine."""
+async def _cached(cache: dict, key: str, coro_fn) -> dict:
+    """Return cached result if present, otherwise call and await the coroutine factory."""
     v = cache.get(key)
-    return v if v is not None else await coro
+    if v is not None:
+        return v
+    return await coro_fn()
 
 
 async def _enrich_ui_args(
@@ -368,22 +370,22 @@ async def _enrich_ui_args(
     if name == "show_suburb_stats":
         enriched = await _cached(
             cache, "fetch_suburb_data",
-            run_fetch_suburb_data(args.get("suburb", ""), args.get("state", "NSW"), args.get("postcode", ""), extra_sources=round_sources),
+            lambda: run_fetch_suburb_data(args.get("suburb", ""), args.get("state", "NSW"), args.get("postcode", ""), extra_sources=round_sources),
         )
         return {**args, **enriched}
 
     if name == "show_property_card":
         enriched = await _cached(
             cache, "fetch_property_data",
-            run_fetch_property_data(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), postcode=args.get("postcode", ""), extra_sources=round_sources),
+            lambda: run_fetch_property_data(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), postcode=args.get("postcode", ""), extra_sources=round_sources),
         )
         street = await _cached(
             cache, "fetch_street_info",
-            run_fetch_street_info(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), extra_sources=round_sources),
+            lambda: run_fetch_street_info(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), extra_sources=round_sources),
         )
         listing = await _cached(
             cache, "fetch_listing_sources",
-            run_fetch_listing_sources(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), extra_sources=round_sources),
+            lambda: run_fetch_listing_sources(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), extra_sources=round_sources),
         )
         merged = {**args, **street, **listing, **enriched}
         if enriched.get("images") is not None:
@@ -393,7 +395,7 @@ async def _enrich_ui_args(
     if name == "show_risk_summary":
         r = await _cached(
             cache, "fetch_risk_data",
-            run_fetch_risk_data(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), args.get("postcode", ""), extra_sources=round_sources),
+            lambda: run_fetch_risk_data(args.get("address", ""), args.get("suburb", ""), args.get("state", "NSW"), args.get("postcode", ""), extra_sources=round_sources),
         )
         if r:
             risk_items = list(args.get("risks", []))
