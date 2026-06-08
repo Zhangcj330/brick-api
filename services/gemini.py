@@ -153,6 +153,7 @@ async def stream_chat(
 
                 round_grounding: dict = {"sources": [], "queries": []}
                 tool_results: dict[str, dict] = {}
+                round0_buffer: list[str] = []  # buffer round-0 text until we know if tools fired
 
                 create_kwargs: dict = dict(
                     model=MODEL,
@@ -187,7 +188,7 @@ async def stream_chat(
                         if dt == "text":
                             accumulated_text += delta.text
                             if _round == 0:
-                                yield _sse({"type": "text_delta", "content": delta.text, "thinking": True})
+                                round0_buffer.append(delta.text)  # buffer; flush after round
                             else:
                                 yield _sse({"type": "text_delta", "content": delta.text})
 
@@ -221,6 +222,15 @@ async def stream_chat(
 
                 data_fcs = [(fc, name, args) for fc, name, args in parsed_fcs if name in _DATA_TOOL_NAMES]
                 ui_fcs   = [(fc, name, args) for fc, name, args in parsed_fcs if name not in _DATA_TOOL_NAMES]
+
+                # Flush round-0 buffer now that we know whether tools fired
+                if _round == 0 and round0_buffer:
+                    has_tool_calls = bool(fn_calls)
+                    for chunk in round0_buffer:
+                        if has_tool_calls:
+                            yield _sse({"type": "text_delta", "content": chunk, "thinking": True})
+                        else:
+                            yield _sse({"type": "text_delta", "content": chunk})
 
                 # ── Data tools: all in parallel ───────────────────────────────
                 if data_fcs:
