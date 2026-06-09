@@ -13,10 +13,10 @@ if os.environ.get("GOOGLE_CLOUD_PROJECT"):
     os.environ.pop("GEMINI_API_KEY", None)
 
 try:
-    from openinference.instrumentation.google_genai import GoogleGenAIInstrumentor
-    GoogleGenAIInstrumentor().instrument()
+    from openinference.instrumentation.vertexai import VertexAIInstrumentor
+    VertexAIInstrumentor().instrument()
 except Exception:
-    pass
+    pass  # google-cloud-aiplatform not installed; manual Langfuse tracking in gemini.py handles observability
 
 app = FastAPI(title="Brick API", version="0.1.0")
 

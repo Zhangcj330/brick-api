@@ -146,8 +146,12 @@ async def stream_chat(
         try:
             contents = _to_contents(messages)
 
+            total_input_tokens = 0
+            total_output_tokens = 0
+
             for _round in range(MAX_ROUNDS):
-                fn_calls: list = []   # list of FunctionCall objects
+                fn_call_parts: list = []  # original Part objects — preserve thought_signature
+                fn_calls: list = []       # FunctionCall objects — for tool dispatch
                 accumulated_text = ""
                 round_start = time.time()
 
@@ -166,6 +170,14 @@ async def stream_chat(
                     contents=contents,
                     config=config,
                 ):
+                    # Accumulate token usage from every chunk (final chunk has totals)
+                    um = getattr(chunk, "usage_metadata", None)
+                    if um:
+                        if getattr(um, "prompt_token_count", None):
+                            total_input_tokens = um.prompt_token_count
+                        if getattr(um, "candidates_token_count", None):
+                            total_output_tokens += um.candidates_token_count
+
                     candidate = (chunk.candidates or [None])[0]
                     if not candidate or not candidate.content:
                         continue
@@ -179,6 +191,7 @@ async def stream_chat(
                                 yield _sse({"type": "text_delta", "content": part.text})
 
                         if part.function_call:
+                            fn_call_parts.append(part)          # keep Part with thought_signature
                             fn_calls.append(part.function_call)
 
                     # Collect grounding metadata
@@ -191,17 +204,18 @@ async def stream_chat(
                                     "url": gc.web.uri,
                                     "domain": None,
                                 })
-                        for sq in gm.search_queries or []:
+                        for sq in gm.web_search_queries or []:
                             round_grounding["queries"].append(sq)
 
                 # Deduplicate function calls by name (streaming may repeat)
                 seen_fc_names: set[str] = set()
-                unique_fcs = []
-                for fc in fn_calls:
+                unique_parts, unique_fcs = [], []
+                for part, fc in zip(fn_call_parts, fn_calls):
                     if fc.name not in seen_fc_names:
                         seen_fc_names.add(fc.name)
+                        unique_parts.append(part)
                         unique_fcs.append(fc)
-                fn_calls = unique_fcs
+                fn_call_parts, fn_calls = unique_parts, unique_fcs
 
                 data_fcs = [fc for fc in fn_calls if fc.name in _DATA_TOOL_NAMES]
                 ui_fcs   = [fc for fc in fn_calls if fc.name not in _DATA_TOOL_NAMES]
@@ -253,13 +267,11 @@ async def stream_chat(
                     yield _sse({"type": "thinking_done", "duration": round(time.time() - round_start, 3)})
 
                 # Build model response content + function result content for next round
+                # Use original Part objects to preserve thought_signature (required by Gemini 2.5)
                 model_parts = []
                 if accumulated_text:
                     model_parts.append(types.Part.from_text(text=accumulated_text))
-                for fc in fn_calls:
-                    model_parts.append(
-                        types.Part.from_function_call(name=fc.name, args=dict(fc.args or {}))
-                    )
+                model_parts.extend(fn_call_parts)
                 contents.append(types.Content(role="model", parts=model_parts))
 
                 result_parts = []
@@ -275,7 +287,15 @@ async def stream_chat(
                 contents.append(types.Content(role="user", parts=result_parts))
 
             if trace_obs is not None:
-                trace_obs.update(output=" ".join(all_text))
+                trace_obs.update(
+                    output=" ".join(all_text),
+                    model=MODEL,
+                    usage={
+                        "input": total_input_tokens,
+                        "output": total_output_tokens,
+                        "unit": "TOKENS",
+                    },
+                )
 
             if grounding["sources"]:
                 seen_urls: set[str] = set()

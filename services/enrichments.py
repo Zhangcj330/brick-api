@@ -15,6 +15,7 @@ import re
 import httpx
 from google import genai
 from google.genai import types
+from langfuse import get_client as _lf_get_client
 
 MODEL = "gemini-3.5-flash"
 
@@ -79,6 +80,29 @@ async def _gemini_json(
             )
 
         response = await asyncio.wait_for(_call(), timeout=timeout)
+
+        # Report model + token usage to Langfuse
+        try:
+            lf = _lf_get_client()
+            um = getattr(response, "usage_metadata", None)
+            if um:
+                with lf.start_as_current_observation(
+                    name="enrichment-gemini-call",
+                    as_type="generation",
+                    model=MODEL,
+                    input=prompt[:500],
+                ) as obs:
+                    obs.update(
+                        output=(response.text or "")[:500],
+                        usage={
+                            "input": getattr(um, "prompt_token_count", 0) or 0,
+                            "output": getattr(um, "candidates_token_count", 0) or 0,
+                            "unit": "TOKENS",
+                        },
+                    )
+        except Exception:
+            pass
+
         if extra_sources is not None:
             extra_sources.extend(sources_from_response(response))
         text = (response.text or "").strip()

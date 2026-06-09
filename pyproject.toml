@@ -12,7 +12,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "beautifulsoup4>=4.14.3",
     "langfuse>=4.7.1",
-    "openinference-instrumentation-google-genai>=1.0.2",
+    "openinference-instrumentation-vertexai>=0.1.16",
 ]
 
 [project.optional-dependencies]
