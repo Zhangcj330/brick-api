@@ -7,6 +7,11 @@ from routers import chat
 
 load_dotenv()
 
+# When using Vertex AI (GCP credits), ensure GEMINI_API_KEY is not in the
+# environment — the Interactions SDK lazily reads it and would override ADC auth.
+if os.environ.get("GOOGLE_CLOUD_PROJECT"):
+    os.environ.pop("GEMINI_API_KEY", None)
+
 try:
     from openinference.instrumentation.google_genai import GoogleGenAIInstrumentor
     GoogleGenAIInstrumentor().instrument()

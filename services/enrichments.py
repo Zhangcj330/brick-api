@@ -23,6 +23,20 @@ MODEL = "gemini-3.5-flash"
 # ---------------------------------------------------------------------------
 
 def get_client() -> genai.Client:
+    """Return a Gemini client.
+
+    Prefers Vertex AI (GCP credits) when GOOGLE_CLOUD_PROJECT is set.
+    Falls back to AI Studio API key when only GEMINI_API_KEY is present.
+    Note: main.py removes GEMINI_API_KEY at startup in Vertex mode so the
+    Interactions SDK doesn't accidentally use it over ADC.
+    """
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT")
+    if project:
+        return genai.Client(
+            vertexai=True,
+            project=project,
+            location=os.environ.get("GOOGLE_CLOUD_LOCATION", "global"),
+        )
     return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 

@@ -1,10 +1,10 @@
 """
-Agentic tool loop — Interactions API (streaming).
+Agentic tool loop — streamGenerateContent (Vertex AI compatible).
 
 Each round:
-  1. Stream interaction events (text deltas, function call steps, grounding)
-  2. If requires_action → execute data/UI tools, feed results back, next round
-  3. If completed → done
+  1. Stream generate_content_stream (text chunks, function calls, grounding)
+  2. If function calls → execute data/UI tools, feed results back, next round
+  3. If no function calls → done
 
 Model: gemini-3.5-flash
 Tools: google_search (grounding) + function declarations (DATA_TOOLS + UI_TOOLS)
@@ -16,9 +16,9 @@ import json
 import os
 import time
 import uuid
-import warnings
 from typing import AsyncGenerator
 
+from google.genai import types
 from langfuse import get_client as _langfuse_client, propagate_attributes as _lf_attrs
 from langfuse import observe as _lf_observe
 
@@ -41,13 +41,6 @@ _RISK_KW = {"flood", "bushfire", "overpriced", "heritage", "contamination"}
 _DATA_TOOL_NAMES: frozenset[str] = frozenset(t["name"] for t in DATA_TOOLS)
 _UI_TOOL_NAMES: frozenset[str] = frozenset(t["name"] for t in UI_TOOLS)
 
-# Suppress the experimental-feature warning emitted on first access of .interactions
-warnings.filterwarnings(
-    "ignore",
-    message=".*Interactions usage is experimental.*",
-    category=UserWarning,
-)
-
 
 # ---------------------------------------------------------------------------
 # Gemini client helpers
@@ -61,34 +54,45 @@ async def _trace_ui_tool(tool_name: str, input_args: dict, output_args: dict) ->
     return output_args
 
 
-def _build_tools(round: int = 0) -> list:
-    """Plain tool dicts for the Interactions API, filtered by round.
+def _build_tools(round: int = 0) -> list[types.Tool]:
+    """Build Tool objects for generate_content_stream, filtered by round.
     Round 0: google_search + data tools
     Round 1+: UI tools (data already fetched)
     """
-    tools: list = []
     if round == 0:
-        tools.append({"type": "google_search"})
-        tools += [
-            {"type": "function", "name": t["name"], "description": t["description"], "parameters": t["parameters"]}
+        fn_decls = [
+            types.FunctionDeclaration(
+                name=t["name"],
+                description=t["description"],
+                parameters=t["parameters"],
+            )
             for t in DATA_TOOLS
         ]
+        tools = [types.Tool(google_search=types.GoogleSearch())]
+        if fn_decls:
+            tools.append(types.Tool(function_declarations=fn_decls))
+        return tools
     else:
-        tools += [
-            {"type": "function", "name": t["name"], "description": t["description"], "parameters": t["parameters"]}
+        fn_decls = [
+            types.FunctionDeclaration(
+                name=t["name"],
+                description=t["description"],
+                parameters=t["parameters"],
+            )
             for t in UI_TOOLS
         ]
-    return tools
+        return [types.Tool(function_declarations=fn_decls)] if fn_decls else []
 
 
-def _to_steps(messages: list[Message]) -> list:
-    """Convert message history to Interactions API step params."""
-    steps = []
-    for msg in messages[:-1]:
-        role = "model_output" if msg.role == "assistant" else "user_input"
-        steps.append({"type": role, "content": [{"type": "text", "text": msg.content}]})
-    steps.append({"type": "user_input", "content": [{"type": "text", "text": messages[-1].content}]})
-    return steps
+def _to_contents(messages: list[Message]) -> list[types.Content]:
+    """Convert message history to generateContent contents list."""
+    contents = []
+    for msg in messages:
+        role = "model" if msg.role == "assistant" else "user"
+        contents.append(
+            types.Content(role=role, parts=[types.Part.from_text(text=msg.content)])
+        )
+    return contents
 
 
 def _sse(data: dict) -> str:
@@ -96,8 +100,7 @@ def _sse(data: dict) -> str:
 
 
 def _sanitize_fn_result(obj):
-    """Recursively replace empty lists with None.
-    Interactions API rejects empty arrays in function_result payloads."""
+    """Recursively replace empty lists with None to avoid API rejections."""
     if isinstance(obj, dict):
         return {k: _sanitize_fn_result(v) for k, v in obj.items()}
     if isinstance(obj, list):
@@ -141,117 +144,96 @@ async def stream_chat(
 
     with trace_cm as trace_obs, attr_cm:
         try:
-            # First round: full conversation history as steps
-            current_input = _to_steps(messages)
-            current_previous_id: str | None = None
+            contents = _to_contents(messages)
 
             for _round in range(MAX_ROUNDS):
-                fn_calls: dict[int, dict] = {}
+                fn_calls: list = []   # list of FunctionCall objects
                 accumulated_text = ""
                 round_start = time.time()
-                final_status = "completed"
 
                 round_grounding: dict = {"sources": [], "queries": []}
                 tool_results: dict[str, dict] = {}
-                round0_buffer: list[str] = []  # buffer round-0 text until we know if tools fired
+                round0_buffer: list[str] = []
 
-                create_kwargs: dict = dict(
-                    model=MODEL,
-                    input=current_input,
+                config = types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                     tools=_build_tools(_round),
-                    generation_config={"temperature": 0.4},
-                    stream=True,
+                    temperature=0.4,
                 )
-                if current_previous_id:
-                    create_kwargs["previous_interaction_id"] = current_previous_id
 
-                async for event in await client.aio.interactions.create(**create_kwargs):
-                    et = event.event_type
+                async for chunk in await client.aio.models.generate_content_stream(
+                    model=MODEL,
+                    contents=contents,
+                    config=config,
+                ):
+                    candidate = (chunk.candidates or [None])[0]
+                    if not candidate or not candidate.content:
+                        continue
 
-                    if et == "interaction.created":
-                        current_previous_id = event.interaction.id
-
-                    elif et == "step.start":
-                        step = event.step
-                        if step.type == "function_call":
-                            fn_calls[event.index] = {
-                                "id": step.id,
-                                "name": step.name,
-                                "args_str": "",
-                            }
-
-                    elif et == "step.delta":
-                        delta = event.delta
-                        dt = delta.type
-
-                        if dt == "text":
-                            accumulated_text += delta.text
+                    for part in candidate.content.parts or []:
+                        if part.text:
+                            accumulated_text += part.text
                             if _round == 0:
-                                round0_buffer.append(delta.text)  # buffer; flush after round
+                                round0_buffer.append(part.text)
                             else:
-                                yield _sse({"type": "text_delta", "content": delta.text})
+                                yield _sse({"type": "text_delta", "content": part.text})
 
-                        elif dt == "arguments_delta":
-                            if event.index in fn_calls and delta.arguments:
-                                fn_calls[event.index]["args_str"] += delta.arguments
+                        if part.function_call:
+                            fn_calls.append(part.function_call)
 
-                        elif dt == "google_search_call":
-                            if delta.arguments and delta.arguments.queries:
-                                round_grounding["queries"].extend(list(delta.arguments.queries))
+                    # Collect grounding metadata
+                    gm = getattr(candidate, "grounding_metadata", None)
+                    if gm:
+                        for gc in gm.grounding_chunks or []:
+                            if gc.web and gc.web.uri:
+                                round_grounding["sources"].append({
+                                    "title": gc.web.title,
+                                    "url": gc.web.uri,
+                                    "domain": None,
+                                })
+                        for sq in gm.search_queries or []:
+                            round_grounding["queries"].append(sq)
 
-                        elif dt == "text_annotation_delta":
-                            for ann in delta.annotations or []:
-                                if ann.type == "url_citation" and ann.url:
-                                    round_grounding["sources"].append(
-                                        {"title": ann.title or ann.url, "url": ann.url, "domain": None}
-                                    )
+                # Deduplicate function calls by name (streaming may repeat)
+                seen_fc_names: set[str] = set()
+                unique_fcs = []
+                for fc in fn_calls:
+                    if fc.name not in seen_fc_names:
+                        seen_fc_names.add(fc.name)
+                        unique_fcs.append(fc)
+                fn_calls = unique_fcs
 
-                    elif et == "interaction.completed":
-                        final_status = event.interaction.status
-
-                # Parse fn_calls into (fc, name, args) tuples
-                parsed_fcs: list[tuple[dict, str, dict]] = []
-                for fc in fn_calls.values():
-                    name = fc["name"]
-                    try:
-                        args = json.loads(fc["args_str"]) if fc["args_str"] else {}
-                    except json.JSONDecodeError:
-                        args = {}
-                    parsed_fcs.append((fc, name, args))
-
-                data_fcs = [(fc, name, args) for fc, name, args in parsed_fcs if name in _DATA_TOOL_NAMES]
-                ui_fcs   = [(fc, name, args) for fc, name, args in parsed_fcs if name not in _DATA_TOOL_NAMES]
+                data_fcs = [fc for fc in fn_calls if fc.name in _DATA_TOOL_NAMES]
+                ui_fcs   = [fc for fc in fn_calls if fc.name not in _DATA_TOOL_NAMES]
 
                 # Flush round-0 buffer now that we know whether tools fired
                 if _round == 0 and round0_buffer:
-                    has_tool_calls = bool(fn_calls)
-                    for chunk in round0_buffer:
-                        if has_tool_calls:
-                            yield _sse({"type": "text_delta", "content": chunk, "thinking": True})
+                    for chunk_text in round0_buffer:
+                        if fn_calls:
+                            yield _sse({"type": "text_delta", "content": chunk_text, "thinking": True})
                         else:
-                            yield _sse({"type": "text_delta", "content": chunk})
+                            yield _sse({"type": "text_delta", "content": chunk_text})
 
                 # ── Data tools: all in parallel ───────────────────────────────
                 if data_fcs:
                     results = await asyncio.gather(
-                        *[_execute_data_tool(name, args, round_grounding["sources"])
-                          for _, name, args in data_fcs],
+                        *[_execute_data_tool(fc.name, dict(fc.args or {}), round_grounding["sources"])
+                          for fc in data_fcs],
                         return_exceptions=True,
                     )
-                    for (fc, name, args), result in zip(data_fcs, results):
+                    for fc, result in zip(data_fcs, results):
                         if isinstance(result, BaseException):
                             result = {"_error": str(result)}
-                        _enrichment_cache[name] = result
-                        tool_results[name] = result
+                        _enrichment_cache[fc.name] = result
+                        tool_results[fc.name] = result
 
                 # ── UI tools: enrich then emit SSE (ordered) ──────────────────
-                for fc, name, args in ui_fcs:
-                    raw_args = dict(args)
-                    args = await _enrich_ui_args(name, args, _enrichment_cache, round_grounding["sources"])
-                    await _trace_ui_tool(name, raw_args, args)
-                    tool_results[name] = args
-                    yield _sse({"type": "tool_call", "id": str(uuid.uuid4()), "name": name, "args": args})
+                for fc in ui_fcs:
+                    raw_args = dict(fc.args or {})
+                    args = await _enrich_ui_args(fc.name, raw_args, _enrichment_cache, round_grounding["sources"])
+                    await _trace_ui_tool(fc.name, raw_args, args)
+                    tool_results[fc.name] = args
+                    yield _sse({"type": "tool_call", "id": str(uuid.uuid4()), "name": fc.name, "args": args})
 
                     for w in args.get("warnings", []):
                         level = "high" if any(kw in w.lower() for kw in _RISK_KW) else "medium"
@@ -263,22 +245,34 @@ async def stream_chat(
                 if accumulated_text:
                     all_text.append(accumulated_text)
 
-                if final_status != "requires_action" or not fn_calls:
+                # No function calls → done
+                if not fn_calls:
                     break
 
                 if _round == 0:
                     yield _sse({"type": "thinking_done", "duration": round(time.time() - round_start, 3)})
 
-                current_input = [
-                    {
-                        "type": "function_result",
-                        "call_id": fc["id"],
-                        "name": fc["name"],
-                        "result": {"status": "displayed"} if fc["name"] not in _DATA_TOOL_NAMES
-                                  else _sanitize_fn_result(tool_results.get(fc["name"], {"status": "ok"})),
-                    }
-                    for fc in fn_calls.values()
-                ]
+                # Build model response content + function result content for next round
+                model_parts = []
+                if accumulated_text:
+                    model_parts.append(types.Part.from_text(text=accumulated_text))
+                for fc in fn_calls:
+                    model_parts.append(
+                        types.Part.from_function_call(name=fc.name, args=dict(fc.args or {}))
+                    )
+                contents.append(types.Content(role="model", parts=model_parts))
+
+                result_parts = []
+                for fc in fn_calls:
+                    result = (
+                        {"status": "displayed"}
+                        if fc.name not in _DATA_TOOL_NAMES
+                        else _sanitize_fn_result(tool_results.get(fc.name, {"status": "ok"}))
+                    )
+                    result_parts.append(
+                        types.Part.from_function_response(name=fc.name, response=result)
+                    )
+                contents.append(types.Content(role="user", parts=result_parts))
 
             if trace_obs is not None:
                 trace_obs.update(output=" ".join(all_text))
