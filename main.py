@@ -13,6 +13,10 @@ if os.environ.get("GOOGLE_CLOUD_PROJECT"):
     os.environ.pop("GEMINI_API_KEY", None)
 
 try:
+    # Initialize Langfuse client first — this registers its OTel TracerProvider.
+    # GoogleGenAIInstrumentor must be called AFTER so it picks up that provider.
+    from langfuse import get_client as _lf_init
+    _lf_init()
     from openinference.instrumentation.google_genai import GoogleGenAIInstrumentor
     GoogleGenAIInstrumentor().instrument()
 except Exception:
