@@ -20,7 +20,6 @@ from typing import AsyncGenerator
 
 from google.genai import types
 from langfuse import get_client as _langfuse_client, propagate_attributes as _lf_attrs
-from langfuse import observe as _lf_observe
 
 from models.schemas import Message
 from prompts.buyer_agent import SYSTEM_PROMPT
@@ -45,13 +44,6 @@ _UI_TOOL_NAMES: frozenset[str] = frozenset(t["name"] for t in UI_TOOLS)
 # ---------------------------------------------------------------------------
 # Gemini client helpers
 # ---------------------------------------------------------------------------
-
-
-@_lf_observe(as_type="span")
-async def _trace_ui_tool(tool_name: str, input_args: dict, output_args: dict) -> dict:
-    """No-op helper — purely for Langfuse tracing of UI tool calls."""
-    _langfuse_client().update_current_span(name=tool_name)
-    return output_args
 
 
 def _build_tools(round: int = 0) -> list[types.Tool]:
@@ -128,38 +120,36 @@ async def stream_chat(
     grounding: dict = {"sources": [], "queries": []}
     _enrichment_cache: dict = {}
 
+    # Outer observation groups all rounds under one Langfuse trace.
+    # GoogleGenAIInstrumentor auto-creates a child LLM generation span for
+    # every generate_content_stream call (input/output/tokens/tool decls captured).
     lf = None
-    trace_cm: object = contextlib.nullcontext()
+    obs_cm: object = contextlib.nullcontext()
     attr_cm: object = contextlib.nullcontext()
     try:
         lf = _langfuse_client()
-        trace_cm = lf.start_as_current_observation(
+        obs_cm = lf.start_as_current_observation(
             name="buyer-agent-chat",
-            as_type="agent",
+            as_type="span",
             input=messages[-1].content,
         )
         attr_cm = _lf_attrs(session_id=session_id, tags=["chat", "buyer-agent"])
     except Exception:
         pass
 
-    with trace_cm as trace_obs, attr_cm:
+    with obs_cm as obs, attr_cm:
         try:
             contents = _to_contents(messages)
 
-            total_input_tokens = 0
-            total_output_tokens = 0
-
             for _round in range(MAX_ROUNDS):
-                fn_call_parts: list = []  # original Part objects — preserve thought_signature
-                fn_calls: list = []       # FunctionCall objects — for tool dispatch
+                fn_call_parts: list = []
+                fn_calls: list = []
                 accumulated_text = ""
                 round_start = time.time()
 
                 round_grounding: dict = {"sources": [], "queries": []}
                 tool_results: dict[str, dict] = {}
                 round0_buffer: list[str] = []
-                round_input_tokens = 0
-                round_output_tokens = 0
 
                 config = types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
@@ -167,80 +157,41 @@ async def stream_chat(
                     temperature=0.4,
                 )
 
-                # Each LLM call is a generation span in Langfuse (cost is tracked here)
-                gen_cm: object = contextlib.nullcontext()
-                gen_obs = None
-                try:
-                    if lf:
-                        gen_cm = lf.start_as_current_observation(
-                            name=f"gemini-round-{_round}",
-                            as_type="generation",
-                            model=MODEL,
-                            input=[{"role": m.role, "content": m.content} for m in messages[-3:]]
-                                  if _round == 0 else f"round-{_round}-tool-results",
-                        )
-                except Exception:
-                    pass
+                # GoogleGenAIInstrumentor wraps this call automatically:
+                # → child LLM generation span with input messages, output text,
+                #   function_call parts, token usage, and tool declarations.
+                async for chunk in await client.aio.models.generate_content_stream(
+                    model=MODEL,
+                    contents=contents,
+                    config=config,
+                ):
+                    candidate = (chunk.candidates or [None])[0]
+                    if not candidate or not candidate.content:
+                        continue
 
-                with gen_cm as gen_obs:
-                    async for chunk in await client.aio.models.generate_content_stream(
-                        model=MODEL,
-                        contents=contents,
-                        config=config,
-                    ):
-                        # Accumulate token usage (final chunk has totals)
-                        um = getattr(chunk, "usage_metadata", None)
-                        if um:
-                            if getattr(um, "prompt_token_count", None):
-                                round_input_tokens = um.prompt_token_count
-                            if getattr(um, "candidates_token_count", None):
-                                round_output_tokens = um.candidates_token_count
+                    for part in candidate.content.parts or []:
+                        if part.text:
+                            accumulated_text += part.text
+                            if _round == 0:
+                                round0_buffer.append(part.text)
+                            else:
+                                yield _sse({"type": "text_delta", "content": part.text})
 
-                        candidate = (chunk.candidates or [None])[0]
-                        if not candidate or not candidate.content:
-                            continue
+                        if part.function_call:
+                            fn_call_parts.append(part)
+                            fn_calls.append(part.function_call)
 
-                        for part in candidate.content.parts or []:
-                            if part.text:
-                                accumulated_text += part.text
-                                if _round == 0:
-                                    round0_buffer.append(part.text)
-                                else:
-                                    yield _sse({"type": "text_delta", "content": part.text})
-
-                            if part.function_call:
-                                fn_call_parts.append(part)
-                                fn_calls.append(part.function_call)
-
-                        # Collect grounding metadata
-                        gm = getattr(candidate, "grounding_metadata", None)
-                        if gm:
-                            for gc in gm.grounding_chunks or []:
-                                if gc.web and gc.web.uri:
-                                    round_grounding["sources"].append({
-                                        "title": gc.web.title,
-                                        "url": gc.web.uri,
-                                        "domain": None,
-                                    })
-                            for sq in gm.web_search_queries or []:
-                                round_grounding["queries"].append(sq)
-
-                    # Update generation span with usage + output for cost tracking
-                    if gen_obs is not None:
-                        try:
-                            gen_obs.update(
-                                output=accumulated_text,
-                                usage={
-                                    "input": round_input_tokens,
-                                    "output": round_output_tokens,
-                                    "unit": "TOKENS",
-                                },
-                            )
-                        except Exception:
-                            pass
-
-                total_input_tokens += round_input_tokens
-                total_output_tokens += round_output_tokens
+                    gm = getattr(candidate, "grounding_metadata", None)
+                    if gm:
+                        for gc in gm.grounding_chunks or []:
+                            if gc.web and gc.web.uri:
+                                round_grounding["sources"].append({
+                                    "title": gc.web.title,
+                                    "url": gc.web.uri,
+                                    "domain": None,
+                                })
+                        for sq in gm.web_search_queries or []:
+                            round_grounding["queries"].append(sq)
 
                 # Deduplicate function calls by name (streaming may repeat)
                 seen_fc_names: set[str] = set()
@@ -280,7 +231,6 @@ async def stream_chat(
                 for fc in ui_fcs:
                     raw_args = dict(fc.args or {})
                     args = await _enrich_ui_args(fc.name, raw_args, _enrichment_cache, round_grounding["sources"])
-                    await _trace_ui_tool(fc.name, raw_args, args)
                     tool_results[fc.name] = args
                     yield _sse({"type": "tool_call", "id": str(uuid.uuid4()), "name": fc.name, "args": args})
 
@@ -294,15 +244,13 @@ async def stream_chat(
                 if accumulated_text:
                     all_text.append(accumulated_text)
 
-                # No function calls → done
                 if not fn_calls:
                     break
 
                 if _round == 0:
                     yield _sse({"type": "thinking_done", "duration": round(time.time() - round_start, 3)})
 
-                # Build model response content + function result content for next round
-                # Use original Part objects to preserve thought_signature (required by Gemini 2.5)
+                # Build contents for next round — preserve original Parts for thought_signature
                 model_parts = []
                 if accumulated_text:
                     model_parts.append(types.Part.from_text(text=accumulated_text))
@@ -321,9 +269,6 @@ async def stream_chat(
                     )
                 contents.append(types.Content(role="user", parts=result_parts))
 
-            if trace_obs is not None:
-                trace_obs.update(output=" ".join(all_text))
-
             if grounding["sources"]:
                 seen_urls: set[str] = set()
                 unique_sources = []
@@ -335,13 +280,16 @@ async def stream_chat(
 
             yield _sse({"type": "done"})
 
+            if obs is not None:
+                obs.update(output=" ".join(all_text))
+
         except Exception as exc:  # noqa: BLE001
-            if trace_obs is not None:
-                trace_obs.update(metadata={"error": str(exc)})
+            if obs is not None:
+                obs.update(metadata={"error": str(exc)})
             yield _sse({"type": "error", "message": str(exc)})
             yield _sse({"type": "done"})
         finally:
-            if lf:
+            if lf is not None:
                 lf.flush()
 
 

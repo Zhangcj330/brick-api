@@ -1,3 +1,4 @@
+import base64
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,11 +13,42 @@ load_dotenv()
 if os.environ.get("GOOGLE_CLOUD_PROJECT"):
     os.environ.pop("GEMINI_API_KEY", None)
 
-try:
-    from openinference.instrumentation.vertexai import VertexAIInstrumentor
-    VertexAIInstrumentor().instrument()
-except Exception:
-    pass  # google-cloud-aiplatform not installed; manual Langfuse tracking in gemini.py handles observability
+
+def _setup_observability() -> None:
+    """Wire GoogleGenAIInstrumentor → Langfuse via OTLP when env vars are set.
+
+    GoogleGenAIInstrumentor (NOT VertexAIInstrumentor) patches google-genai's
+    AsyncModels.generate_content_stream, which is what we actually call.
+    Each round automatically becomes a child LLM generation span with
+    input messages, output, token counts, and tool declarations captured.
+    """
+    pk = os.environ.get("LANGFUSE_PUBLIC_KEY", "")
+    sk = os.environ.get("LANGFUSE_SECRET_KEY", "")
+    host = os.environ.get("LANGFUSE_HOST", "https://cloud.langfuse.com")
+    if not (pk and sk):
+        return
+    try:
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        from openinference.instrumentation.google_genai import GoogleGenAIInstrumentor
+
+        auth = base64.b64encode(f"{pk}:{sk}".encode()).decode()
+        provider = TracerProvider()
+        provider.add_span_processor(
+            BatchSpanProcessor(
+                OTLPSpanExporter(
+                    endpoint=f"{host}/api/public/otel/v1/traces",
+                    headers={"Authorization": f"Basic {auth}"},
+                )
+            )
+        )
+        GoogleGenAIInstrumentor().instrument(tracer_provider=provider)
+    except Exception as exc:
+        print(f"[observability] setup failed: {exc}")
+
+
+_setup_observability()
 
 app = FastAPI(title="Brick API", version="0.1.0")
 
