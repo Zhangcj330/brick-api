@@ -194,13 +194,17 @@ async def stream_chat(
                             round_grounding["queries"].append(sq)
 
                 # Deduplicate function calls by name (streaming may repeat)
+                # Also skip any data tool already executed in a previous round.
                 seen_fc_names: set[str] = set()
                 unique_parts, unique_fcs = [], []
                 for part, fc in zip(fn_call_parts, fn_calls):
-                    if fc.name not in seen_fc_names:
+                    if fc.name not in seen_fc_names and fc.name not in _enrichment_cache:
                         seen_fc_names.add(fc.name)
                         unique_parts.append(part)
                         unique_fcs.append(fc)
+                    elif fc.name in _enrichment_cache:
+                        # Tool already ran — reuse cached result without re-executing
+                        tool_results[fc.name] = _enrichment_cache[fc.name]
                 fn_call_parts, fn_calls = unique_parts, unique_fcs
 
                 data_fcs = [fc for fc in fn_calls if fc.name in _DATA_TOOL_NAMES]
