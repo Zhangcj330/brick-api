@@ -130,7 +130,7 @@ async def stream_chat(
         lf = _langfuse_client()
         obs_cm = lf.start_as_current_observation(
             name="buyer-agent-chat",
-            as_type="span",
+            as_type="agent",
             input=messages[-1].content,
         )
         attr_cm = _lf_attrs(session_id=session_id, tags=["chat", "buyer-agent"])
