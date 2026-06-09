@@ -203,12 +203,7 @@ async def stream_chat(
                         unique_fcs.append(fc)
                 fn_call_parts, fn_calls = unique_parts, unique_fcs
 
-                # Pre-populate tool_results from cache — skip re-executing already-run tools
-                for fc in fn_calls:
-                    if fc.name in _enrichment_cache:
-                        tool_results[fc.name] = _enrichment_cache[fc.name]
-
-                data_fcs = [fc for fc in fn_calls if fc.name in _DATA_TOOL_NAMES and fc.name not in _enrichment_cache]
+                data_fcs = [fc for fc in fn_calls if fc.name in _DATA_TOOL_NAMES]
                 ui_fcs   = [fc for fc in fn_calls if fc.name not in _DATA_TOOL_NAMES]
 
                 # Flush round-0 buffer now that we know whether tools fired
