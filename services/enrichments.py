@@ -78,6 +78,7 @@ def _ecs_wif_credentials() -> aws.Credentials:
         token_url=info.get("token_url", "https://sts.googleapis.com/v1/token"),
         aws_security_credentials_supplier=_EcsAwsCredentialsSupplier(),
         service_account_impersonation_url=info.get("service_account_impersonation_url"),
+        scopes=["https://www.googleapis.com/auth/cloud-platform"],
         universe_domain=info.get("universe_domain", "googleapis.com"),
     )
 
