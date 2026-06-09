@@ -158,6 +158,8 @@ async def stream_chat(
                 round_grounding: dict = {"sources": [], "queries": []}
                 tool_results: dict[str, dict] = {}
                 round0_buffer: list[str] = []
+                round_input_tokens = 0
+                round_output_tokens = 0
 
                 config = types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
@@ -165,47 +167,80 @@ async def stream_chat(
                     temperature=0.4,
                 )
 
-                async for chunk in await client.aio.models.generate_content_stream(
-                    model=MODEL,
-                    contents=contents,
-                    config=config,
-                ):
-                    # Accumulate token usage from every chunk (final chunk has totals)
-                    um = getattr(chunk, "usage_metadata", None)
-                    if um:
-                        if getattr(um, "prompt_token_count", None):
-                            total_input_tokens = um.prompt_token_count
-                        if getattr(um, "candidates_token_count", None):
-                            total_output_tokens += um.candidates_token_count
+                # Each LLM call is a generation span in Langfuse (cost is tracked here)
+                gen_cm: object = contextlib.nullcontext()
+                gen_obs = None
+                try:
+                    if lf:
+                        gen_cm = lf.start_as_current_observation(
+                            name=f"gemini-round-{_round}",
+                            as_type="generation",
+                            model=MODEL,
+                            input=[{"role": m.role, "content": m.content} for m in messages[-3:]]
+                                  if _round == 0 else f"round-{_round}-tool-results",
+                        )
+                except Exception:
+                    pass
 
-                    candidate = (chunk.candidates or [None])[0]
-                    if not candidate or not candidate.content:
-                        continue
+                with gen_cm as gen_obs:
+                    async for chunk in await client.aio.models.generate_content_stream(
+                        model=MODEL,
+                        contents=contents,
+                        config=config,
+                    ):
+                        # Accumulate token usage (final chunk has totals)
+                        um = getattr(chunk, "usage_metadata", None)
+                        if um:
+                            if getattr(um, "prompt_token_count", None):
+                                round_input_tokens = um.prompt_token_count
+                            if getattr(um, "candidates_token_count", None):
+                                round_output_tokens = um.candidates_token_count
 
-                    for part in candidate.content.parts or []:
-                        if part.text:
-                            accumulated_text += part.text
-                            if _round == 0:
-                                round0_buffer.append(part.text)
-                            else:
-                                yield _sse({"type": "text_delta", "content": part.text})
+                        candidate = (chunk.candidates or [None])[0]
+                        if not candidate or not candidate.content:
+                            continue
 
-                        if part.function_call:
-                            fn_call_parts.append(part)          # keep Part with thought_signature
-                            fn_calls.append(part.function_call)
+                        for part in candidate.content.parts or []:
+                            if part.text:
+                                accumulated_text += part.text
+                                if _round == 0:
+                                    round0_buffer.append(part.text)
+                                else:
+                                    yield _sse({"type": "text_delta", "content": part.text})
 
-                    # Collect grounding metadata
-                    gm = getattr(candidate, "grounding_metadata", None)
-                    if gm:
-                        for gc in gm.grounding_chunks or []:
-                            if gc.web and gc.web.uri:
-                                round_grounding["sources"].append({
-                                    "title": gc.web.title,
-                                    "url": gc.web.uri,
-                                    "domain": None,
-                                })
-                        for sq in gm.web_search_queries or []:
-                            round_grounding["queries"].append(sq)
+                            if part.function_call:
+                                fn_call_parts.append(part)
+                                fn_calls.append(part.function_call)
+
+                        # Collect grounding metadata
+                        gm = getattr(candidate, "grounding_metadata", None)
+                        if gm:
+                            for gc in gm.grounding_chunks or []:
+                                if gc.web and gc.web.uri:
+                                    round_grounding["sources"].append({
+                                        "title": gc.web.title,
+                                        "url": gc.web.uri,
+                                        "domain": None,
+                                    })
+                            for sq in gm.web_search_queries or []:
+                                round_grounding["queries"].append(sq)
+
+                    # Update generation span with usage + output for cost tracking
+                    if gen_obs is not None:
+                        try:
+                            gen_obs.update(
+                                output=accumulated_text,
+                                usage={
+                                    "input": round_input_tokens,
+                                    "output": round_output_tokens,
+                                    "unit": "TOKENS",
+                                },
+                            )
+                        except Exception:
+                            pass
+
+                total_input_tokens += round_input_tokens
+                total_output_tokens += round_output_tokens
 
                 # Deduplicate function calls by name (streaming may repeat)
                 seen_fc_names: set[str] = set()
@@ -287,15 +322,7 @@ async def stream_chat(
                 contents.append(types.Content(role="user", parts=result_parts))
 
             if trace_obs is not None:
-                trace_obs.update(
-                    output=" ".join(all_text),
-                    model=MODEL,
-                    usage={
-                        "input": total_input_tokens,
-                        "output": total_output_tokens,
-                        "unit": "TOKENS",
-                    },
-                )
+                trace_obs.update(output=" ".join(all_text))
 
             if grounding["sources"]:
                 seen_urls: set[str] = set()
