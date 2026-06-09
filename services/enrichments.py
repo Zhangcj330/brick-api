@@ -11,8 +11,10 @@ import json
 import math
 import os
 import re
+import urllib.request
 
 import httpx
+from google.auth import aws
 from google import genai
 from google.genai import types
 
@@ -21,6 +23,64 @@ MODEL = "gemini-3.5-flash"
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
+
+class _EcsAwsCredentialsSupplier(aws.AwsSecurityCredentialsSupplier):
+    """Supplies AWS task role credentials from the ECS container endpoint."""
+
+    def __init__(self) -> None:
+        self._cached: aws.AwsSecurityCredentials | None = None
+
+    def get_aws_region(self, context, request) -> str:
+        region = os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
+        if not region:
+            raise RuntimeError("AWS_REGION or AWS_DEFAULT_REGION is required for AWS WIF")
+        return region
+
+    def get_aws_security_credentials(self, context, request) -> aws.AwsSecurityCredentials:
+        if self._cached is not None:
+            return self._cached
+
+        full_uri = os.environ.get("AWS_CONTAINER_CREDENTIALS_FULL_URI")
+        relative_uri = os.environ.get("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI")
+        if full_uri:
+            credentials_url = full_uri
+        elif relative_uri:
+            credentials_url = f"http://169.254.170.2{relative_uri}"
+        else:
+            raise RuntimeError(
+                "ECS task role credentials are unavailable. Configure a Task role "
+                "so ECS injects AWS_CONTAINER_CREDENTIALS_RELATIVE_URI."
+            )
+
+        req = urllib.request.Request(credentials_url)
+        auth_token = os.environ.get("AWS_CONTAINER_AUTHORIZATION_TOKEN")
+        if auth_token:
+            req.add_header("Authorization", auth_token)
+
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+
+        self._cached = aws.AwsSecurityCredentials(
+            payload["AccessKeyId"],
+            payload["SecretAccessKey"],
+            payload.get("Token"),
+        )
+        return self._cached
+
+
+def _ecs_wif_credentials() -> aws.Credentials:
+    with open(os.environ["GOOGLE_APPLICATION_CREDENTIALS"], encoding="utf-8") as f:
+        info = json.load(f)
+
+    return aws.Credentials(
+        audience=info["audience"],
+        subject_token_type=info["subject_token_type"],
+        token_url=info.get("token_url", "https://sts.googleapis.com/v1/token"),
+        aws_security_credentials_supplier=_EcsAwsCredentialsSupplier(),
+        service_account_impersonation_url=info.get("service_account_impersonation_url"),
+        universe_domain=info.get("universe_domain", "googleapis.com"),
+    )
+
 
 def get_client() -> genai.Client:
     """Return a Gemini client.
@@ -32,8 +92,15 @@ def get_client() -> genai.Client:
     """
     project = os.environ.get("GOOGLE_CLOUD_PROJECT")
     if project:
+        credentials = None
+        if os.environ.get("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI") or os.environ.get(
+            "AWS_CONTAINER_CREDENTIALS_FULL_URI"
+        ):
+            credentials = _ecs_wif_credentials()
+
         return genai.Client(
             vertexai=True,
+            credentials=credentials,
             project=project,
             location=os.environ.get("GOOGLE_CLOUD_LOCATION", "global"),
         )
