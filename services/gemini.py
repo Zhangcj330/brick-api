@@ -193,21 +193,22 @@ async def stream_chat(
                         for sq in gm.web_search_queries or []:
                             round_grounding["queries"].append(sq)
 
-                # Deduplicate function calls by name (streaming may repeat)
-                # Also skip any data tool already executed in a previous round.
+                # Deduplicate within this round's streaming output (model may emit same fc twice)
                 seen_fc_names: set[str] = set()
                 unique_parts, unique_fcs = [], []
                 for part, fc in zip(fn_call_parts, fn_calls):
-                    if fc.name not in seen_fc_names and fc.name not in _enrichment_cache:
+                    if fc.name not in seen_fc_names:
                         seen_fc_names.add(fc.name)
                         unique_parts.append(part)
                         unique_fcs.append(fc)
-                    elif fc.name in _enrichment_cache:
-                        # Tool already ran — reuse cached result without re-executing
-                        tool_results[fc.name] = _enrichment_cache[fc.name]
                 fn_call_parts, fn_calls = unique_parts, unique_fcs
 
-                data_fcs = [fc for fc in fn_calls if fc.name in _DATA_TOOL_NAMES]
+                # Pre-populate tool_results from cache — skip re-executing already-run tools
+                for fc in fn_calls:
+                    if fc.name in _enrichment_cache:
+                        tool_results[fc.name] = _enrichment_cache[fc.name]
+
+                data_fcs = [fc for fc in fn_calls if fc.name in _DATA_TOOL_NAMES and fc.name not in _enrichment_cache]
                 ui_fcs   = [fc for fc in fn_calls if fc.name not in _DATA_TOOL_NAMES]
 
                 # Flush round-0 buffer now that we know whether tools fired
