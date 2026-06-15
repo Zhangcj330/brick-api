@@ -40,12 +40,36 @@ export interface InteractionCreateResponse {
   status: RunStatus;
 }
 
+export interface DataPoint {
+  label: string;
+  value: string;
+}
+
+export interface StructuredCard {
+  verdict: string;
+  body?: string;
+  dataPoints?: DataPoint[];
+  concerns?: string[];
+  nextSteps?: string[];
+  milestoneType?: "neutral" | "positive" | "caution" | "blocking";
+  milestoneCategory?: "property" | "suburb" | "budget" | "risk" | "grants" | "custom";
+  milestoneData?: Record<string, unknown>;
+  suggestModule?: string;
+}
+
 export interface InteractionResultResponse {
   interaction_id: string;
   status: RunStatus;
   ready: boolean;
   final_response: string | null;
+  structured_card: StructuredCard | null;
   error: string | null;
+}
+
+export function extractFallbackVerdict(text: string): string {
+  if (!text) return "";
+  const match = text.match(/^([^.!?]{10,150}[.!?])/);
+  return match ? match[1].trim() : text.slice(0, 150).trim();
 }
 
 const DEFAULT_API_BASE = "http://localhost:8000/api/v1";
@@ -127,7 +151,30 @@ export async function waitForInteractionResult(
       throw new Error(result.error ?? "Interaction failed");
     }
 
+    result.structured_card ??= null;
+
     if (result.ready) {
+      if (result.final_response) {
+        try {
+          const parsed = JSON.parse(result.final_response) as {
+            text?: string;
+            structured_card?: StructuredCard;
+          };
+          if (parsed.structured_card) {
+            result.structured_card = parsed.structured_card;
+            result.final_response = parsed.text || result.final_response;
+          }
+        } catch {
+          // Not JSON - plain text response, structured_card stays null
+        }
+      }
+
+      if (!result.structured_card && result.final_response) {
+        result.structured_card = {
+          verdict: extractFallbackVerdict(result.final_response),
+        };
+      }
+
       return result;
     }
 
