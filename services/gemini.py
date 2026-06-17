@@ -33,7 +33,7 @@ from services.tool_runners import (
 )
 from services.tools import DATA_TOOLS, UI_TOOLS
 
-MODEL = "gemini-3.0-flash"
+MODEL = "gemini-3.5-flash"
 MAX_ROUNDS = 10
 MAX_MESSAGES = 40
 _RISK_KW = {"flood", "bushfire", "overpriced", "heritage", "contamination"}
