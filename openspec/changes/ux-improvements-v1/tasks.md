@@ -24,5 +24,5 @@
 
 ## 5. Cleanup & validation
 
-- [ ] 5.1 Close GitHub issues #1, #2, #3 once all tasks above are verified in the browser
-- [ ] 5.2 Take before/after screenshots and store in `screenshots/issue-1-2-3-auth-flow/`
+- [x] 5.1 Close GitHub issues #1, #2, #3 once all tasks above are verified in the browser
+- [x] 5.2 Take before/after screenshots and store in `screenshots/issue-1-2-3-auth-flow/`
