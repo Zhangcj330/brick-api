@@ -15,7 +15,7 @@ export default function App() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
-    router.push(`/chat?message=${encodeURIComponent(message.trim())}`);
+    router.push(`/chat-v2?message=${encodeURIComponent(message.trim())}`);
   };
 
   const navigateToChat = () => {
